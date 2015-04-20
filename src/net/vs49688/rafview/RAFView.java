@@ -87,12 +87,10 @@ public class RAFView {
 		files.sort((Path p1, Path p2) -> { return p1.getFileName().compareTo(p2.getFileName());	});
 
 		/* Add them */
-		for(int i = 0; i < files.size(); i += 2) {
-			
-			// TODO: Should probably add a version specifier for multiple
-			// Archive_* files in the same version folder.
-			vfs.addFile(files.get(i), files.get(i+1), version);
-		}
+		/* BUGBUGBUG: If archives in the same folder have the same file, then
+		   whichever one is loaded last will be the one in the VFS */
+		for(int i = 0; i < files.size(); i += 2)
+			vfs.addFile(files.get(i), files.get(i+1));
 	}
 	
 	/**

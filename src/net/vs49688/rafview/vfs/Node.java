@@ -57,4 +57,9 @@ public abstract class Node {
 		
 		return !s.contains(":");
     }
+	
+	@Override
+	public String toString() {
+		return m_Name == null ? "" : m_Name;
+	}
 }

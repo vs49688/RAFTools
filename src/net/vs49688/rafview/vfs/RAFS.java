@@ -31,10 +31,9 @@ public class RAFS {
 	 * Add a RAF Archive to the VFS.
 	 * @param raf The path to the index (.raf)
 	 * @param dat The path to the data (.raf.dat)
-	 * @param versionName The version of this file.
 	 * @throws IOException If an I/O error occurred.
 	 */
-	public void addFile(Path raf, Path dat, String versionName) throws IOException {
+	public void addFile(Path raf, Path dat) throws IOException {
 		int lOffset, sOffset;
 		int magic, version, mgrIndex;
 
@@ -82,21 +81,23 @@ public class RAFS {
 
 			/* Read the file list */
 			buffer.position(lOffset);
-			readFileList(buffer, indexMap, versionName, dat);
+			readFileList(buffer, indexMap, dat);
 		}
 	}
 
+	public Node getRoot() {
+		return m_Root;
+	}
+	
 	/**
 	 * Read the file table, adding data sources to all the FileNodes.
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
 	 * position where the file table starts.
 	 * @param indexMap The mapping of string table indices to their FileNodes.
-	 * @param version The version of files in the file table. Should be of the
-	 * form "X.X.X.X"
 	 * @param dat The path to the data file.
 	 * @throws IOException If an I/O error occurred.
 	 */
-	private void readFileList(ByteBuffer b, List<FileNode> indexMap, String version, Path dat) throws IOException {
+	private void readFileList(ByteBuffer b, List<FileNode> indexMap, Path dat) throws IOException {
 		int numFiles = b.getInt();
 		
 		// FIXME: assert(numFiles == stringtable.size())
@@ -119,7 +120,7 @@ public class RAFS {
 				m_DataFiles.put(dat, rdf);
 			}
 			
-			fn.addVersion(version, rdf.createDataSource(offset, size));
+			fn.setSource(rdf.createDataSource(offset, size));
 		}
 	}
 	
@@ -142,17 +143,7 @@ public class RAFS {
 		
 		if(node instanceof DirNode) {
 			for(final Node n : (DirNode)node)
-				_dumpPaths(n, tab + 1);
-			
-		} else if(node instanceof FileNode) {
-			
-			((FileNode)node).getVersions().stream().forEach((v) -> {
-				for(int i = 0; i < tab; ++i)
-					System.out.print("  ");
-				
-				System.out.printf("  V: %s\n", v.toString());
-			});
-			
+				_dumpPaths(n, tab + 1);	
 		}
 	}
 
@@ -191,9 +182,7 @@ public class RAFS {
 		} else if(node instanceof FileNode) {
 			FileNode fn = (FileNode)node;
 			
-			DataSource ds = fn.getLatestVersion().getSource();
-			
-			byte[] data = ds.read();
+			byte[] data = fn.getSource().read();
 			
 			System.out.printf("Writing %s\n", path);
 			Files.createFile(path);
