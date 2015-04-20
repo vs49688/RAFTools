@@ -55,9 +55,6 @@ public abstract class Node {
 		if(s.contains("/"))
 			return false;
 		
-		if(s.contains(":"))
-			return false;
-		
-		return true;
+		return !s.contains(":");
     }
 }

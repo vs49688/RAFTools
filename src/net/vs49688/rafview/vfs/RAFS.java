@@ -1,10 +1,6 @@
 package net.vs49688.rafview.vfs;
 
-import net.vs49688.rafview.sources.RAFDataFile;
-import net.vs49688.rafview.sources.DataSource;
-import net.vs49688.rafview.vfs.Node;
-import net.vs49688.rafview.vfs.FileNode;
-import net.vs49688.rafview.vfs.DirNode;
+import net.vs49688.rafview.sources.*;
 import java.util.*;
 import java.io.*;
 import java.nio.*;
@@ -12,45 +8,50 @@ import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.Paths;
-import net.vs49688.rafview.vfs.FileNode.Version;
 
 public class RAFS {
+	/** The magic number of a .raf file */
 	private static final int RAFIDX_MAGIC = 0x18BE0EF0;
+	
+	/** The root of the VFS */
 	private final DirNode m_Root;
 	
+	/** The mapping of paths to their RAFDataFile objects */
 	private final Map<Path, RAFDataFile> m_DataFiles;
 
-	public RAFS() throws IOException {
+	/**
+	 * Constructs a new, empty VFS
+	 */
+	public RAFS() {
 		m_Root = new DirNode();
 		m_DataFiles = new HashMap<>();
 	}
 	
+	/**
+	 * Add a RAF Archive to the VFS.
+	 * @param raf The path to the index (.raf)
+	 * @param dat The path to the data (.raf.dat)
+	 * @param versionName The version of this file.
+	 * @throws IOException If an I/O error occurred.
+	 */
 	public void addFile(Path raf, Path dat, String versionName) throws IOException {
 		int lOffset, sOffset;
 		int magic, version, mgrIndex;
 
-		if(!Files.exists(raf))
-			throw new IOException(String.format("%s does not exist", raf));
-		
-		if(!Files.exists(dat))
-			throw new IOException(String.format("%s does not exist", dat));
-		
-		if(Files.isDirectory(raf))
-			throw new IOException(String.format("%s is a directory", raf));
-
-		if(Files.isDirectory(dat))
-			throw new IOException(String.format("%s is a directory", dat));
-
 		try(FileInputStream rfis = new FileInputStream(raf.toFile())) {
 			MappedByteBuffer buffer;
+			
+			/* Map the file into memory */
 			try (FileChannel fChannel = rfis.getChannel()) {
 				buffer = fChannel.map(FileChannel.MapMode.READ_ONLY, 0, fChannel.size());
 				buffer.order(ByteOrder.LITTLE_ENDIAN);
 			}
 
+			/* Check the magic number */
 			if((magic = buffer.getInt()) != RAFIDX_MAGIC)
 				throw new IOException(String.format("Invalid magic number. Expected 0x%X, got 0x%X\n", RAFIDX_MAGIC, magic));
 
+			/* Make sure we're version 1 */
 			if((version = buffer.getInt()) != 1)
 				throw new IOException(String.format("Unsupported version %d\n", version));
 
@@ -65,24 +66,63 @@ public class RAFS {
 			buffer.position(sOffset);
 			List<String> st = readStringTable(buffer);
 
+			/* A mapping of the offsets in the string table to their FileNode */
 			List<FileNode> indexMap = new ArrayList<>(st.size());
 			
-			for(final String s : st) {
-				Path path = Paths.get(s);
-				
+			st.stream().map((s) -> Paths.get(s)).forEach((path) -> {
 				DirNode node = m_Root;
-				for(int i = 0; i < path.getNameCount()-1; ++i) {
+				
+				/* Traverse the directory tree, creating directories if required */
+				for(int i = 0; i < path.getNameCount()-1; ++i)
 					node = node.getAddDirectory(path.getName(i).toString());
-				}
 
+				/* Add the file */
 				indexMap.add((FileNode)node.AddChild(new FileNode(path.getName(path.getNameCount()-1).toString())));
-			}
+			});
 
 			/* Read the file list */
 			buffer.position(lOffset);
 			readFileList(buffer, indexMap, versionName, dat);
 		}
 	}
+
+	/**
+	 * Read the file table, adding data sources to all the FileNodes.
+	 * @param b The ByteBuffer containing the data. Is expected to be at the 
+	 * position where the file table starts.
+	 * @param indexMap The mapping of string table indices to their FileNodes.
+	 * @param version The version of files in the file table. Should be of the
+	 * form "X.X.X.X"
+	 * @param dat The path to the data file.
+	 * @throws IOException If an I/O error occurred.
+	 */
+	private void readFileList(ByteBuffer b, List<FileNode> indexMap, String version, Path dat) throws IOException {
+		int numFiles = b.getInt();
+		
+		// FIXME: assert(numFiles == stringtable.size())
+		
+		for(int i = 0; i < numFiles; ++i) {
+			int unk = b.getInt(); // Not sure what this is
+			
+			int offset = b.getInt();
+			int size = b.getInt();
+			int index = b.getInt();
+			
+			FileNode fn = indexMap.get(index);
+
+			/* If we've already got this file loaded, don't load it again */
+			RAFDataFile rdf;
+			if(m_DataFiles.containsKey(dat)) {
+				rdf = m_DataFiles.get(dat);
+			} else {
+				rdf = new RAFDataFile(dat);
+				m_DataFiles.put(dat, rdf);
+			}
+			
+			fn.addVersion(version, rdf.createDataSource(offset, size));
+		}
+	}
+	
 
 	/**
 	 * 
@@ -106,42 +146,16 @@ public class RAFS {
 			
 		} else if(node instanceof FileNode) {
 			
-			for(final Version v : ((FileNode)node).getVersions()) {
+			((FileNode)node).getVersions().stream().forEach((v) -> {
 				for(int i = 0; i < tab; ++i)
 					System.out.print("  ");
 				
 				System.out.printf("  V: %s\n", v.toString());
-			}
+			});
 			
 		}
 	}
-	
-	private void readFileList(ByteBuffer b, List<FileNode> indexMap, String version, Path dat) throws IOException {
-		int numFiles = b.getInt();
-		
-		// FIXME: assert(numFiles == stringtable.size())
-		
-		for(int i = 0; i < numFiles; ++i) {
-			int unk = b.getInt(); // Not sure what this is
-			
-			int offset = b.getInt();
-			int size = b.getInt();
-			int index = b.getInt();
-			
-			FileNode fn = indexMap.get(index);
 
-			RAFDataFile rdf;
-			if(m_DataFiles.containsKey(dat)) {
-				rdf = m_DataFiles.get(dat);
-			} else {
-				rdf = new RAFDataFile(dat);
-				m_DataFiles.put(dat, rdf);
-			}
-			
-			fn.addVersion(version, rdf.createDataSource(offset, size));
-		}
-	}
-	
 	/**
 	 * Dump the entire RAF FileSystem to a folder.
 	 * @param dir The base directory to write everything to.

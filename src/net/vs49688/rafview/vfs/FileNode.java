@@ -1,6 +1,5 @@
 package net.vs49688.rafview.vfs;
 
-import java.io.IOException;
 import java.util.*;
 import net.vs49688.rafview.sources.DataSource;
 import net.vs49688.rafview.IPv4Sorter;
@@ -88,6 +87,6 @@ public class FileNode extends Node {
 		}
 		
 		private String m_Version;
-        private DataSource m_DataSource;
+        private final DataSource m_DataSource;
     }
 }
