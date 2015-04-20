@@ -1,5 +1,6 @@
 package net.vs49688.rafview;
 
+import net.vs49688.rafview.gui.*;
 import net.vs49688.rafview.vfs.*;
 import java.util.*;
 import java.util.regex.*;
@@ -10,14 +11,17 @@ public class RAFView {
 	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 
 	public static void main(String[] args) throws IOException {
-		RAFS vfs = new RAFS();
+		//RAFS vfs = new RAFS();
 
 		//addAll(vfs, "F:\\Games\\League of Legends");
-		addAll(vfs, "C:\\Riot Games\\League of Legends");
-		vfs.dumpPaths();
+		//addAll(vfs, "C:\\Riot Games\\League of Legends");
+		//vfs.dumpPaths();
 		//vfs.dumpToDir("F:\\lolex");
-		System.err.printf("Using %s bytes of memory\n", Runtime.getRuntime().totalMemory());
-
+		//System.err.printf("Using %s bytes of memory\n", Runtime.getRuntime().totalMemory());
+		
+		Controller c = new Controller();
+		
+		//tepkek.setRoot(null);
 	}
 	
 	private static void addAll(RAFS vfs, String baseDir) throws IOException {
@@ -109,7 +113,6 @@ public class RAFView {
 		for(final Path p: files) {
 			Path f = p.getFileName();
 			
-			/* Guaranteed to match (is checked above) */
 			Matcher m = s_RAFPattern.matcher(f.toString());
 			
 			if(!m.find())
