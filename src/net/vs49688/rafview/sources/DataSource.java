@@ -1,5 +1,6 @@
 package net.vs49688.rafview.sources;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -20,4 +21,6 @@ public interface DataSource {
 	 * @throws IOException If an I/O error occurred.
 	 */
 	public byte[] read() throws IOException;
+	
+	public void close();
 }

@@ -23,7 +23,7 @@ public class RAFS {
 	 * Constructs a new, empty VFS
 	 */
 	public RAFS() {
-		m_Root = new DirNode();
+		m_Root = new RootNode();
 		m_DataFiles = new HashMap<>();
 	}
 	
@@ -76,7 +76,7 @@ public class RAFS {
 					node = node.getAddDirectory(path.getName(i).toString());
 
 				/* Add the file */
-				indexMap.add((FileNode)node.AddChild(new FileNode(path.getName(path.getNameCount()-1).toString())));
+				indexMap.add((FileNode)node.addChild(new FileNode(path.getName(path.getNameCount()-1).toString())));
 			});
 
 			/* Read the file list */
@@ -124,7 +124,10 @@ public class RAFS {
 		}
 	}
 	
-
+	public void clear() {
+		m_Root.delete();
+	}
+	
 	/**
 	 * 
 	 */
@@ -138,7 +141,7 @@ public class RAFS {
 			System.out.print("  ");
 
 		System.out.printf("%d: %s%s\n", node.getUID(),
-				node.getName() == null ? "" : node.getName(),
+				node.name() == null ? "" : node.name(),
 				node instanceof DirNode ? "/" : "");
 		
 		if(node instanceof DirNode) {
@@ -163,7 +166,7 @@ public class RAFS {
 	}
 
 	private void _dumpToDir(Path dir, Node node) throws IOException {
-		Path path = Paths.get(dir.toString(), node.getName() == null ? "" : node.getName());
+		Path path = Paths.get(dir.toString(), node.name() == null ? "" : node.name());
 		
 		/* Handle DirNodes */
 		if(node instanceof DirNode) {

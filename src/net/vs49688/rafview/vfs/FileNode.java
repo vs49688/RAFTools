@@ -27,4 +27,17 @@ public class FileNode extends Node {
 	public DataSource getSource() {
 		return m_DataSource;
 	}
+	
+	@Override
+	public boolean isLeaf() {
+		return true;
+	}
+	
+	@Override
+	public synchronized void _delete() {
+		if(m_DataSource != null)
+			m_DataSource.close();
+		
+		m_DataSource = null;
+	}
 }

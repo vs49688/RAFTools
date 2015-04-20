@@ -2,6 +2,7 @@ package net.vs49688.rafview.gui;
 
 import java.awt.event.*;
 import java.io.*;
+import net.vs49688.rafview.vfs.Node;
 
 public class Controller {
 	private final View m_View;
@@ -9,7 +10,7 @@ public class Controller {
 	
 	public Controller() {
 		m_Model = new Model();
-		m_View = new View(m_Model, new MenuListener());
+		m_View = new View(m_Model, new MenuListener(), new TreeOpHandler());
 		
 		m_View.invokeLater();
 	}
@@ -29,20 +30,50 @@ public class Controller {
 				File f = m_View.showOpenDialog(false);
 				if(f != null) {							
 					try {
+						m_Model.getVFS().clear();
 						m_Model.addFile(f.toPath());
 					} catch(IOException ex) {
-						ex.printStackTrace();
+						m_View.showErrorDialog("ERROR", ex.getMessage());
 					}
 
-					m_View.updateVFS();
+					m_View.updateView();
 				}
 					
+			} else if(cmd.equals("file->addarchive")) {
+				File f = m_View.showOpenDialog(false);
+				if(f != null) {							
+					try {
+						m_Model.addFile(f.toPath());
+					} catch(IOException ex) {
+						m_View.showErrorDialog("ERROR", ex.getMessage());
+					}
+
+					m_View.updateView();
+				}
 			} else if(cmd.equals("file->openlol")) {
 				File f = m_View.showOpenDialog(true);
-				if(f != null) {
-					
+				if(f != null) {							
+					try {
+						m_Model.openLolDirectory(f.toPath());
+					} catch(IOException ex) {
+						m_View.showErrorDialog("ERROR", ex.getMessage());
+					}
+
+					m_View.updateView();
 				}
 			}
 		}
+	}
+	
+	private class TreeOpHandler implements VFSViewTree.OpHandler {
+
+		@Override
+		public void nodeSelected(Node node) {
+			m_View.setPathText(node.getFullPath().toString());
+		}
+
+		@Override
+		public void nodeExport(Node node) {	}
+		
 	}
 }

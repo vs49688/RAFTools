@@ -1,5 +1,6 @@
 package net.vs49688.rafview.gui;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
@@ -11,23 +12,28 @@ public class View extends JFrame {
 
 	private final Model m_Model;
 	private final ActionListener m_MenuListener;
+	private final VFSViewTree.OpHandler m_TreeOpHandler;
 	
 	private String m_LastOpenDirectory;
 	
-	public View(Model model, ActionListener menuListener) {
+	public View(Model model, ActionListener menuListener, VFSViewTree.OpHandler treeOpHandler) {
 		m_Model = model;
 		m_MenuListener = menuListener;
+		m_TreeOpHandler = treeOpHandler;
 		
 		m_LastOpenDirectory = System.getProperty("user.home");
 
 		initComponents();
 		
+		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
+		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		updateView();
 	}
-
-	public void setRoot(Node node) {
-		DefaultTreeModel tm = new DefaultTreeModel(_tepkek(node));
-		m_VFSTree.setModel(tm);
+	
+	public final void updateView() {
+		m_VFSTree.setModel(new DefaultTreeModel(_tepkek(m_Model.getVFS().getRoot())));
 	}
 	
 	private MutableTreeNode _tepkek(Node node) {
@@ -46,6 +52,13 @@ public class View extends JFrame {
 		return tn;
 	}
 
+	public void setPathText(String path) {
+		if(path == null)
+			path = "";
+		
+		m_PathField.setText(path);
+	}
+	
     /**
      * Show the Open File Dialog.
 	 * @param folders Select directories only?
@@ -86,7 +99,7 @@ public class View extends JFrame {
         javax.swing.JSplitPane mainInfoSplitter = new javax.swing.JSplitPane();
         javax.swing.JSplitPane treePreviewSplitter = new javax.swing.JSplitPane();
         javax.swing.JScrollPane vfsScroll = new javax.swing.JScrollPane();
-        m_VFSTree = new javax.swing.JTree();
+        m_VFSTree = new net.vs49688.rafview.gui.VFSViewTree();
         jPanel1 = new javax.swing.JPanel();
         m_InfoPanel = new javax.swing.JPanel();
         m_PathField = new javax.swing.JTextField();
@@ -94,6 +107,7 @@ public class View extends JFrame {
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem openArchiveItem = new javax.swing.JMenuItem();
+        javax.swing.JMenuItem addArchiveItem = new javax.swing.JMenuItem();
         javax.swing.JMenuItem openLolDirItem = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitItem = new javax.swing.JMenuItem();
 
@@ -167,6 +181,16 @@ public class View extends JFrame {
         });
         fileMenu.add(openArchiveItem);
 
+        addArchiveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        addArchiveItem.setText("Add Archive");
+        addArchiveItem.setActionCommand("file->openarchive");
+        addArchiveItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _forwardMenuCommand(evt);
+            }
+        });
+        fileMenu.add(addArchiveItem);
+
         openLolDirItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         openLolDirItem.setText("Open LoL Directory");
         openLolDirItem.setActionCommand("file->openlol");
@@ -214,10 +238,21 @@ public class View extends JFrame {
 			View.this.setVisible(true);
 		});
 	}
+	
+    public void showErrorDialog(String title, String message)
+    {
+        showErrorDialog(this, title, message);
+    }
+
+    public static void showErrorDialog(Component parent, String title, String message)
+    {
+        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel m_InfoPanel;
     private javax.swing.JTextField m_PathField;
-    private javax.swing.JTree m_VFSTree;
+    private net.vs49688.rafview.gui.VFSViewTree m_VFSTree;
     // End of variables declaration//GEN-END:variables
 }

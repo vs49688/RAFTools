@@ -126,5 +126,8 @@ public class RAFDataFile {
 			return safeRead(m_Offset, m_Size);
 		}
 		
+		@Override
+		public void close() {}
+		
 	}
 }
