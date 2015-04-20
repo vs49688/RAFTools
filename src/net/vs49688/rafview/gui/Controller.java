@@ -13,7 +13,7 @@ public class Controller {
 		
 		m_View.invokeLater();
 	}
-	
+
 	private class MenuListener implements ActionListener {
 		@Override
 		@SuppressWarnings("ConvertToStringSwitch")
@@ -27,8 +27,14 @@ public class Controller {
 				m_View.dispose();
 			} else if(cmd.equals("file->openarchive")) {
 				File f = m_View.showOpenDialog(false);
-				if(f != null) {
-					System.err.printf("WTO %s\n", f.toString());
+				if(f != null) {							
+					try {
+						m_Model.addFile(f.toPath());
+					} catch(IOException ex) {
+						ex.printStackTrace();
+					}
+
+					m_View.updateVFS();
 				}
 					
 			} else if(cmd.equals("file->openlol")) {
