@@ -7,13 +7,13 @@ public class FileNode extends Node {
 	private DataSource m_DataSource;
 
 	
-    public FileNode() {
-        super();
+    public FileNode(IOperationsNotify notify) {
+        super(notify);
         m_DataSource = null;
     }
 	
-	public FileNode(String name) {
-		super(name);
+	public FileNode(String name, IOperationsNotify notify) {
+		super(name, notify);
 		m_DataSource = null;
 	}
 

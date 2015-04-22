@@ -11,18 +11,24 @@ public abstract class Node {
 	
     private String m_Name;
 	private final int m_UID;
-    
     private DirNode m_Parent;
-
-	public Node() {
+	private Object m_UserObject;
+	protected final IOperationsNotify m_Notify;
+	
+	public Node(IOperationsNotify notify) {
 		m_Name = "";
 		m_Parent = null;
 		m_UID = _getNextUID();
+		m_Notify = notify;
 	}
 	
-	public Node(String name) {
-		this();
-		rename(name);
+	public Node(String name, IOperationsNotify notify) {
+		this(notify);
+		
+        if(!isNameValid(name))
+            throw new IllegalArgumentException("Invalid name");
+        
+        m_Name = name;
 	}
 	
     public final synchronized String name() {
@@ -34,6 +40,8 @@ public abstract class Node {
             throw new IllegalArgumentException("Invalid name");
         
         m_Name = name;
+		
+		m_Notify.onModify(this);
     }
 	
 	protected abstract void _delete();
@@ -81,5 +89,13 @@ public abstract class Node {
 	@Override
 	public String toString() {
 		return m_Name;
+	}
+	
+	public void setUserObject(Object o) {
+		m_UserObject = o;
+	}
+	
+	public Object getUserObject() {
+		return m_UserObject;
 	}
 }

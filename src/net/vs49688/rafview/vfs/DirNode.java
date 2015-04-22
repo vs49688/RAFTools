@@ -5,19 +5,26 @@ import java.util.*;
 public class DirNode extends Node implements Iterable<Node> {
 	private final Set<Node> m_Children;
 
-	public DirNode() {
+	public DirNode(IOperationsNotify notify) {
+		super(notify);
 		m_Children = createSet();
 	}
 	
-	public DirNode(String name) {
-		super(name);
+	public DirNode(String name, IOperationsNotify notify) {
+		super(name, notify);
 		
 		m_Children = createSet();
 	}
 	
 	private static Set createSet() {
 		return Collections.synchronizedSortedSet(new TreeSet<>((Node n1, Node n2) -> {
-			int res = n1.name().compareTo(n2.name());
+			
+			if(n1 instanceof DirNode && !(n2 instanceof DirNode)) {
+				return 1;
+			} else if(n2 instanceof DirNode && !(n1 instanceof DirNode)) {
+				return -1;
+			}
+			
 			return n1.name().compareTo(n2.name());
 		}));
 	}
@@ -29,9 +36,15 @@ public class DirNode extends Node implements Iterable<Node> {
 		if(m_Children.contains(node))
 			throw new IllegalArgumentException("Node already a child");
 		
-		m_Children.add(node);
+		/*for(final Node n : m_Children) {
+			if(n.name().equalsIgnoreCase(node.name()))
+				throw new IllegalArgumentException("Already a file with same name.");
+		}*/
 		
+		m_Children.add(node);
 		node.setParent(this);
+		
+		node.m_Notify.onAdd(node);
 		
 		return node;
 	}
@@ -60,7 +73,22 @@ public class DirNode extends Node implements Iterable<Node> {
 			}
 		}
 
-		return (DirNode)addChild(new DirNode(name));
+		return (DirNode)addChild(new DirNode(name, m_Notify));
+	}
+	
+	public int getChildCount() {
+		return m_Children.size();
+	}
+	
+	public int getIndex(Node child) {
+		int i = 0;
+		for(final Node n : m_Children) {
+			if(child == n)
+				return i;
+			
+			++i;
+		}
+		return -1;
 	}
 	
 	@Override

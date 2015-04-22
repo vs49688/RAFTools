@@ -1,9 +1,12 @@
 package net.vs49688.rafview.gui;
 
+import net.vs49688.rafview.cli.Model;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.filechooser.*;
 import javax.swing.tree.*;
 import net.vs49688.rafview.vfs.*;
@@ -13,6 +16,7 @@ public class View extends JFrame {
 	private final Model m_Model;
 	private final ActionListener m_MenuListener;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
+	private final Console m_Console;
 	
 	private String m_LastOpenDirectory;
 	
@@ -25,20 +29,39 @@ public class View extends JFrame {
 
 		initComponents();
 		
+		this.setSize(700, 500);
+		
 		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
 		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
+		m_Console = new Console(menuListener);
+		m_TabPane.add("Console", m_Console);
+		
+		this.getRootPane().setDefaultButton(m_Console.getSubmitButton());
 		updateView();
+		
+		//DefaultMutableTreeNode rn = new DefaultMutableTreeNode(m_Model.getVFS().getRoot());
+		//m_Model.getVFS().getRoot().setUserObject(rn);
+		//m_VFSTree.setModel(new DefaultTreeModel(rn));
+		
+		/* This will cause onAdd() to be called for the root */
+		m_Model.getVFS().addNotifyHandler(new _NotifyHandler());
 	}
 	
-	public final void updateView() {
-		m_VFSTree.setModel(new DefaultTreeModel(_tepkek(m_Model.getVFS().getRoot())));
+	private void updateView() {
+		//m_VFSTree.setModel(new DefaultTreeModel(_tepkek(m_Model.getVFS().getRoot())));
+	}
+	
+	public Console getConsole() {
+		return m_Console;
 	}
 	
 	private MutableTreeNode _tepkek(Node node) {
-		DefaultMutableTreeNode tn = new DefaultMutableTreeNode(node);
 		
+		DefaultMutableTreeNode tn = new DefaultMutableTreeNode(node);		
+		node.setUserObject(tn);
+
 		if(node instanceof DirNode) {
 			DirNode dn = (DirNode)node;
 			
@@ -100,7 +123,7 @@ public class View extends JFrame {
         javax.swing.JSplitPane treePreviewSplitter = new javax.swing.JSplitPane();
         javax.swing.JScrollPane vfsScroll = new javax.swing.JScrollPane();
         m_VFSTree = new net.vs49688.rafview.gui.VFSViewTree();
-        jPanel1 = new javax.swing.JPanel();
+        m_TabPane = new javax.swing.JTabbedPane();
         m_InfoPanel = new javax.swing.JPanel();
         m_PathField = new javax.swing.JTextField();
         javax.swing.JLabel pathLabel = new javax.swing.JLabel();
@@ -122,19 +145,7 @@ public class View extends JFrame {
         vfsScroll.setViewportView(m_VFSTree);
 
         treePreviewSplitter.setLeftComponent(vfsScroll);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 463, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 306, Short.MAX_VALUE)
-        );
-
-        treePreviewSplitter.setRightComponent(jPanel1);
+        treePreviewSplitter.setRightComponent(m_TabPane);
 
         mainInfoSplitter.setTopComponent(treePreviewSplitter);
 
@@ -154,7 +165,7 @@ public class View extends JFrame {
                 .addContainerGap()
                 .addComponent(pathLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
                 .addContainerGap())
         );
         m_InfoPanelLayout.setVerticalGroup(
@@ -249,10 +260,48 @@ public class View extends JFrame {
         JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
     }
 	
+	private class _NotifyHandler implements IOperationsNotify {
+
+		@Override
+		public void onClear() {
+			//m_VFSTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(m_Model.getVFS().getRoot())));
+	
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode)m_Model.getVFS().getRoot().getUserObject();
+			
+			if(root.getChildCount() > 0) {
+				DefaultTreeModel model = (DefaultTreeModel)m_VFSTree.getModel();
+				for(int i = 0; i < root.getChildCount(); ++i)
+					model.removeNodeFromParent((DefaultMutableTreeNode)root.getLastChild());
+			}
+		}
+
+		@Override
+		public void onModify(Node n) {
+		}
+
+		@Override
+		public void onAdd(Node n) {
+			DefaultMutableTreeNode tn = new DefaultMutableTreeNode(n);
+			n.setUserObject(tn);
+			
+			DirNode parent = n.getParent();
+			
+			if(parent != null) {
+				DefaultTreeModel m = (DefaultTreeModel)m_VFSTree.getModel();
+				
+				DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
+				m.insertNodeInto(tn, tnp, parent.getIndex(n));
+			} else {
+				m_VFSTree.setModel(new DefaultTreeModel(tn));
+			}
+		}
+	}
+
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel m_InfoPanel;
     private javax.swing.JTextField m_PathField;
+    private javax.swing.JTabbedPane m_TabPane;
     private net.vs49688.rafview.gui.VFSViewTree m_VFSTree;
     // End of variables declaration//GEN-END:variables
 }

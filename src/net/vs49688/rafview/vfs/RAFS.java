@@ -19,12 +19,49 @@ public class RAFS {
 	/** The mapping of paths to their RAFDataFile objects */
 	private final Map<Path, RAFDataFile> m_DataFiles;
 
+	private final IOperationsNotify m_NotifyDispatch;
+	private final List<IOperationsNotify> m_Notify;
+	
 	/**
 	 * Constructs a new, empty VFS
 	 */
 	public RAFS() {
-		m_Root = new RootNode();
+		m_NotifyDispatch = new _NotifyDispatch();
+		m_Notify = new ArrayList<>();
+		m_Root = new RootNode(m_NotifyDispatch);
+		
 		m_DataFiles = new HashMap<>();
+		//m_Notify = notify;
+	}
+	
+	/**
+	 * Add a new notify handler.
+	 * This causes the the onAdd() function in the handler to be
+	 * called for every node in the tree.
+	 * @param ion The notify handler/
+	 */
+	public void addNotifyHandler(IOperationsNotify ion) {
+		if(ion == null || m_Notify.contains(ion))
+			return;
+		
+		/* We're a new handler, so we don't know the existing
+		 * tree structure. Let's rebuild it for them! */
+		_reprocess(m_Root, ion);
+		m_Notify.add(ion);
+	}
+
+	/**
+	 * Simulates the rebuilding the tree.
+	 * @param n The root node.
+	 * @param notify The notify handler.
+	 */
+	private void _reprocess(Node n, IOperationsNotify notify) {
+		notify.onAdd(n);
+		
+		if(n instanceof DirNode) {
+			for(final Node c : (DirNode)n)
+				_reprocess(c, notify);
+		}
 	}
 	
 	/**
@@ -72,11 +109,12 @@ public class RAFS {
 				DirNode node = m_Root;
 				
 				/* Traverse the directory tree, creating directories if required */
-				for(int i = 0; i < path.getNameCount()-1; ++i)
+				for(int i = 0; i < path.getNameCount()-1; ++i) {
 					node = node.getAddDirectory(path.getName(i).toString());
+				}
 
 				/* Add the file */
-				indexMap.add((FileNode)node.addChild(new FileNode(path.getName(path.getNameCount()-1).toString())));
+				indexMap.add((FileNode)node.addChild(new FileNode(path.getName(path.getNameCount()-1).toString(), m_NotifyDispatch)));
 			});
 
 			/* Read the file list */
@@ -125,6 +163,7 @@ public class RAFS {
 	}
 	
 	public void clear() {
+		m_NotifyDispatch.onClear();
 		m_Root.delete();
 	}
 	
@@ -150,6 +189,61 @@ public class RAFS {
 		}
 	}
 
+	public void extract(Path vfsPath, Path outDir) throws IOException {
+		
+		if(vfsPath == null)
+			throw new IllegalArgumentException("vfsPath cannot be null");
+		
+		if(outDir == null)
+			throw new IllegalArgumentException("outPath cannot be null");
+
+		Node node = _findNodeByName(m_Root, vfsPath, 0);
+		
+		if(node == null)
+			throw new IOException("Not found");
+		
+		_extractNode(node, outDir);
+
+	}
+
+	private void _extractNode(Node root, Path outDir) throws IOException {
+		if(root instanceof FileNode) {
+			FileNode fn = (FileNode)root;
+			Files.write(outDir.resolve(fn.name()), fn.getSource().read());
+			return;
+		}
+		
+		DirNode dn = (DirNode)root;
+		outDir = outDir.resolve(root.name());
+		Files.createDirectories(outDir);
+		
+		for(final Node n: dn) {
+			_extractNode(n, outDir);
+		}
+	}
+	
+	/**
+	 * Traverse the tree using a string as a path
+	 * @param root The node to start searching from.
+	 * @param path The path we're searching for.
+	 * @param component The component index we're up to in the path.
+	 * @return If found, the node. Otherwise, null.
+	 */
+	private Node _findNodeByName(Node root, Path path, int component) {
+		
+		if(component == path.getNameCount())
+			return root;
+
+		DirNode n = (DirNode)root;
+		
+		for(final Node c : n) {
+			if(c.name().equalsIgnoreCase(path.getName(component).toString()))
+				return _findNodeByName(c, path, component + 1);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Dump the entire RAF FileSystem to a folder.
 	 * @param dir The base directory to write everything to.
@@ -232,5 +326,30 @@ public class RAFS {
 		}
 
 		return list;
+	}
+	
+	private class _NotifyDispatch implements IOperationsNotify {
+
+		@Override
+		public void onClear() {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onClear();
+			});
+		}
+
+		@Override
+		public void onModify(Node n) {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onModify(n);
+			});
+		}
+		
+		@Override
+		public void onAdd(Node n) {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onAdd(n);
+			});
+		}
+		
 	}
 }

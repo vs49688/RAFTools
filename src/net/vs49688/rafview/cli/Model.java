@@ -1,48 +1,41 @@
-package net.vs49688.rafview;
+package net.vs49688.rafview.cli;
 
-import net.vs49688.rafview.gui.*;
-import net.vs49688.rafview.vfs.*;
-import java.util.*;
-import java.util.regex.*;
 import java.io.*;
 import java.nio.file.*;
-import net.vs49688.rafview.cli.CommandInterface;
-import net.vs49688.rafview.cli.Model;
+import java.util.*;
+import java.util.regex.*;
+import net.vs49688.rafview.IPv4Sorter;
+import net.vs49688.rafview.vfs.*;
 
-public class RAFView {
+
+public class Model {
+	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
+	private final RAFS m_VFS;
 	
+	public Model() {
+		m_VFS = new RAFS();
+	}
+	
+	public void addFile(Path file) throws IOException {
+		Path dat = Paths.get(file.getParent().toString(), String.format("%s.dat", file.getFileName().toString()));
+		m_VFS.addFile(file, dat);
+	}
+	
+	public void openLolDirectory(Path path) throws IOException {
+		m_VFS.clear();
+		addAll(m_VFS, path);
+	}
 
-	public static void main(String[] args) throws IOException {
-		//RAFS vfs = new RAFS();
-
-		//addAll(vfs, "F:\\Games\\League of Legends");
-		//addAll(vfs, Paths.get("C:\\Riot Games\\League of Legends"));
-		//vfs.dumpPaths();
-		//vfs.dumpToDir("C:\\lolex");
-		//System.err.printf("Using %s bytes of memory\n", Runtime.getRuntime().totalMemory());
-		
-		Controller c = new Controller();
-		
-		/* Uncomment to enable the CLI */
-		/*Model model = new Model();
-		CommandInterface cli = new CommandInterface(System.out, model);
-		
-		cli.start();
-		
-		try(Scanner stdin = new Scanner(System.in)) {
-			System.err.print("> ");
-			while(stdin.hasNextLine()) {
-				cli.parseString(stdin.nextLine());
-				System.err.print("> ");
-			}
-		}
-		
-		cli.stop();*/
+	public RAFS getVFS() {
+		return m_VFS;
 	}
 	
 	private static void addAll(RAFS vfs, Path baseDir) throws IOException {
 		/* Generate the path to "filearchives" */
 		Path filearchives = Paths.get(baseDir.toString(), "RADS", "projects", "lol_game_client", "filearchives");
+		
+		if(!Files.exists(filearchives))
+			throw new IOException("Not a valid LoL directory");
 		
 		/* List the files, taking only directories of the form X.X.X.X */
 		DirectoryStream<Path> stream = Files.newDirectoryStream(filearchives, (Path entry) -> {
@@ -82,8 +75,6 @@ public class RAFView {
 		for(final String v : versions)
 			addVersion(vfs, filearchives, v);
 	}
-	
-	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 	
 	private static void addVersion(RAFS vfs, Path filearchives, String version) throws IOException {
 		Path versionPath = Paths.get(filearchives.toString(), version);
