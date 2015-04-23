@@ -149,7 +149,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return "0.1-prev";
+		return "0.2-alpha";
 	}
 	
 	public static String getApplicationName() {
@@ -157,11 +157,11 @@ public class Model {
 	}
 	
 	public static String getContactEmail() {
-		return "zane.vaniperen@uqconnect.edu.au";
+		return "vs49688@yahoo.com.au";
 	}
 	
 	public static String getCopyrightHolder() {
-		return "Zane van Iperen";
+		return "vs49688";
 	}
 	
 	public static int getCopyrightYear() {

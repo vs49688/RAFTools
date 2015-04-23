@@ -51,13 +51,14 @@ public class CommandInterface {
 			Model.getApplicationName(),	Model.getVersionString(),
 			Model.getCopyrightYear(), Model.getCopyrightHolder()));
 		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
-		_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
-		_write("/r/leagueoflegends (And Rito if they pls).\n");
-		_write("It is an alpha-quality release and should not be considered\n");
-		_write("stable for everyday use.\n");
+		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
+		//_write("/r/leagueoflegends (And Rito if they pls).\n");
+		_write(String.format("RAFTools comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
+		_write("permitted by applicable law. This build is an alpha-quality\n");
+		_write("release and should not be considered stable enough for everyday\nuse.\n");
 		
 		_write("Type `help' for more information.\n");
-		//_write("RAFTools comes with ABSOLUTELY NO WARRANTY; for details\n");
+
 		//_write("type `show w'.  This is free software, and you are welcome\n");
 		//_write("to redistribute it under certain conditions; type `show c' \n");
 		//_write("for details.\n");
