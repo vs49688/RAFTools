@@ -39,7 +39,7 @@
                   <KeyStroke key="Ctrl+A"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Add Archive"/>
-                <Property name="actionCommand" type="java.lang.String" value="file-&gt;openarchive"/>
+                <Property name="actionCommand" type="java.lang.String" value="file-&gt;addarchive"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_forwardMenuCommand"/>

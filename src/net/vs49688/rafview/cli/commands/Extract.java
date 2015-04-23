@@ -6,8 +6,8 @@ import net.vs49688.rafview.interpreter.*;
 
 public class Extract implements ICommand {
 
-	Model m_Model;
-	Appendable m_Console;
+	private final Model m_Model;
+	private final Appendable m_Console;
 	
 	public Extract(Appendable out, Model model) {
 		m_Console = out;

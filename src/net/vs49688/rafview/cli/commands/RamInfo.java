@@ -1,12 +1,10 @@
 package net.vs49688.rafview.cli.commands;
 
-import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 
 public class RamInfo implements ICommand {
 
-	Model m_Model;
-	Appendable m_Console;
+	private final Appendable m_Console;
 	
 	public RamInfo(Appendable out) {
 		m_Console = out;

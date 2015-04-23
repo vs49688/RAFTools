@@ -217,7 +217,7 @@ public class View extends JFrame {
 
         addArchiveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         addArchiveItem.setText("Add Archive");
-        addArchiveItem.setActionCommand("file->openarchive");
+        addArchiveItem.setActionCommand("file->addarchive");
         addArchiveItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 _forwardMenuCommand(evt);

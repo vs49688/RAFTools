@@ -16,7 +16,7 @@ public class DirNode extends Node implements Iterable<Node> {
 		m_Children = createSet();
 	}
 	
-	private static Set createSet() {
+	private static Set<Node> createSet() {
 		return Collections.synchronizedSortedSet(new TreeSet<>((Node n1, Node n2) -> {
 			
 			if(n1 instanceof DirNode && !(n2 instanceof DirNode)) {
