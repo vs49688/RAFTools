@@ -29,4 +29,13 @@ public class Open implements ICommand {
 		return "open";
 	}
 
+	@Override
+	public String getUsageString() {
+		return "path_to_raf_file";
+	}
+	
+	@Override
+	public String getDescription() {
+		return "Create a new VFS using a file as the base";
+	}
 }

@@ -3,6 +3,7 @@ package net.vs49688.rafview.gui;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.text.*;
 
 public class Console extends JPanel implements Appendable {
 
@@ -92,12 +93,13 @@ public class Console extends JPanel implements Appendable {
 	}	
 	
 	public synchronized void print(String s) {
+		((DefaultCaret)m_Text.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		m_Text.append(s);
 	}
 	
 	public void println(String s) {
-		print(s);
-		print("\n");
+		print(s + "\n");
+		m_Text.setCaretPosition(m_Text.getDocument().getLength());
 	}
 
 	public String getCommandText() {

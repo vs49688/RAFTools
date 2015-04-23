@@ -28,5 +28,14 @@ public class OpenDir implements ICommand {
 	public String getCommand() {
 		return "opendir";
 	}
-
+	
+	@Override
+	public String getUsageString() {
+		return "path_to_lol_directory";
+	}
+	
+	@Override
+	public String getDescription() {
+		return "Open a LoL directory";
+	}
 }

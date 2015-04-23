@@ -28,4 +28,13 @@ public class Add implements ICommand {
 		return "add";
 	}
 
+	@Override
+	public String getUsageString() {
+		return "path_to_raf_file";
+	}
+	
+	@Override
+	public String getDescription() {
+		return "Add a file to the VFS";
+	}
 }

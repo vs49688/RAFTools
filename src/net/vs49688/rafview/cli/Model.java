@@ -147,4 +147,24 @@ public class Model {
 		
 		return pairs.keySet().stream().noneMatch((id) -> ((pairs.get(id) & 0b11) != 0b11));
 	}
+	
+	public static String getVersionString() {
+		return "0.1-prev";
+	}
+	
+	public static String getApplicationName() {
+		return "RAFTools";
+	}
+	
+	public static String getContactEmail() {
+		return "zane.vaniperen@uqconnect.edu.au";
+	}
+	
+	public static String getCopyrightHolder() {
+		return "Zane van Iperen";
+	}
+	
+	public static int getCopyrightYear() {
+		return 2015;
+	}
 }

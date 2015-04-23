@@ -16,7 +16,10 @@ public class Show implements ICommand {
 		
 		switch(args[1].toLowerCase()) {
 			case "c":
-				m_Console.append("show: TODO: Show conditions\n");
+				m_Console.append("This version of RAFTools is a preview build for\n");
+				m_Console.append("the users of /r/leagueoflegends. It is an alpha-quality\n");
+				m_Console.append("release and should not be considered stable for everyday\n");
+				m_Console.append("use.\n");
 				break;
 			case "w":
 				m_Console.append("show: TODO: Show warranty information\n");
@@ -31,4 +34,13 @@ public class Show implements ICommand {
 		return "show";
 	}
 	
+	@Override
+	public String getUsageString() {
+		return "";
+	}
+	
+	@Override
+	public String getDescription() {
+		return "";
+	}
 }

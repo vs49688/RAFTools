@@ -15,7 +15,7 @@ public class Interpreter {
 	private final UUID m_ExitUUID;
 	private final IFuckedUp m_IFuckedUp;
 
-	public Interpreter(IFuckedUp errHandler) {
+	public Interpreter(IFuckedUp fuck) {
 		m_Handlers = new ConcurrentHashMap<>();
 		m_CommandQueue = new ArrayBlockingQueue<>(32);
 		m_ResultStorage = (Map) Collections.synchronizedMap(new LinkedHashMap<>());
@@ -24,7 +24,7 @@ public class Interpreter {
 
 		m_ExitUUID = UUID.randomUUID();
 		
-		m_IFuckedUp = errHandler;
+		m_IFuckedUp = fuck;
 	}
 
 	public void start() {

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.vs49688.rafview.gui;
 
 import java.awt.event.*;
@@ -41,7 +36,7 @@ public class VFSViewTree extends JTree {
 		
 		JMenuItem item;
 		
-		item = new JMenuItem("Export");
+		item = new JMenuItem("Extract");
 		item.addActionListener((ActionEvent ae) -> {
 			m_OpHandler.nodeExport(getSelectedVFSNode());
 		});

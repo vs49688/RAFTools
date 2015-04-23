@@ -17,7 +17,7 @@ public class Extract implements ICommand {
 	@Override
 	public void process(String cmdLine, String[] args) throws CommandException, Exception {
 		if(args.length < 3)
-			throw new CommandException(cmdLine, "extract: file1... [file2... []] output_directory");
+			throw new CommandException(cmdLine, getUsageString());
 		
 		String outDir = args[args.length-1];
 		
@@ -31,4 +31,13 @@ public class Extract implements ICommand {
 		return "extract";
 	}
 
+	@Override
+	public String getUsageString() {
+		return "file1... [file2... [...]] output_directory";
+	}
+	
+	@Override
+	public String getDescription() {
+		return "Extract a file or directory";
+	}
 }

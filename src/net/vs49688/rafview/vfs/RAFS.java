@@ -38,7 +38,7 @@ public class RAFS {
 	 * Add a new notify handler.
 	 * This causes the the onAdd() function in the handler to be
 	 * called for every node in the tree.
-	 * @param ion The notify handler/
+	 * @param ion The notify handler.
 	 */
 	public void addNotifyHandler(IOperationsNotify ion) {
 		if(ion == null || m_Notify.contains(ion))

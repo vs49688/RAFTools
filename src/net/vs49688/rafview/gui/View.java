@@ -5,8 +5,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.filechooser.*;
 import javax.swing.tree.*;
 import net.vs49688.rafview.vfs.*;
@@ -29,6 +27,7 @@ public class View extends JFrame {
 
 		initComponents();
 		
+		this.setTitle(String.format("%s %s", Model.getApplicationName(), Model.getVersionString()));
 		this.setSize(700, 500);
 		
 		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
@@ -39,18 +38,9 @@ public class View extends JFrame {
 		m_TabPane.add("Console", m_Console);
 		
 		this.getRootPane().setDefaultButton(m_Console.getSubmitButton());
-		updateView();
-		
-		//DefaultMutableTreeNode rn = new DefaultMutableTreeNode(m_Model.getVFS().getRoot());
-		//m_Model.getVFS().getRoot().setUserObject(rn);
-		//m_VFSTree.setModel(new DefaultTreeModel(rn));
-		
+
 		/* This will cause onAdd() to be called for the root */
 		m_Model.getVFS().addNotifyHandler(new _NotifyHandler());
-	}
-	
-	private void updateView() {
-		//m_VFSTree.setModel(new DefaultTreeModel(_tepkek(m_Model.getVFS().getRoot())));
 	}
 	
 	public Console getConsole() {
@@ -110,6 +100,35 @@ public class View extends JFrame {
         return f;
     }
 
+	
+    /**
+     * Show the Save File Dialog.
+	 * @param defaultName The default file name.
+	 * @param folders Select directories only?
+     * @return The selected file, or null if the dialog was canceled.
+     */
+    public File showSaveDialog(String defaultName, boolean folders)
+    {
+        JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
+		
+		if(!folders) {
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.setAcceptAllFileFilterUsed(false);
+			fc.setSelectedFile(new File(defaultName));
+		} else {
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		}
+
+        /* If we've cancelled, do nothing. */
+        if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+             return null;
+        
+        File f = fc.getSelectedFile();
+        m_LastOpenDirectory = f.getParent();
+        
+        return f;
+    }
+
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -133,8 +152,12 @@ public class View extends JFrame {
         javax.swing.JMenuItem addArchiveItem = new javax.swing.JMenuItem();
         javax.swing.JMenuItem openLolDirItem = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitItem = new javax.swing.JMenuItem();
+        javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+        javax.swing.JMenuItem aboutBtn = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(700, 500));
+        setPreferredSize(new java.awt.Dimension(700, 500));
 
         mainInfoSplitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         mainInfoSplitter.setResizeWeight(1.0);
@@ -224,6 +247,19 @@ public class View extends JFrame {
 
         menuBar.add(fileMenu);
 
+        helpMenu.setText("Help");
+
+        aboutBtn.setText("About");
+        aboutBtn.setActionCommand("help->about");
+        aboutBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                _forwardMenuCommand(evt);
+            }
+        });
+        helpMenu.add(aboutBtn);
+
+        menuBar.add(helpMenu);
+
         setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -234,7 +270,7 @@ public class View extends JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainInfoSplitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+            .addComponent(mainInfoSplitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
         );
 
         pack();
@@ -264,8 +300,7 @@ public class View extends JFrame {
 
 		@Override
 		public void onClear() {
-			//m_VFSTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(m_Model.getVFS().getRoot())));
-	
+
 			DefaultMutableTreeNode root = (DefaultMutableTreeNode)m_Model.getVFS().getRoot().getUserObject();
 			
 			if(root.getChildCount() > 0) {

@@ -16,6 +16,8 @@ public class CommandInterface {
 	ICommand m_AddCommand;
 	ICommand m_OpenDirCommand;
 	ICommand m_ExtractCommand;
+	ICommand m_RamInfoCommand;
+	Help m_HelpCommand;
 	
 	public CommandInterface(Appendable out, Model model) {
 		m_Out = out;
@@ -23,20 +25,42 @@ public class CommandInterface {
 		m_Model = model;
 		m_Interpreter = new Interpreter(new _CommandError());
 		
-		m_Interpreter.registerCommand((m_ShowCommand = new Show(out)));
+		//m_Interpreter.registerCommand((m_ShowCommand = new Show(out)));
 		m_Interpreter.registerCommand((m_OpenCommand = new Open(out, model)));
 		m_Interpreter.registerCommand((m_AddCommand = new Add(out, model)));
 		m_Interpreter.registerCommand((m_OpenDirCommand = new OpenDir(out, model)));
 		m_Interpreter.registerCommand((m_ExtractCommand = new Extract(out, model)));
+		m_Interpreter.registerCommand((m_RamInfoCommand = new RamInfo(out)));
+		
+		m_HelpCommand = new Help(out);
+		m_HelpCommand.addHandler(m_HelpCommand);
+		m_HelpCommand.addHandler(m_OpenCommand);
+		m_HelpCommand.addHandler(m_AddCommand);
+		m_HelpCommand.addHandler(m_OpenDirCommand);
+		m_HelpCommand.addHandler(m_ExtractCommand);
+		m_HelpCommand.addHandler(m_RamInfoCommand);
+		
+		m_Interpreter.registerCommand(m_HelpCommand);
+		
 		printGPL();
 	}
 	
 	private void printGPL() {
-		_write("RAFTools v0.1 - Copyright (C) 2015 Zane van Iperen\n");
-		_write("RAFTools comes with ABSOLUTELY NO WARRANTY; for details\n");
-		_write("type `show w'.  This is free software, and you are welcome\n");
-		_write("to redistribute it under certain conditions; type `show c' \n");
-		_write("for details.\n");
+		
+		_write(String.format("%s %s - Copyright (C) %d %s\n",
+			Model.getApplicationName(),	Model.getVersionString(),
+			Model.getCopyrightYear(), Model.getCopyrightHolder()));
+		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
+		_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
+		_write("/r/leagueoflegends (And Rito if they pls).\n");
+		_write("It is an alpha-quality release and should not be considered\n");
+		_write("stable for everyday use.\n");
+		
+		_write("Type `help' for more information.\n");
+		//_write("RAFTools comes with ABSOLUTELY NO WARRANTY; for details\n");
+		//_write("type `show w'.  This is free software, and you are welcome\n");
+		//_write("to redistribute it under certain conditions; type `show c' \n");
+		//_write("for details.\n");
 	}
 	
 	public void setFuckupHandler(IFuckedUp handler) {
@@ -70,7 +94,7 @@ public class CommandInterface {
 	 * @return 
 	 */
 	public Interpreter.CommandResult parseString(String s) {
-		System.err.printf("> %s\n", s);
+		//System.err.printf("PS: %s\n", s);
 		return m_Interpreter.executeCommand(s);
 	}
 	

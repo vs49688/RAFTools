@@ -13,10 +13,12 @@ public class Controller {
 	private final View m_View;
 	private final Model m_Model;
 	private final CommandInterface m_CLI;
+	private final AboutDialog m_AboutDialog;
 	
 	public Controller() {
 		m_Model = new Model();
 		m_View = new View(m_Model, new MenuListener(), new _TreeOpHandler());
+		m_AboutDialog = new AboutDialog(m_View);
 		m_CLI = new CommandInterface(m_View.getConsole(), m_Model);
 	
 		m_CLI.setFuckupHandler(new _FuckupHandler());
@@ -32,7 +34,7 @@ public class Controller {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			
-			System.err.printf("Got %s\n", cmd);
+			//System.err.printf("Got %s\n", cmd);
 			
 			if(cmd.equals("file->exit")) {
 				m_CLI.stop();
@@ -52,6 +54,8 @@ public class Controller {
 					m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
 			} else if(cmd.equals("console->submit")) {				
 				m_CLI.parseString(m_View.getConsole().getCommandText());
+			} else if(cmd.equals("help->about")) {
+				m_AboutDialog.setVisible(true);
 			}
 		}
 	}
@@ -64,7 +68,18 @@ public class Controller {
 		}
 
 		@Override
-		public void nodeExport(Node node) {	}
+		public void nodeExport(Node node) {
+			File f;
+			if(node instanceof DirNode)
+				f = m_View.showSaveDialog("", true);
+			else
+				f = m_View.showSaveDialog(node.name(), true);
+			
+			if(f == null)
+				return;
+			
+			m_CLI.parseString(String.format("extract \"%s\" \"%s\"", node.getFullPath(), f.toString()));
+		}
 		
 	}
 	
