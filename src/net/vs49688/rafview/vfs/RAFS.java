@@ -31,7 +31,6 @@ public class RAFS {
 		m_Root = new RootNode(m_NotifyDispatch);
 		
 		m_DataFiles = new HashMap<>();
-		//m_Notify = notify;
 	}
 	
 	/**
@@ -91,8 +90,12 @@ public class RAFS {
 			if((version = buffer.getInt()) != 1)
 				throw new IOException(String.format("Unsupported version %d\n", version));
 
-			/* No idea what this does */
+			/* No idea what this does. Appears to be always 0 */
 			mgrIndex = buffer.getInt();
+			
+			if(mgrIndex != 0) {
+				System.err.printf("WARNING: mgrIndex field non-zero. Please take note of this and email the developer.\n");
+			}
 			
 			/* Read the file list and string offsets */
 			lOffset = buffer.getInt();
