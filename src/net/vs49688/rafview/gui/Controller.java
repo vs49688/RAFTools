@@ -3,25 +3,42 @@ package net.vs49688.rafview.gui;
 import net.vs49688.rafview.cli.Model;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.*;
+import java.text.ParseException;
 import javax.swing.SwingUtilities;
+import java.util.*;
 import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
-import net.vs49688.rafview.interpreter.IFuckedUp;
-import net.vs49688.rafview.interpreter.Interpreter;
+import net.vs49688.rafview.inibin.*;
+import net.vs49688.rafview.interpreter.*;
 
 public class Controller {
 	private final View m_View;
 	private final Model m_Model;
 	private final CommandInterface m_CLI;
 	private final AboutDialog m_AboutDialog;
+	private final Console m_Console;
+	private final InibinViewer m_InibinViewer;
 	
 	public Controller() {
+		ActionListener al = new MenuListener();
+		
 		m_Model = new Model();
-		m_View = new View(m_Model, new MenuListener(), new _TreeOpHandler());
+		m_View = new View(m_Model, al, new _TreeOpHandler());
+		
+		m_Console = new Console(al);
+		m_InibinViewer = new InibinViewer(al);
+		
+		m_View.addTab(m_Console, "Console");
+		m_View.addTab(m_InibinViewer, "Inibin Viewer");
+		
 		m_AboutDialog = new AboutDialog(m_View);
-		m_CLI = new CommandInterface(m_View.getConsole(), m_Model);
+		
+		m_CLI = new CommandInterface(m_Console, m_Model);
 	
 		m_CLI.setFuckupHandler(new _FuckupHandler());
+		
+		m_View.getRootPane().setDefaultButton(m_Console.getSubmitButton());
 		
 		m_View.invokeLater();
 		
@@ -36,26 +53,39 @@ public class Controller {
 			
 			//System.err.printf("Got %s\n", cmd);
 			
-			if(cmd.equals("file->exit")) {
-				m_CLI.stop();
-				m_View.setVisible(false);
-				m_View.dispose();
-			} else if(cmd.equals("file->openarchive")) {
-				File f = m_View.showOpenDialog(false);
-				if(f != null)
-					m_CLI.parseString(String.format("open \"%s\"", f.toString()));
-			} else if(cmd.equals("file->addarchive")) {
-				File f = m_View.showOpenDialog(false);
-				if(f != null)
-					m_CLI.parseString(String.format("add \"%s\"", f.toString()));
-			} else if(cmd.equals("file->openlol")) {
-				File f = m_View.showOpenDialog(true);
-				if(f != null)
-					m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
-			} else if(cmd.equals("console->submit")) {				
-				m_CLI.parseString(m_View.getConsole().getCommandText());
-			} else if(cmd.equals("help->about")) {
-				m_AboutDialog.setVisible(true);
+			try {
+				if(cmd.equals("file->exit")) {
+					m_CLI.stop();
+					m_View.setVisible(false);
+					m_View.dispose();
+				} else if(cmd.equals("file->openarchive")) {
+					File f = m_View.showOpenDialog(false, true, false);
+					if(f != null)
+						m_CLI.parseString(String.format("open \"%s\"", f.toString()));
+				} else if(cmd.equals("file->addarchive")) {
+					File f = m_View.showOpenDialog(false, true, false);
+					if(f != null)
+						m_CLI.parseString(String.format("add \"%s\"", f.toString()));
+				} else if(cmd.equals("file->openlol")) {
+					File f = m_View.showOpenDialog(true, false, false);
+					if(f != null)
+						m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
+				} else if(cmd.equals("console->submit")) {				
+					m_CLI.parseString(m_Console.getCommandText());
+				} else if(cmd.equals("help->about")) {
+					m_AboutDialog.setVisible(true);
+				} else if(cmd.equals("inibin->export")) {
+
+				} else if(cmd.equals("inibin->loadexternal")) {
+					File f = m_View.showOpenDialog(false, false, true);
+					
+					if(f != null) {
+						Map<Integer, Value> inibin = InibinReader.readInibin(f.toPath());
+						m_InibinViewer.setInibin(inibin);
+					}
+				}
+			} catch(IOException | ParseException ex) {
+				m_View.showErrorDialog("ERROR", ex.getMessage());
 			}
 		}
 	}
@@ -64,7 +94,34 @@ public class Controller {
 
 		@Override
 		public void nodeSelected(Node node) {
-			m_View.setPathText(node.getFullPath().toString());
+			Path fullPath = node.getFullPath();
+			m_View.setPathText(fullPath.toString());
+			
+			if(node instanceof FileNode) {
+				FileNode fn = (FileNode)node;
+				
+				if(node.name().toLowerCase().endsWith(".inibin")) {
+					/* Spawn a background thread to do the task for us, we
+					 * don't want to do it on the GUI thread */
+					
+					// TODO: Thread-pool this
+					new Thread(() -> {
+						try {
+							byte[] data = fn.getSource().read();
+							Map<Integer, Value> kek = InibinReader.readInibin(data);
+
+							SwingUtilities.invokeLater(() -> {
+								m_InibinViewer.setInibin(kek);
+							});
+						} catch(Exception e) {
+							SwingUtilities.invokeLater(() -> {
+								m_View.showErrorDialog("ERROR", e.getMessage());
+							});
+						}
+
+					}).start();
+				}
+			}
 		}
 
 		@Override

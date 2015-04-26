@@ -12,43 +12,33 @@ import net.vs49688.rafview.vfs.*;
 public class View extends JFrame {
 
 	private final Model m_Model;
-	private final ActionListener m_MenuListener;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
-	private final Console m_Console;
-	private final InibinViewer m_InibinViewer;
 	
 	private String m_LastOpenDirectory;
 	
-	public View(Model model, ActionListener menuListener, VFSViewTree.OpHandler treeOpHandler) {
+	public View(Model model, ActionListener listener, VFSViewTree.OpHandler treeOpHandler) {
 		m_Model = model;
-		m_MenuListener = menuListener;
 		m_TreeOpHandler = treeOpHandler;
 		
 		m_LastOpenDirectory = System.getProperty("user.home");
 
 		initComponents();
 		
+		m_OpenArchive.addActionListener(listener);
+		m_AddArchive.addActionListener(listener);
+		m_OpenDir.addActionListener(listener);
+		m_Exit.addActionListener(listener);
+		m_About.addActionListener(listener);
+		
 		this.setTitle(String.format("%s %s", Model.getApplicationName(), Model.getVersionString()));
-		this.setSize(750, 500);
+		this.setSize(700, 500);
 		
 		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
 		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
-		m_Console = new Console(menuListener);
-		m_TabPane.add("Console", m_Console);
-		
-		m_InibinViewer = new InibinViewer();
-		m_TabPane.add("inibin Viewer", m_InibinViewer);
-		
-		this.getRootPane().setDefaultButton(m_Console.getSubmitButton());
 
 		/* This will cause onAdd() to be called for the root */
 		m_Model.getVFS().addNotifyHandler(new _NotifyHandler());
-	}
-	
-	public Console getConsole() {
-		return m_Console;
 	}
 	
 	private MutableTreeNode _tepkek(Node node) {
@@ -69,6 +59,10 @@ public class View extends JFrame {
 		return tn;
 	}
 
+	public void addTab(Component tab, String name) {
+		m_TabPane.addTab(name, tab);
+	}
+	
 	public void setPathText(String path) {
 		if(path == null)
 			path = "";
@@ -81,14 +75,19 @@ public class View extends JFrame {
 	 * @param folders Select directories only?
      * @return The selected file, or null if the dialog was canceled.
      */
-    public File showOpenDialog(boolean folders)
+    public File showOpenDialog(boolean folders, boolean raf, boolean inibin)
     {
         JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
         fc.setMultiSelectionEnabled(false);
 		
 		if(!folders) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			fc.addChoosableFileFilter(new FileNameExtensionFilter("RAF Index (.raf)", "raf"));
+			
+			if(raf)
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("RAF Index (.raf)", "raf"));
+			
+			if(inibin)
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.inibin)", "inibin"));
 			fc.setAcceptAllFileFilterUsed(false);
 		} else {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -152,16 +151,15 @@ public class View extends JFrame {
         javax.swing.JLabel pathLabel = new javax.swing.JLabel();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem openArchiveItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem addArchiveItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem openLolDirItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem exitItem = new javax.swing.JMenuItem();
+        m_OpenArchive = new javax.swing.JMenuItem();
+        m_AddArchive = new javax.swing.JMenuItem();
+        m_OpenDir = new javax.swing.JMenuItem();
+        m_Exit = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem aboutBtn = new javax.swing.JMenuItem();
+        m_About = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(750, 500));
-        setPreferredSize(new java.awt.Dimension(700, 500));
+        setMinimumSize(new java.awt.Dimension(700, 500));
 
         mainInfoSplitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         mainInfoSplitter.setResizeWeight(1.0);
@@ -209,58 +207,33 @@ public class View extends JFrame {
 
         fileMenu.setText("File");
 
-        openArchiveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        openArchiveItem.setText("Open Archive");
-        openArchiveItem.setActionCommand("file->openarchive");
-        openArchiveItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _forwardMenuCommand(evt);
-            }
-        });
-        fileMenu.add(openArchiveItem);
+        m_OpenArchive.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        m_OpenArchive.setText("Open Archive");
+        m_OpenArchive.setActionCommand("file->openarchive");
+        fileMenu.add(m_OpenArchive);
 
-        addArchiveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-        addArchiveItem.setText("Add Archive");
-        addArchiveItem.setActionCommand("file->addarchive");
-        addArchiveItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _forwardMenuCommand(evt);
-            }
-        });
-        fileMenu.add(addArchiveItem);
+        m_AddArchive.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        m_AddArchive.setText("Add Archive");
+        m_AddArchive.setActionCommand("file->addarchive");
+        fileMenu.add(m_AddArchive);
 
-        openLolDirItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        openLolDirItem.setText("Open LoL Directory");
-        openLolDirItem.setActionCommand("file->openlol");
-        openLolDirItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _forwardMenuCommand(evt);
-            }
-        });
-        fileMenu.add(openLolDirItem);
+        m_OpenDir.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        m_OpenDir.setText("Open LoL Directory");
+        m_OpenDir.setActionCommand("file->openlol");
+        fileMenu.add(m_OpenDir);
 
-        exitItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
-        exitItem.setText("Exit");
-        exitItem.setActionCommand("file->exit");
-        exitItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _forwardMenuCommand(evt);
-            }
-        });
-        fileMenu.add(exitItem);
+        m_Exit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        m_Exit.setText("Exit");
+        m_Exit.setActionCommand("file->exit");
+        fileMenu.add(m_Exit);
 
         menuBar.add(fileMenu);
 
         helpMenu.setText("Help");
 
-        aboutBtn.setText("About");
-        aboutBtn.setActionCommand("help->about");
-        aboutBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _forwardMenuCommand(evt);
-            }
-        });
-        helpMenu.add(aboutBtn);
+        m_About.setText("About");
+        m_About.setActionCommand("help->about");
+        helpMenu.add(m_About);
 
         menuBar.add(helpMenu);
 
@@ -279,10 +252,6 @@ public class View extends JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void _forwardMenuCommand(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__forwardMenuCommand
-        m_MenuListener.actionPerformed(evt);
-    }//GEN-LAST:event__forwardMenuCommand
 
 	public void invokeLater() {
 		SwingUtilities.invokeLater(() -> {
@@ -338,7 +307,12 @@ public class View extends JFrame {
 
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem m_About;
+    private javax.swing.JMenuItem m_AddArchive;
+    private javax.swing.JMenuItem m_Exit;
     private javax.swing.JPanel m_InfoPanel;
+    private javax.swing.JMenuItem m_OpenArchive;
+    private javax.swing.JMenuItem m_OpenDir;
     private javax.swing.JTextField m_PathField;
     private javax.swing.JTabbedPane m_TabPane;
     private net.vs49688.rafview.gui.VFSViewTree m_VFSTree;

@@ -1,5 +1,7 @@
 package net.vs49688.rafview.gui;
 
+import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
 import net.vs49688.rafview.inibin.*;
@@ -8,44 +10,33 @@ public class InibinViewer extends JPanel {
 
 	private Map<Integer, Value> m_Inibin;
 	
-	public InibinViewer() {
+	public InibinViewer(ActionListener listener) {
 		initComponents();
+
+		m_TextArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+		
+		m_LoadExternalBtn.addActionListener(listener);
+
 		setInibin(null);
 	}
 
 	public final synchronized void setInibin(Map<Integer, Value> inibin) {
 		if(inibin == null)
 			inibin = new HashMap<>();
-		
+
 		m_Inibin = inibin;
 		
 		m_TextArea.setText("");
-		m_RAWRadio.setSelected(true);
+		m_RAWRadio.doClick();
 	}
 	
 	private void _displayAsRaw(Map<Integer, Value> map) {
-		StringBuilder sb = new StringBuilder();
 		
-		//sb.append("{\n");
+		m_TextArea.setText("");
 		
 		for(final Integer key : map.keySet()) {
-			final Value val = map.get(key);
-			sb.append("%12d: ");
-			
-			//if(val.getType() == Value.Type.STRING)
-			//	sb.append("'");
-			
-			sb.append(val.toString());
-			
-			//if(val.getType() == Value.Type.STRING)
-			//	sb.append("'");
-			
-			sb.append("\n");
+			m_TextArea.append(String.format("%12d: %s\n", key, map.get(key).toString()));
 		}
-		
-		//sb.append("}\n");
-		
-		m_TextArea.setText(sb.toString());
 	}
 	
 	/**
@@ -62,11 +53,11 @@ public class InibinViewer extends JPanel {
         m_ChampionRadio = new javax.swing.JRadioButton();
         m_AbilityRadio = new javax.swing.JRadioButton();
         javax.swing.JLabel treatAsLabel = new javax.swing.JLabel();
-        m_ExportBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         m_TextArea = new javax.swing.JTextArea();
 
         m_LoadExternalBtn.setText("Load External File");
+        m_LoadExternalBtn.setActionCommand("inibin->loadexternal");
 
         treatGroup.add(m_RAWRadio);
         m_RAWRadio.setText("Raw");
@@ -80,6 +71,7 @@ public class InibinViewer extends JPanel {
         treatGroup.add(m_ChampionRadio);
         m_ChampionRadio.setText("Champion");
         m_ChampionRadio.setActionCommand("champion");
+        m_ChampionRadio.setEnabled(false);
         m_ChampionRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 _onTreatmentChange(evt);
@@ -89,6 +81,7 @@ public class InibinViewer extends JPanel {
         treatGroup.add(m_AbilityRadio);
         m_AbilityRadio.setText("Ability");
         m_AbilityRadio.setActionCommand("ability");
+        m_AbilityRadio.setEnabled(false);
         m_AbilityRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 _onTreatmentChange(evt);
@@ -96,8 +89,6 @@ public class InibinViewer extends JPanel {
         });
 
         treatAsLabel.setText("Treat as:");
-
-        m_ExportBtn.setText("Export");
 
         m_TextArea.setEditable(false);
         m_TextArea.setColumns(20);
@@ -120,9 +111,7 @@ public class InibinViewer extends JPanel {
                         .addComponent(m_ChampionRadio)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(m_AbilityRadio)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
-                        .addComponent(m_ExportBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 217, Short.MAX_VALUE)
                         .addComponent(m_LoadExternalBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -130,17 +119,15 @@ public class InibinViewer extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(m_RAWRadio)
                         .addComponent(m_ChampionRadio)
                         .addComponent(m_AbilityRadio)
                         .addComponent(treatAsLabel))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(m_LoadExternalBtn)
-                        .addComponent(m_ExportBtn)))
+                    .addComponent(m_LoadExternalBtn))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -162,7 +149,6 @@ public class InibinViewer extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JRadioButton m_AbilityRadio;
     private javax.swing.JRadioButton m_ChampionRadio;
-    private javax.swing.JButton m_ExportBtn;
     private javax.swing.JButton m_LoadExternalBtn;
     private javax.swing.JRadioButton m_RAWRadio;
     private javax.swing.JTextArea m_TextArea;

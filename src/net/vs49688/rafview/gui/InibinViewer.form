@@ -36,9 +36,7 @@
                       <Component id="m_ChampionRadio" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="m_AbilityRadio" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="66" max="32767" attributes="0"/>
-                      <Component id="m_ExportBtn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace pref="217" max="32767" attributes="0"/>
                       <Component id="m_LoadExternalBtn" min="-2" pref="160" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -50,8 +48,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="291" max="32767" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="jScrollPane1" pref="445" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="m_RAWRadio" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -59,10 +57,7 @@
                       <Component id="m_AbilityRadio" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="treatAsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="m_LoadExternalBtn" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="m_ExportBtn" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="m_LoadExternalBtn" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -73,6 +68,7 @@
     <Component class="javax.swing.JButton" name="m_LoadExternalBtn">
       <Properties>
         <Property name="text" type="java.lang.String" value="Load External File"/>
+        <Property name="actionCommand" type="java.lang.String" value="inibin-&gt;loadexternal"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="m_RAWRadio">
@@ -94,6 +90,7 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Champion"/>
         <Property name="actionCommand" type="java.lang.String" value="champion"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_onTreatmentChange"/>
@@ -106,6 +103,7 @@
         </Property>
         <Property name="text" type="java.lang.String" value="Ability"/>
         <Property name="actionCommand" type="java.lang.String" value="ability"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_onTreatmentChange"/>
@@ -119,11 +117,6 @@
         <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.JButton" name="m_ExportBtn">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Export"/>
-      </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
       <AuxValues>

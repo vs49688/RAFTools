@@ -16,7 +16,7 @@ public class InibinReader {
 	private static final int FLAG_BYTE		= 0b0000000000010000; // 1-byte integers
 	private static final int FLAG_BITFIELD	= 0b0000000000100000; // 1-byte packed booleans
 	private static final int FLAG_UNK7		= 0b0000000001000000; // RGB colour (1 byte * 3 reads)?
-	private static final int FLAG_UNK8		= 0b0000000010000000;
+	private static final int FLAG_POSITION	= 0b0000000010000000; // Position (1 float * 3 reads)
 	private static final int FLAG_UNK9		= 0b0000000100000000;
 	private static final int FLAG_UNK10		= 0b0000001000000000;
 	private static final int FLAG_UNK11		= 0b0000010000000000; // RGBA colour (1 byte * 4 reads)?
@@ -28,7 +28,7 @@ public class InibinReader {
 	
 	private static final int FLAGS_KNOWN	= FLAG_UNK1 | FLAG_UNK2 |
 			FLAG_IDIV10 | FLAG_SHORT | FLAG_BYTE | FLAG_BITFIELD | FLAG_UNK7 |
-			FLAG_UNK8 | FLAG_UNK11 | FLAG_SOFFSETS;
+			FLAG_POSITION | FLAG_UNK11 | FLAG_SOFFSETS;
 	
 	private static final Map<Integer, FlagHandler> m_FlagHandlers = _initHandlers();
 	
@@ -63,6 +63,14 @@ public class InibinReader {
 			_parseBitfield(map, buffer);
 		});
 		
+		ret.put(FLAG_UNK7, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk7(map, buffer);
+		});
+	
+		ret.put(FLAG_POSITION, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk8(map, buffer);
+		});
+
 		ret.put(FLAG_SOFFSETS, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
 			_parseStringOffsets(map, buffer, stLen);
 		});
@@ -71,14 +79,13 @@ public class InibinReader {
 	}
 
 	public static void main(String[] args) throws IOException, ParseException {
-		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/Ashe/Spells/ArchersMark.inibin"));
+		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/HeroSpawnOffsets.inibin"));
 		
 		printMap(inibni);
 
 	}
 	
 	public static Map<Integer, Value> readInibin(Path path) throws IOException, ParseException {
-		Map<Integer, Value> map = new HashMap<>();
 		
 		try(FileInputStream rfis = new FileInputStream(path.toFile())) {
 			MappedByteBuffer buffer;
@@ -86,21 +93,32 @@ public class InibinReader {
 			/* Map the file into memory */
 			try (FileChannel fChannel = rfis.getChannel()) {
 				buffer = fChannel.map(FileChannel.MapMode.READ_ONLY, 0, fChannel.size());
-				buffer.order(ByteOrder.LITTLE_ENDIAN);
 			}
 
-			/* First byte is the version */
-			int version = buffer.get() & 0xF;
-			
-			System.err.printf("Version %d\n", version);
-			if(version == 1) {
-				parseV1(buffer);
-			} else if(version == 2) {
-				parseV2(map, buffer);
-			} else {
-				throw new ParseException(String.format("Invalid .inibin version %d", version), -1);
-			}
+			return _readInibin(buffer);
 		}
+	}
+	
+	public static Map<Integer, Value> readInibin(byte[] data) throws IOException, ParseException {
+		return _readInibin(ByteBuffer.wrap(data));
+	}
+	
+	private static Map<Integer, Value> _readInibin(ByteBuffer buffer) throws IOException, ParseException {
+		Map<Integer, Value> map = new HashMap<>();
+		
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		/* First byte is the version */
+		int version = buffer.get() & 0xF;
+
+		System.err.printf("Version %d\n", version);
+		if(version == 1) {
+			parseV1(buffer);
+		} else if(version == 2) {
+			parseV2(map, buffer);
+		} else {
+			throw new ParseException(String.format("Invalid .inibin version %d", version), -1);
+		}
+		
 		return map;
 	}
 	
@@ -124,7 +142,7 @@ public class InibinReader {
 		int flags = readUnsignedShort(buffer);
 		
 		//System.err.printf("String Table Length: %d\n", stLen);
-		//dumpFlags(flags);
+		dumpFlags(flags);
 		
 		/* Check if there are any unknown flags set */
 		if((flags & (~FLAGS_KNOWN)) != 0) {
@@ -221,6 +239,33 @@ public class InibinReader {
 		}
 	}
 	
+	private static void _parseUnk7(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+
+		for(int i = 0; i < keys.length; ++i) {
+			ArrayList<Value> tmp = new ArrayList<>(3);
+			
+			for(int j = 0; j < 3; ++j)
+				tmp.add(new Value(Value.Type.INTEGER, null, ((int)buffer.get()) & 0xFF, 0.0f, false, null));
+
+			map.put(keys[i], new Value(Value.Type.LIST, null, -1, 0.0f, false, tmp));
+		}
+	}
+
+	private static void _parseUnk8(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+		
+		for(int i = 0; i < keys.length; ++i) {
+			ArrayList<Value> tmp = new ArrayList<>(3);
+			
+			for(int j = 0; j < 3; ++j)
+				//tmp.add(new Value(Value.Type.INTEGER, null, buffer.getInt(), 0.0f, false, null));
+				tmp.add(new Value(Value.Type.FLOAT, null, -1, buffer.getFloat(), false, null));
+
+			map.put(keys[i], new Value(Value.Type.LIST, null, -1, 0.0f, false, tmp));
+		}
+	}
+
 	private static void _parseStringOffsets(Map<Integer, Value> map, ByteBuffer buffer, int stLen) throws IOException, ParseException {
 		int[] keys = _readKeys(buffer);
 		
@@ -236,7 +281,7 @@ public class InibinReader {
 			map.put(keys[i], new Value(Value.Type.STRING, scanForString(stringTable, offsets[i]), -1, 0.0f, false, null));
 		}
 	}
-	
+
 	/**
 	 * Scan a byte buffer for a US-ASCII-encoded string.
 	 * @param buffer The buffer to scan.
@@ -246,6 +291,12 @@ public class InibinReader {
 	private static String scanForString(byte[] buffer, int start) {
 		StringBuilder sb = new StringBuilder();
 		
+		//assert start < buffer.length;
+		
+		//if(start >= buffer.length) {
+		//	int x = 0;
+		//	return "";
+		//}
 		while(buffer[start] != 0)
 			sb.append((char)buffer[start++]);
 
@@ -276,7 +327,7 @@ public class InibinReader {
 	
 	
 	
-	/*
+	
 	private static void dumpFlags(int flags) {
 		System.err.printf("Flags: 0b%s\n", binaryString(flags, 16));
 		System.err.printf("Unknown Flags: 0b%s\n", binaryString(flags & ~(FLAGS_KNOWN), 16));
@@ -288,7 +339,7 @@ public class InibinReader {
 		if((flags & FLAG_BYTE) != 0)			System.err.printf("FLAG_BYTE ");
 		if((flags & FLAG_BITFIELD) != 0)		System.err.printf("FLAG_BITFIELD ");
 		if((flags & FLAG_UNK7) != 0)		System.err.printf("FLAG_UNK7 ");
-		if((flags & FLAG_UNK8) != 0)			System.err.printf("FLAG_UNK8 ");
+		if((flags & FLAG_POSITION) != 0)			System.err.printf("FLAG_POSITION ");
 		if((flags & FLAG_UNK9) != 0)			System.err.printf("FLAG_UNK9 ");
 		if((flags & FLAG_UNK10) != 0)		System.err.printf("FLAG_UNK10 ");
 		if((flags & FLAG_UNK11) != 0)		System.err.printf("FLAG_UNK11 ");
@@ -307,7 +358,7 @@ public class InibinReader {
 				Integer.toBinaryString(number));
 
         return response.substring(response.length() - binaryDigits);
-    }*/
+    }
 	
 	/**
 	 * Print the map to a Python dictionary ^_^
