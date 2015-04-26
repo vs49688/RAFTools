@@ -8,43 +8,61 @@ public final class Value {
 		INTEGER,
 		FLOAT,
 		BOOLEAN,
+		VECTOR3F,
 		LIST
 	}
 	
 	private final Type m_Type;
-	private final String m_String;
-	private final Integer m_Integer;
-	private final Float m_Float;
-	private final Boolean m_Boolean;
-	private final List<Value> m_List;
+	private final Object m_Data;
 	
-	public Value(Type type, String s, int i, float f, boolean b, List<Value> l) {
-		m_Type = type;
-		m_String = s;
-		m_Integer = i;
-		m_Float = f;
-		m_Boolean = b;
-		m_List = l;
+	public Value(String s) {
+		m_Data = s;
+		m_Type = Type.STRING;
+	}
+	
+	public Value(int i) {
+		m_Data = i;
+		m_Type = Type.INTEGER;
+	}
+	
+	public Value(float f) {
+		m_Data = f;
+		m_Type = Type.FLOAT;
+	}
+	
+	public Value(boolean b) {
+		m_Data = b;
+		m_Type = Type.BOOLEAN;
+	}
+	
+	public Value(Vector3f v) {
+		m_Data = v;
+		m_Type = Type.VECTOR3F;
+	}
+	
+	public Value(List<Value> l) {
+		m_Data = l;
+		m_Type = Type.LIST;
 	}
 	
 	public String getString() {
-		return m_String;
+		return (String)m_Data;
 	}
 	
 	public Integer getInteger() {
-		return m_Integer;
+		return (Integer)m_Data;
 	}
 	
 	public Float getFloat() {
-		return m_Float;
+		return (Float)m_Data;
 	}
 	
 	public Boolean getBoolean() {
-		return m_Boolean;
+		return (Boolean)m_Data;
 	}
 	
 	public List<Value> getList() {
-		return m_List;
+		return (List<Value>)m_Data;
 	}
 	
 	public Type getType() {
@@ -53,7 +71,8 @@ public final class Value {
 	
 	@Override
 	public String toString() {
-		switch(m_Type) {
+		return m_Data.toString();
+		/*switch(m_Type) {
 			case STRING:
 				return m_String;
 			case INTEGER:
@@ -66,6 +85,6 @@ public final class Value {
 				return m_List.toString();
 		}
 		
-		return "";
+		return "";*/
 	}
 }

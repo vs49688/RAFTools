@@ -68,7 +68,11 @@ public class InibinReader {
 		});
 	
 		ret.put(FLAG_POSITION, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
-			_parseUnk8(map, buffer);
+			_parsePosition(map, buffer);
+		});
+
+		ret.put(FLAG_UNK11, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk11(map, buffer);
 		});
 
 		ret.put(FLAG_SOFFSETS, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
@@ -79,7 +83,7 @@ public class InibinReader {
 	}
 
 	public static void main(String[] args) throws IOException, ParseException {
-		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/HeroSpawnOffsets.inibin"));
+		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/sruap_flag/SRUAP_flag.inibin"));
 		
 		printMap(inibni);
 
@@ -188,7 +192,7 @@ public class InibinReader {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
-			map.put(keys[i], new Value(Value.Type.INTEGER, null, buffer.getInt(), 0.0f, false, null));
+			map.put(keys[i], new Value(buffer.getInt()));
 		}
 	}
 	
@@ -196,7 +200,7 @@ public class InibinReader {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
-			map.put(keys[i], new Value(Value.Type.FLOAT, null, -1, buffer.getFloat(), false, null));
+			map.put(keys[i], new Value(buffer.getFloat()));
 		}
 	}
 	
@@ -204,7 +208,7 @@ public class InibinReader {
 		int[] keys = _readKeys(buffer);
 
 		for(int i = 0; i < keys.length; ++i) {
-			map.put(keys[i], new Value(Value.Type.FLOAT, null, -1, ((float)buffer.get())/10, false, null));
+			map.put(keys[i], new Value(((float)buffer.get())/10));
 		}
 	}
 	
@@ -212,7 +216,7 @@ public class InibinReader {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
-			map.put(keys[i], new Value(Value.Type.INTEGER, null, buffer.getShort(), 0.0f, false, null));
+			map.put(keys[i], new Value(buffer.getShort()));
 		}
 	}
 	
@@ -220,7 +224,7 @@ public class InibinReader {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
-			map.put(keys[i], new Value(Value.Type.INTEGER, null, buffer.get(), 0.0f, false, null));
+			map.put(keys[i], new Value(buffer.get()));
 		}
 	}
 	
@@ -235,7 +239,7 @@ public class InibinReader {
 			if(i % 8 == 0)
 				kek = unpackBooleans(buffer.get());
 			
-			map.put(keys[i], new Value(Value.Type.BOOLEAN, null, -1, 0.0f, kek[7 - (i % 8)], null));
+			map.put(keys[i], new Value(kek[7 - (i % 8)]));
 		}
 	}
 	
@@ -246,23 +250,30 @@ public class InibinReader {
 			ArrayList<Value> tmp = new ArrayList<>(3);
 			
 			for(int j = 0; j < 3; ++j)
-				tmp.add(new Value(Value.Type.INTEGER, null, ((int)buffer.get()) & 0xFF, 0.0f, false, null));
+				tmp.add(new Value(((int)buffer.get()) & 0xFF));
 
-			map.put(keys[i], new Value(Value.Type.LIST, null, -1, 0.0f, false, tmp));
+			map.put(keys[i], new Value(tmp));
 		}
 	}
 
-	private static void _parseUnk8(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+	private static void _parsePosition(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
-			ArrayList<Value> tmp = new ArrayList<>(3);
+			map.put(keys[i], new Value(new Vector3f(buffer.getFloat(), buffer.getFloat(), buffer.getFloat())));
+		}
+	}
+	
+	private static void _parseUnk11(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+		
+		for(int i = 0; i < keys.length; ++i) {
+			List<Value> tmp = new ArrayList<>();
+			for(int j = 0; j < 4; ++j) {
+				tmp.add(new Value(buffer.get() & 0xFF));
+			}
 			
-			for(int j = 0; j < 3; ++j)
-				//tmp.add(new Value(Value.Type.INTEGER, null, buffer.getInt(), 0.0f, false, null));
-				tmp.add(new Value(Value.Type.FLOAT, null, -1, buffer.getFloat(), false, null));
-
-			map.put(keys[i], new Value(Value.Type.LIST, null, -1, 0.0f, false, tmp));
+			map.put(keys[i], new Value(tmp));
 		}
 	}
 
@@ -278,7 +289,7 @@ public class InibinReader {
 		buffer.get(stringTable);
 		
 		for(int i = 0; i < keys.length; ++i) {	
-			map.put(keys[i], new Value(Value.Type.STRING, scanForString(stringTable, offsets[i]), -1, 0.0f, false, null));
+			map.put(keys[i], new Value(scanForString(stringTable, offsets[i])));
 		}
 	}
 
@@ -291,12 +302,9 @@ public class InibinReader {
 	private static String scanForString(byte[] buffer, int start) {
 		StringBuilder sb = new StringBuilder();
 		
-		//assert start < buffer.length;
-		
-		//if(start >= buffer.length) {
-		//	int x = 0;
-		//	return "";
-		//}
+		if(start >= buffer.length || start < 0)
+			throw new IllegalArgumentException("start out of range");
+
 		while(buffer[start] != 0)
 			sb.append((char)buffer[start++]);
 
@@ -339,7 +347,7 @@ public class InibinReader {
 		if((flags & FLAG_BYTE) != 0)			System.err.printf("FLAG_BYTE ");
 		if((flags & FLAG_BITFIELD) != 0)		System.err.printf("FLAG_BITFIELD ");
 		if((flags & FLAG_UNK7) != 0)		System.err.printf("FLAG_UNK7 ");
-		if((flags & FLAG_POSITION) != 0)			System.err.printf("FLAG_POSITION ");
+		if((flags & FLAG_POSITION) != 0)	System.err.printf("FLAG_POSITION ");
 		if((flags & FLAG_UNK9) != 0)			System.err.printf("FLAG_UNK9 ");
 		if((flags & FLAG_UNK10) != 0)		System.err.printf("FLAG_UNK10 ");
 		if((flags & FLAG_UNK11) != 0)		System.err.printf("FLAG_UNK11 ");
