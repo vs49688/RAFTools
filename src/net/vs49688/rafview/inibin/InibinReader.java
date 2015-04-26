@@ -71,7 +71,7 @@ public class InibinReader {
 	}
 
 	public static void main(String[] args) throws IOException, ParseException {
-		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/Ezreal/Ezreal.inibin"));
+		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/Ashe/Spells/ArchersMark.inibin"));
 		
 		printMap(inibni);
 

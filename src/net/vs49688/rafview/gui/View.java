@@ -15,6 +15,7 @@ public class View extends JFrame {
 	private final ActionListener m_MenuListener;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
 	private final Console m_Console;
+	private final InibinViewer m_InibinViewer;
 	
 	private String m_LastOpenDirectory;
 	
@@ -28,7 +29,7 @@ public class View extends JFrame {
 		initComponents();
 		
 		this.setTitle(String.format("%s %s", Model.getApplicationName(), Model.getVersionString()));
-		this.setSize(700, 500);
+		this.setSize(750, 500);
 		
 		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
 		
@@ -36,6 +37,9 @@ public class View extends JFrame {
 		
 		m_Console = new Console(menuListener);
 		m_TabPane.add("Console", m_Console);
+		
+		m_InibinViewer = new InibinViewer();
+		m_TabPane.add("inibin Viewer", m_InibinViewer);
 		
 		this.getRootPane().setDefaultButton(m_Console.getSubmitButton());
 
@@ -156,7 +160,7 @@ public class View extends JFrame {
         javax.swing.JMenuItem aboutBtn = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(700, 500));
+        setMinimumSize(new java.awt.Dimension(750, 500));
         setPreferredSize(new java.awt.Dimension(700, 500));
 
         mainInfoSplitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -188,7 +192,7 @@ public class View extends JFrame {
                 .addContainerGap()
                 .addComponent(pathLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
+                .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
                 .addContainerGap())
         );
         m_InfoPanelLayout.setVerticalGroup(
