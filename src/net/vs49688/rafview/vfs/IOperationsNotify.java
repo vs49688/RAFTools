@@ -17,4 +17,6 @@ public interface IOperationsNotify {
 	 */
 	public void onAdd(Node n);
 	//public void onDelete(Node n);
+	
+	//public void onOverwrite(Node n1, Node n2);
 }

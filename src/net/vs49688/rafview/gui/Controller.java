@@ -107,7 +107,7 @@ public class Controller {
 					// TODO: Thread-pool this
 					new Thread(() -> {
 						try {
-							byte[] data = fn.getSource().read();
+							byte[] data = fn.getLatestVersion().getSource().read();
 							Map<Integer, Value> kek = InibinReader.readInibin(data);
 
 							SwingUtilities.invokeLater(() -> {

@@ -18,7 +18,7 @@ public class Add implements ICommand {
 	public void process(String cmdLine, String[] args) throws CommandException, Exception {
 		if(args.length != 2)
 			throw new CommandException(cmdLine, "add: Invalid arguments");
-		m_Model.addFile(Paths.get(args[1]));
+		//m_Model.addFile(Paths.get(args[1]));
 		
 		m_Console.append(String.format("Added %s...\n", args[1]));
 	}

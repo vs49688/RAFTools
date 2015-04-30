@@ -1,8 +1,8 @@
 package net.vs49688.rafview.vfs;
 import java.nio.file.*;
+import java.util.Objects;
 
 public abstract class Node {
-	
 	private static int s_NextUID = 0;
 	
 	private synchronized static int _getNextUID() {
@@ -94,8 +94,39 @@ public abstract class Node {
 	public void setUserObject(Object o) {
 		m_UserObject = o;
 	}
+
+	@Override
+	public int hashCode() {
+		int hash = 5;
+		hash = 71 * hash + Objects.hashCode(this.m_Name);
+		hash = 71 * hash + this.m_UID;
+		hash = 71 * hash + Objects.hashCode(this.m_Parent);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Node other = (Node) obj;
+		if (!Objects.equals(this.m_Name, other.m_Name)) {
+			return false;
+		}
+		if (this.m_UID != other.m_UID) {
+			return false;
+		}
+		if (!Objects.equals(this.m_Parent, other.m_Parent)) {
+			return false;
+		}
+		return true;
+	}
 	
 	public Object getUserObject() {
 		return m_UserObject;
 	}
+
 }

@@ -19,7 +19,7 @@ public class Open implements ICommand {
 		if(args.length != 2)
 			throw new CommandException(cmdLine, "open: Invalid arguments");
 		m_Model.getVFS().clear();
-		m_Model.addFile(Paths.get(args[1]));
+		//m_Model.addFile(Paths.get(args[1]));
 		
 		m_Console.append(String.format("Opened %s...\n", args[1]));
 	}

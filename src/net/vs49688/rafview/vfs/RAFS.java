@@ -8,6 +8,7 @@ import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.Paths;
+import net.vs49688.rafview.vfs.FileNode.*;
 
 public class RAFS {
 	/** The magic number of a .raf file */
@@ -67,9 +68,10 @@ public class RAFS {
 	 * Add a RAF Archive to the VFS.
 	 * @param raf The path to the index (.raf)
 	 * @param dat The path to the data (.raf.dat)
+	 * @param versionName The version of this file.
 	 * @throws IOException If an I/O error occurred.
 	 */
-	public void addFile(Path raf, Path dat) throws IOException {
+	public void addFile(Path raf, Path dat, String versionName) throws IOException {
 		int lOffset, sOffset;
 		int magic, version, mgrIndex;
 
@@ -122,7 +124,7 @@ public class RAFS {
 
 			/* Read the file list */
 			buffer.position(lOffset);
-			readFileList(buffer, indexMap, dat);
+			readFileList(buffer, indexMap, versionName, dat);
 		}
 	}
 
@@ -135,10 +137,12 @@ public class RAFS {
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
 	 * position where the file table starts.
 	 * @param indexMap The mapping of string table indices to their FileNodes.
+	 * @param version The version of files in the file table. Should be of the
+	 * form "X.X.X.X"
 	 * @param dat The path to the data file.
 	 * @throws IOException If an I/O error occurred.
 	 */
-	private void readFileList(ByteBuffer b, List<FileNode> indexMap, Path dat) throws IOException {
+	private void readFileList(ByteBuffer b, List<FileNode> indexMap, String version, Path dat) throws IOException {
 		int numFiles = b.getInt();
 		
 		// FIXME: assert(numFiles == stringtable.size())
@@ -161,7 +165,7 @@ public class RAFS {
 				m_DataFiles.put(dat, rdf);
 			}
 			
-			fn.setSource(rdf.createDataSource(offset, size));
+			fn.addVersion(version, rdf.createDataSource(offset, size));
 		}
 	}
 	
@@ -192,7 +196,7 @@ public class RAFS {
 		}
 	}
 
-	public void extract(Path vfsPath, Path outDir) throws IOException {
+	public void extract(Path vfsPath, Path outDir, IVOp c) throws IOException {
 		
 		if(vfsPath == null)
 			throw new IllegalArgumentException("vfsPath cannot be null");
@@ -200,19 +204,29 @@ public class RAFS {
 		if(outDir == null)
 			throw new IllegalArgumentException("outPath cannot be null");
 
+		if(c == null)
+			throw new IllegalArgumentException("c cannot be null");
+		
 		Node node = _findNodeByName(m_Root, vfsPath, 0);
 		
 		if(node == null)
 			throw new IOException("Not found");
 		
-		_extractNode(node, outDir);
+		_extractNode(node, outDir, c);
 
 	}
 
-	private void _extractNode(Node root, Path outDir) throws IOException {
+	private void _extractNode(Node root, Path outDir, IVOp c) throws IOException {
 		if(root instanceof FileNode) {
 			FileNode fn = (FileNode)root;
-			Files.write(outDir.resolve(fn.name()), fn.getSource().read());
+			
+			for(final Version v : fn.getVersions()) {
+				if(c.extract(v)) {
+					Files.write(outDir.resolve(fn.name()), v.getSource().read());
+					return;
+				}
+			}
+			
 			return;
 		}
 		
@@ -221,7 +235,7 @@ public class RAFS {
 		Files.createDirectories(outDir);
 		
 		for(final Node n: dn) {
-			_extractNode(n, outDir);
+			_extractNode(n, outDir, c);
 		}
 	}
 	
@@ -282,7 +296,7 @@ public class RAFS {
 		} else if(node instanceof FileNode) {
 			FileNode fn = (FileNode)node;
 			
-			byte[] data = fn.getSource().read();
+			byte[] data = fn.getLatestVersion().getSource().read();
 			
 			System.out.printf("Writing %s\n", path);
 			Files.createFile(path);

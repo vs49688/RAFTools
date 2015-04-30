@@ -21,9 +21,9 @@ public class Extract implements ICommand {
 		
 		String outDir = args[args.length-1];
 		
-		for(int i = 1; i < args.length-1; ++i) {
-			m_Model.getVFS().extract(Paths.get(args[i]), Paths.get(outDir));
-		}
+		//for(int i = 1; i < args.length-1; ++i) {
+		//	m_Model.getVFS().extract(Paths.get(args[i]), Paths.get(outDir));
+		//}
 	}
 
 	@Override

@@ -16,9 +16,9 @@ public class Model {
 		m_VFS = new RAFS();
 	}
 	
-	public void addFile(Path file) throws IOException {
+	public void addFile(Path file, String version) throws IOException {
 		Path dat = Paths.get(file.getParent().toString(), String.format("%s.dat", file.getFileName().toString()));
-		m_VFS.addFile(file, dat);
+		m_VFS.addFile(file, dat, version);
 	}
 	
 	public void openLolDirectory(Path path) throws IOException {
@@ -99,7 +99,7 @@ public class Model {
 		/* BUGBUGBUG: If archives in the same folder have the same file, then
 		   whichever one is loaded last will be the one in the VFS */
 		for(int i = 0; i < files.size(); i += 2)
-			vfs.addFile(files.get(i), files.get(i+1));
+			vfs.addFile(files.get(i), files.get(i+1), version);
 	}
 	
 	/**
