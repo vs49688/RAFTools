@@ -33,7 +33,7 @@ public class Extract implements ICommand {
 
 	@Override
 	public String getUsageString() {
-		return "file1... [file2... [...]] output_directory";
+		return "file1[:version]... [file2[:version]... [...]] output_directory";
 	}
 	
 	@Override

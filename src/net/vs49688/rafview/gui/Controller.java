@@ -125,7 +125,7 @@ public class Controller {
 		}
 
 		@Override
-		public void nodeExport(Node node) {
+		public void nodeExport(Node node, FileNode.Version version) {
 			File f;
 			if(node instanceof DirNode)
 				f = m_View.showSaveDialog("", true);
@@ -144,6 +144,7 @@ public class Controller {
 
 		@Override
 		public void onFuckup(Interpreter.CommandResult result) {
+			result.getException().printStackTrace();
 			m_View.showErrorDialog("ERROR", result.getException().getMessage());
 		}
 	

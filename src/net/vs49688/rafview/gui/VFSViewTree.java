@@ -14,11 +14,11 @@ public class VFSViewTree extends JTree {
 		public void nodeSelected(Node node) { }
 
 		@Override
-		public void nodeExport(Node node) { }
+		public void nodeExport(Node node, FileNode.Version version) { }
 	};
 	
 	private OpHandler m_OpHandler;
-	private final JPopupMenu m_ContextMenu;
+	//private final JPopupMenu m_ContextMenu;
 
 	public VFSViewTree() {
 		super();
@@ -27,20 +27,39 @@ public class VFSViewTree extends JTree {
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
 		m_OpHandler = s_DummyOpHandler;
-		m_ContextMenu = createPopupMenu();
-		this.add(m_ContextMenu);
 	}
 	
-	private JPopupMenu createPopupMenu() {
+	private JPopupMenu createPopupMenu(Node n) {
 		JPopupMenu m = new JPopupMenu();
 		
-		JMenuItem item;
+		if(n instanceof FileNode) {
+			FileNode fn = (FileNode)n;
+			
+			JMenu menu = new JMenu("Extract");
+
+			menu.add(new JMenuItem("Latest"));
+			menu.addActionListener((ActionEvent ae) -> {
+				m_OpHandler.nodeExport(n, fn.getLatestVersion());
+			});
+			
+			for(final FileNode.Version v : fn.getVersions()) {
+				JMenuItem item = new JMenuItem(v.toString());
+				item.addActionListener((ActionEvent ae) -> {
+					m_OpHandler.nodeExport(n, v);
+				});
+				menu.add(item);
+			}
+			m.add(menu);
+		} else if(n instanceof DirNode) {
+			DirNode fn = (DirNode)n;
+			
+			JMenuItem item = new JMenuItem("Extract");
+			item.addActionListener((ActionEvent ae) -> {
+				m_OpHandler.nodeExport(n, null);
+			});
+			m.add(item);
+		}
 		
-		item = new JMenuItem("Extract");
-		item.addActionListener((ActionEvent ae) -> {
-			m_OpHandler.nodeExport(getSelectedVFSNode());
-		});
-		m.add(item);
 		return m;
 	}
 	
@@ -62,9 +81,11 @@ public class VFSViewTree extends JTree {
 			int row = VFSViewTree.this.getClosestRowForLocation(e.getX(), e.getY());
 			VFSViewTree.this.setSelectionRow(row);
 
-			//Node vfsNode = getSelectedVFSNode();
+			Node vfsNode = getSelectedVFSNode();
 			
 			if(SwingUtilities.isRightMouseButton(e)) {
+				JPopupMenu m_ContextMenu = createPopupMenu(vfsNode);
+				VFSViewTree.this.add(m_ContextMenu);
 				m_ContextMenu.show(e.getComponent(), e.getX(), e.getY());
 				
 			}
@@ -104,6 +125,6 @@ public class VFSViewTree extends JTree {
 	
 	public interface OpHandler {
 		public void nodeSelected(Node node);
-		public void nodeExport(Node node);
+		public void nodeExport(Node node, FileNode.Version version);
 	}
 }

@@ -22,6 +22,8 @@ public class OpenDir implements ICommand {
 		m_Model.openLolDirectory(Paths.get(args[1]));
 		
 		m_Console.append(String.format("Opened LoL directory %s...\n", args[1]));
+		
+		m_Model.getVFS().dumpPaths();
 	}
 
 	@Override

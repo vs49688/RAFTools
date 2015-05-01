@@ -1,6 +1,7 @@
 package net.vs49688.rafview.vfs;
 import java.nio.file.*;
 import java.util.Objects;
+import java.util.concurrent.locks.*;
 
 public abstract class Node {
 	private static int s_NextUID = 0;
@@ -14,12 +15,14 @@ public abstract class Node {
     private DirNode m_Parent;
 	private Object m_UserObject;
 	protected final IOperationsNotify m_Notify;
+	protected final ReadWriteLock m_Lock;
 	
 	public Node(IOperationsNotify notify) {
 		m_Name = "";
 		m_Parent = null;
 		m_UID = _getNextUID();
 		m_Notify = notify;
+		m_Lock = new ReentrantReadWriteLock();
 	}
 	
 	public Node(String name, IOperationsNotify notify) {
@@ -31,45 +34,75 @@ public abstract class Node {
         m_Name = name;
 	}
 	
-    public final synchronized String name() {
-        return m_Name;
+    public final String name() {
+		m_Lock.readLock().lock();
+		try {
+			return m_Name;
+		} finally {
+			m_Lock.readLock().unlock();
+		}
     }
     
-    public final synchronized void rename(String name) {
+    public final void rename(String name) {
         if(!isNameValid(name))
             throw new IllegalArgumentException("Invalid name");
         
-        m_Name = name;
+		m_Lock.writeLock().lock();
+		try {
+			m_Name = name;
+		} finally {
+			m_Lock.writeLock().unlock();
+		}
 		
 		m_Notify.onModify(this);
     }
 	
 	protected abstract void _delete();
-	public final synchronized void delete() {
-		if(m_Parent != null)
-			throw new IllegalArgumentException("Cannot delete node with parent");
+	
+	public final void delete() {
+		m_Lock.writeLock().lock();
+		try {
+			if(m_Parent != null)
+				throw new IllegalArgumentException("Cannot delete node with parent");
 
-		_delete();
+			_delete();
+		} finally {
+			m_Lock.writeLock().unlock();
+		}
 	}
 	
 	public abstract boolean isLeaf();
     
-    public synchronized void setParent(DirNode parent) {
-        m_Parent = parent;
+    public void setParent(DirNode parent) {
+		m_Lock.writeLock().lock();
+		try {
+			m_Parent = parent;
+		} finally {
+			m_Lock.writeLock().unlock();
+		}
     }
     
-    public synchronized DirNode getParent() {
-        return m_Parent;
+    public DirNode getParent() {
+		m_Lock.readLock().lock();
+        try {
+			return m_Parent;
+		} finally {
+			m_Lock.readLock().unlock();
+		}
     }
 
 	public Path getFullPath() {
 		
-		Path p = Paths.get(name());
-		
-		if(m_Parent != null)
-			p = m_Parent.getFullPath().resolve(p);
-		
-		return p;
+		m_Lock.readLock().lock();
+		try {
+			Path p = Paths.get(name());
+			if(m_Parent != null)
+				p = m_Parent.getFullPath().resolve(p);
+			
+			return p;
+		} finally {
+			m_Lock.readLock().unlock();
+		}
 	}
 
 	public final int getUID() {
@@ -93,6 +126,10 @@ public abstract class Node {
 	
 	public void setUserObject(Object o) {
 		m_UserObject = o;
+	}
+
+	public Object getUserObject() {
+		return m_UserObject;
 	}
 
 	@Override
@@ -124,9 +161,4 @@ public abstract class Node {
 		}
 		return true;
 	}
-	
-	public Object getUserObject() {
-		return m_UserObject;
-	}
-
 }

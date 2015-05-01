@@ -110,7 +110,9 @@ public class RAFS {
 			/* A mapping of the offsets in the string table to their FileNode */
 			List<FileNode> indexMap = new ArrayList<>(st.size());
 			
-			st.stream().map((s) -> Paths.get(s)).forEach((path) -> {
+			for(final String s : st) {
+				Path path = Paths.get(s);
+				
 				DirNode node = m_Root;
 				
 				/* Traverse the directory tree, creating directories if required */
@@ -118,9 +120,23 @@ public class RAFS {
 					node = node.getAddDirectory(path.getName(i).toString());
 				}
 
-				/* Add the file */
-				indexMap.add((FileNode)node.addChild(new FileNode(path.getName(path.getNameCount()-1).toString(), m_NotifyDispatch)));
-			});
+				FileNode newNode = null;
+				for(final Node n : node) {
+					if(n.name().equalsIgnoreCase(path.getFileName().toString())) {
+						if(!(n instanceof FileNode)) {
+							throw new IOException(String.format("%s: Overwriting directory with file (%s)", raf, n.getFullPath()));
+						}
+						newNode = (FileNode)n;
+						break;
+					}
+				}
+				
+				if(newNode == null) {
+					newNode = (FileNode)node.addChild(new FileNode(path.getName(path.getNameCount()-1).toString(), m_NotifyDispatch));
+				}
+				
+				indexMap.add(newNode);
+			}
 
 			/* Read the file list */
 			buffer.position(lOffset);
@@ -189,6 +205,17 @@ public class RAFS {
 		System.out.printf("%d: %s%s\n", node.getUID(),
 				node.name() == null ? "" : node.name(),
 				node instanceof DirNode ? "/" : "");
+		
+		if(node instanceof FileNode) {
+			FileNode fn = (FileNode)node;
+			
+			for(final FileNode.Version v : fn.getVersions()) {
+				for(int i = 0; i <= tab; ++i)
+					System.out.print("  ");
+				
+				System.out.printf("V: %s\n", v.toString());
+			}
+		}
 		
 		if(node instanceof DirNode) {
 			for(final Node n : (DirNode)node)

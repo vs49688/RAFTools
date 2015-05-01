@@ -25,27 +25,39 @@ public class DirNode extends Node implements Iterable<Node> {
 				return -1;
 			}
 			
-			return n1.name().compareTo(n2.name());
+			return n1.name().compareToIgnoreCase(n2.name());
 		}));
 	}
 
-	public synchronized Node addChild(Node node) {
+	public Node addChild(Node node) {
 		if(node == null)
 			throw new IllegalArgumentException("Cannot add null node");
 		
-		if(m_Children.contains(node))
-			throw new IllegalArgumentException("Node already a child");
+		m_Lock.writeLock().lock();
+		try {
+			// POTBUG: This doesn't seem to be working properly
+			if(m_Children.contains(node)) {
+				//throw new IllegalArgumentException("Node already a child");
+				//System.err.printf("Duplicate node %s, skipping\n", node.getFullPath());
+				return node;
+			}
+			
+			return _addChild(node);
 		
-		/*for(final Node n : m_Children) {
-			if(n.name().equalsIgnoreCase(node.name()))
-				throw new IllegalArgumentException("Already a file with same name.");
-		}*/
-		
+			/*for(final Node n : m_Children) {
+				if(n.name().equalsIgnoreCase(node.name()))
+					throw new IllegalArgumentException("Already a file with same name.");
+			}*/
+		} finally {
+			m_Lock.writeLock().unlock();
+		}
+	}
+	
+	public synchronized Node _addChild(Node node) {
 		m_Children.add(node);
 		node.setParent(this);
-		
+		//System.err.printf("_addChild: %s\n", node.getFullPath());
 		node.m_Notify.onAdd(node);
-		
 		return node;
 	}
 	
@@ -60,20 +72,49 @@ public class DirNode extends Node implements Iterable<Node> {
 		m_Children.remove(node);
 	}
 
+	private boolean kek(Node n1, Node n2) {
+		//if(n1.getParent() != n2.getParent())
+		//	return false;
+		
+		if(!n1.name().equalsIgnoreCase(n2.name()))
+			return false;
+		
+		if((n1 instanceof DirNode) && !(n2 instanceof DirNode))
+			return false;
+		
+		if((n1 instanceof FileNode) && !(n2 instanceof FileNode))
+			return false;
+		
+		return true;
+	}
+	
+	public Node existGetChild(String name) {
+		m_Lock.readLock().lock();
+		
+		try {
+			for(final Node n : this) {
+				if(n.name().equalsIgnoreCase(name))
+					return n;
+			}
+		} finally {
+			m_Lock.readLock().unlock();
+		}
+		
+		return null;
+	}
+	
 	public DirNode getAddDirectory(String name){
 		if(name == null || name.isEmpty() || !isNameValid(name))
 			throw new IllegalArgumentException("Invalid directory name");
 		
-		for(Node n : this) {
-			if(n.name().equals(name)) {
-				if(!(n instanceof DirNode))
-					throw new IllegalArgumentException("File/Directory already exists");
-				
-				return (DirNode)n;
-			}
-		}
-
-		return (DirNode)addChild(new DirNode(name, m_Notify));
+		Node n = existGetChild(name);
+		if(n == null)
+			return (DirNode)addChild(new DirNode(name, m_Notify));
+		
+		if(!(n instanceof DirNode))
+			throw new IllegalArgumentException("File exists");
+		
+		return (DirNode)n;
 	}
 	
 	public int getChildCount() {
