@@ -135,7 +135,7 @@ public class Controller {
 			if(f == null)
 				return;
 			
-			m_CLI.parseString(String.format("extract \"%s\" \"%s\"", node.getFullPath(), f.toString()));
+			m_CLI.parseString(String.format("extract \"%s:%s\" \"%s\"", node.getFullPath(), version, f.toString()));
 		}
 		
 	}

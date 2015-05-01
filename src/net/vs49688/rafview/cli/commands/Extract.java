@@ -21,9 +21,18 @@ public class Extract implements ICommand {
 		
 		String outDir = args[args.length-1];
 		
-		//for(int i = 1; i < args.length-1; ++i) {
-		//	m_Model.getVFS().extract(Paths.get(args[i]), Paths.get(outDir));
-		//}
+		for(int i = 1; i < args.length-1; ++i) {
+			String version;
+			String file[] = args[i].trim().split(":", 2);
+			if(file.length == 1) {
+				version = "latest";
+			} else {
+				version = file[1];
+			}
+			
+			
+			m_Model.getVFS().extract(Paths.get(file[0]), Paths.get(outDir), version);
+		}
 	}
 
 	@Override

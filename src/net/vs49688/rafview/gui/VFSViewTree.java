@@ -37,13 +37,15 @@ public class VFSViewTree extends JTree {
 			
 			JMenu menu = new JMenu("Extract");
 
-			menu.add(new JMenuItem("Latest"));
-			menu.addActionListener((ActionEvent ae) -> {
+			JMenuItem item = new JMenuItem("Latest");
+			item.addActionListener((ActionEvent ae) -> {
 				m_OpHandler.nodeExport(n, fn.getLatestVersion());
 			});
 			
+			menu.add(item);
+			
 			for(final FileNode.Version v : fn.getVersions()) {
-				JMenuItem item = new JMenuItem(v.toString());
+				item = new JMenuItem(v.toString());
 				item.addActionListener((ActionEvent ae) -> {
 					m_OpHandler.nodeExport(n, v);
 				});

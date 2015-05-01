@@ -92,7 +92,7 @@ public class DirNode extends Node implements Iterable<Node> {
 		m_Lock.readLock().lock();
 		
 		try {
-			for(final Node n : this) {
+			for(final Node n : m_Children) {
 				if(n.name().equalsIgnoreCase(name))
 					return n;
 			}

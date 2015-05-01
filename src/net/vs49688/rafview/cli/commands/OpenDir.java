@@ -23,7 +23,7 @@ public class OpenDir implements ICommand {
 		
 		m_Console.append(String.format("Opened LoL directory %s...\n", args[1]));
 		
-		m_Model.getVFS().dumpPaths();
+		//m_Model.getVFS().dumpPaths();
 	}
 
 	@Override

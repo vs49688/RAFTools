@@ -223,37 +223,52 @@ public class RAFS {
 		}
 	}
 
-	public void extract(Path vfsPath, Path outDir, IVOp c) throws IOException {
+	/**
+	 * Extract a file or directory from the VFS.
+	 * @param vfsPath The path to extract.
+	 * @param outDir The output directory.
+	 * @param version The version of the file to extract. If vfsPath is a directory, then
+	 * this parameter is ignored.
+	 * @throws IOException If an I/O error occurrs.
+	 */
+	public void extract(Path vfsPath, Path outDir, String version) throws IOException {
 		
 		if(vfsPath == null)
 			throw new IllegalArgumentException("vfsPath cannot be null");
 		
 		if(outDir == null)
 			throw new IllegalArgumentException("outPath cannot be null");
-
-		if(c == null)
-			throw new IllegalArgumentException("c cannot be null");
 		
 		Node node = _findNodeByName(m_Root, vfsPath, 0);
 		
 		if(node == null)
 			throw new IOException("Not found");
 		
-		_extractNode(node, outDir, c);
+		if(node instanceof DirNode)
+			version = "latest";
+
+		_extractNode(node, outDir, version);
 
 	}
 
-	private void _extractNode(Node root, Path outDir, IVOp c) throws IOException {
+	private void _extractNode(Node root, Path outDir, String version) throws IOException {
 		if(root instanceof FileNode) {
 			FileNode fn = (FileNode)root;
+			FileNode.Version ver = null;
 			
-			for(final Version v : fn.getVersions()) {
-				if(c.extract(v)) {
-					Files.write(outDir.resolve(fn.name()), v.getSource().read());
-					return;
+			if(version.equalsIgnoreCase("latest")) {
+				ver = fn.getLatestVersion();
+			} else {
+				for(final Version v : fn.getVersions()) {
+					if(v.toString().equalsIgnoreCase(version)) {
+						ver = v;
+						break;
+					}
 				}
 			}
 			
+			if(ver != null)
+				Files.write(outDir.resolve(fn.name()), ver.getSource().read());
 			return;
 		}
 		
@@ -262,7 +277,7 @@ public class RAFS {
 		Files.createDirectories(outDir);
 		
 		for(final Node n: dn) {
-			_extractNode(n, outDir, c);
+			_extractNode(n, outDir, version);
 		}
 	}
 	

@@ -17,6 +17,7 @@ public class CommandInterface {
 	ICommand m_OpenDirCommand;
 	ICommand m_ExtractCommand;
 	ICommand m_RamInfoCommand;
+	ICommand m_ForceGC;
 	Help m_HelpCommand;
 	
 	public CommandInterface(Appendable out, Model model) {
@@ -31,6 +32,7 @@ public class CommandInterface {
 		m_Interpreter.registerCommand((m_OpenDirCommand = new OpenDir(out, model)));
 		m_Interpreter.registerCommand((m_ExtractCommand = new Extract(out, model)));
 		m_Interpreter.registerCommand((m_RamInfoCommand = new RamInfo(out)));
+		m_Interpreter.registerCommand((m_ForceGC = new ForceGC()));
 		
 		m_HelpCommand = new Help(out);
 		m_HelpCommand.addHandler(m_HelpCommand);
@@ -39,6 +41,7 @@ public class CommandInterface {
 		m_HelpCommand.addHandler(m_OpenDirCommand);
 		m_HelpCommand.addHandler(m_ExtractCommand);
 		m_HelpCommand.addHandler(m_RamInfoCommand);
+		m_HelpCommand.addHandler(m_ForceGC);
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		
@@ -95,7 +98,7 @@ public class CommandInterface {
 	 * @return 
 	 */
 	public Interpreter.CommandResult parseString(String s) {
-		//System.err.printf("PS: %s\n", s);
+		System.err.printf("PS: %s\n", s);
 		return m_Interpreter.executeCommand(s);
 	}
 	
