@@ -245,7 +245,7 @@ public class RAFS {
 			throw new IOException("Not found");
 		
 		if(node instanceof DirNode)
-			version = "latest";
+			version = null;
 
 		_extractNode(node, outDir, version);
 
@@ -256,7 +256,7 @@ public class RAFS {
 			FileNode fn = (FileNode)root;
 			FileNode.Version ver = null;
 			
-			if(version.equalsIgnoreCase("latest")) {
+			if(version == null || version.isEmpty()) {
 				ver = fn.getLatestVersion();
 			} else {
 				for(final Version v : fn.getVersions()) {

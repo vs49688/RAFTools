@@ -25,7 +25,7 @@ public class Extract implements ICommand {
 			String version;
 			String file[] = args[i].trim().split(":", 2);
 			if(file.length == 1) {
-				version = "latest";
+				version = null;
 			} else {
 				version = file[1];
 			}

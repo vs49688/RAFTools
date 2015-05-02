@@ -16,10 +16,10 @@ public class Open implements ICommand {
 	
 	@Override
 	public void process(String cmdLine, String[] args) throws CommandException, Exception {
-		if(args.length != 2)
+		if(args.length != 3)
 			throw new CommandException(cmdLine, "open: Invalid arguments");
 		m_Model.getVFS().clear();
-		//m_Model.addFile(Paths.get(args[1]));
+		m_Model.addFile(Paths.get(args[1]), args[2]);
 		
 		m_Console.append(String.format("Opened %s...\n", args[1]));
 	}
@@ -31,7 +31,7 @@ public class Open implements ICommand {
 
 	@Override
 	public String getUsageString() {
-		return "path_to_raf_file";
+		return "<path_to_raf_file> <version>";
 	}
 	
 	@Override

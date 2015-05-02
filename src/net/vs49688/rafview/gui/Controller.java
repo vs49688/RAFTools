@@ -19,6 +19,7 @@ public class Controller {
 	private final AboutDialog m_AboutDialog;
 	private final Console m_Console;
 	private final InibinViewer m_InibinViewer;
+	private final VersionDialog m_VerDialog;
 	
 	public Controller() {
 		ActionListener al = new MenuListener();
@@ -33,6 +34,8 @@ public class Controller {
 		m_View.addTab(m_InibinViewer, "Inibin Viewer");
 		
 		m_AboutDialog = new AboutDialog(m_View);
+		
+		m_VerDialog = new VersionDialog(m_View);
 		
 		m_CLI = new CommandInterface(m_Console, m_Model);
 	
@@ -60,12 +63,13 @@ public class Controller {
 					m_View.dispose();
 				} else if(cmd.equals("file->openarchive")) {
 					File f = m_View.showOpenDialog(false, true, false);
-					if(f != null)
-						m_CLI.parseString(String.format("open \"%s\"", f.toString()));
+					if(f != null) {			
+						m_CLI.parseString(String.format("open \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
+					}
 				} else if(cmd.equals("file->addarchive")) {
 					File f = m_View.showOpenDialog(false, true, false);
 					if(f != null)
-						m_CLI.parseString(String.format("add \"%s\"", f.toString()));
+						m_CLI.parseString(String.format("add \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
 				} else if(cmd.equals("file->openlol")) {
 					File f = m_View.showOpenDialog(true, false, false);
 					if(f != null)
@@ -90,6 +94,18 @@ public class Controller {
 		}
 	}
 
+	private String _getVersionFromDialog() {
+		String ver = "";
+		
+		while(ver == null || ver.isEmpty()) {
+			m_VerDialog.setVisible(true);
+			
+			ver = m_VerDialog.getVersionText();
+		}
+		
+		return ver;
+	}
+	
 	private class _TreeOpHandler implements VFSViewTree.OpHandler {
 
 		@Override
@@ -135,7 +151,14 @@ public class Controller {
 			if(f == null)
 				return;
 			
-			m_CLI.parseString(String.format("extract \"%s:%s\" \"%s\"", node.getFullPath(), version, f.toString()));
+			String fn;
+			
+			if(version == null)
+				fn = node.getFullPath().toString();
+			else
+				fn = String.format("%s:%s", node.getFullPath(), version);
+			
+			m_CLI.parseString(String.format("extract \"%s\" \"%s\"", fn, f.toString()));
 		}
 		
 	}
