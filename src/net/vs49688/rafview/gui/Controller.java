@@ -62,16 +62,16 @@ public class Controller {
 					m_View.setVisible(false);
 					m_View.dispose();
 				} else if(cmd.equals("file->openarchive")) {
-					File f = m_View.showOpenDialog(false, true, false);
+					File f = m_View.showOpenDialog(View.FILETYPE_RAF);
 					if(f != null) {			
 						m_CLI.parseString(String.format("open \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
 					}
 				} else if(cmd.equals("file->addarchive")) {
-					File f = m_View.showOpenDialog(false, true, false);
+					File f = m_View.showOpenDialog(View.FILETYPE_RAF);
 					if(f != null)
 						m_CLI.parseString(String.format("add \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
 				} else if(cmd.equals("file->openlol")) {
-					File f = m_View.showOpenDialog(true, false, false);
+					File f = m_View.showOpenDialog(View.FILETYPE_DIR);
 					if(f != null)
 						m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
 				} else if(cmd.equals("console->submit")) {				
@@ -81,7 +81,7 @@ public class Controller {
 				} else if(cmd.equals("inibin->export")) {
 
 				} else if(cmd.equals("inibin->loadexternal")) {
-					File f = m_View.showOpenDialog(false, false, true);
+					File f = m_View.showOpenDialog(View.FILETYPE_INIBIN);
 					
 					if(f != null) {
 						Map<Integer, Value> inibin = InibinReader.readInibin(f.toPath());
@@ -116,7 +116,8 @@ public class Controller {
 			if(node instanceof FileNode) {
 				FileNode fn = (FileNode)node;
 				
-				if(node.name().toLowerCase().endsWith(".inibin")) {
+				if(node.name().toLowerCase().endsWith(".inibin") ||
+					node.name().toLowerCase().endsWith(".troybin")) {
 					/* Spawn a background thread to do the task for us, we
 					 * don't want to do it on the GUI thread */
 					

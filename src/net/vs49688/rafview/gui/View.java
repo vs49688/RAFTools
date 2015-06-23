@@ -11,6 +11,10 @@ import net.vs49688.rafview.vfs.*;
 
 public class View extends JFrame {
 
+	public static final int FILETYPE_DIR	= (1 << 0);
+	public static final int FILETYPE_RAF	= (1 << 1);
+	public static final int FILETYPE_INIBIN	= (1 << 2);
+
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
 	
@@ -22,6 +26,14 @@ public class View extends JFrame {
 		
 		m_LastOpenDirectory = System.getProperty("user.home");
 
+		/* Attempt to set the system look and feel. It doesn't really matter
+		 * if this fails. */
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(ReflectiveOperationException|UnsupportedLookAndFeelException e) {
+			
+		}
+	
 		initComponents();
 		
 		m_OpenArchive.addActionListener(listener);
@@ -69,25 +81,29 @@ public class View extends JFrame {
 		
 		m_PathField.setText(path);
 	}
-	
+
     /**
      * Show the Open File Dialog.
-	 * @param folders Select directories only?
+	 * @param typeFlags The selection flags.
+	 * The FILETYPE_DIR flag, if set, tells the dialog to only allow
+	 * directory selection. Otherwise, the flags shall be made up of a
+	 * combination of the FILETYPE_RAF and FILETYPE_INIBIN flags.
      * @return The selected file, or null if the dialog was canceled.
      */
-    public File showOpenDialog(boolean folders, boolean raf, boolean inibin)
+    public File showOpenDialog(int typeFlags)
     {
         JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
         fc.setMultiSelectionEnabled(false);
 		
-		if(!folders) {
+		if((typeFlags & FILETYPE_DIR) == 0) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			
-			if(raf)
+			if((typeFlags & FILETYPE_RAF) != 0)
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("RAF Index (.raf)", "raf"));
 			
-			if(inibin)
-				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.inibin)", "inibin"));
+			if((typeFlags & FILETYPE_INIBIN) != 0)
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.inibin, .troybin)", "inibin", "troybin"));
+			
 			fc.setAcceptAllFileFilterUsed(false);
 		} else {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
