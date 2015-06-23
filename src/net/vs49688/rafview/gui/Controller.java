@@ -94,8 +94,7 @@ public class Controller {
 					File f = m_View.showOpenDialog(View.FILETYPE_DDS);
 					
 					if(f != null) {
-						byte[] dds = null;
-						m_DDSViewer.setDDS(f.getName(), dds);
+						m_DDSViewer.setDDS(f.getName(), Files.readAllBytes(f.toPath()));
 					}
 				}
 			} catch(IOException | ParseException ex) {

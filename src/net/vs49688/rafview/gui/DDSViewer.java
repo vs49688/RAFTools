@@ -2,8 +2,14 @@ package net.vs49688.rafview.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.*;
 import java.util.*;
+import javax.imageio.*;
 import net.vs49688.rafview.inibin.*;
 
 public class DDSViewer extends JPanel {
@@ -20,10 +26,19 @@ public class DDSViewer extends JPanel {
 
 	public final synchronized void setDDS(String name, byte[] dds) {
 		if(dds == null) {
-			name = "";
+			m_NameLabel.setText("");
+			return;
 		}
 		
 		m_NameLabel.setText(name);
+		
+				
+		try {
+			BufferedImage image = ImageIO.read(new ByteArrayInputStream(dds));
+			m_ImagePanel.setImage(image);
+		} catch(IOException e) {
+			e.printStackTrace(System.err);
+		}
 	}
 	
 	/**
@@ -37,27 +52,44 @@ public class DDSViewer extends JPanel {
         javax.swing.ButtonGroup treatGroup = new javax.swing.ButtonGroup();
         m_LoadExternalBtn = new javax.swing.JButton();
         m_NameLabel = new javax.swing.JLabel();
+        m_ImagePanel = new net.vs49688.rafview.gui.NavigableImagePanel();
 
         m_LoadExternalBtn.setText("Load External File");
         m_LoadExternalBtn.setActionCommand("dds->loadexternal");
 
         m_NameLabel.setText("<NAME GOES HERE>");
 
+        javax.swing.GroupLayout m_ImagePanelLayout = new javax.swing.GroupLayout(m_ImagePanel);
+        m_ImagePanel.setLayout(m_ImagePanelLayout);
+        m_ImagePanelLayout.setHorizontalGroup(
+            m_ImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        m_ImagePanelLayout.setVerticalGroup(
+            m_ImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 421, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(m_NameLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 337, Short.MAX_VALUE)
-                .addComponent(m_LoadExternalBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(m_ImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(m_NameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 337, Short.MAX_VALUE)
+                        .addComponent(m_LoadExternalBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(438, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(m_ImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(m_LoadExternalBtn)
                     .addComponent(m_NameLabel))
@@ -67,6 +99,7 @@ public class DDSViewer extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private net.vs49688.rafview.gui.NavigableImagePanel m_ImagePanel;
     private javax.swing.JButton m_LoadExternalBtn;
     private javax.swing.JLabel m_NameLabel;
     // End of variables declaration//GEN-END:variables
