@@ -14,6 +14,7 @@ public class View extends JFrame {
 	public static final int FILETYPE_DIR	= (1 << 0);
 	public static final int FILETYPE_RAF	= (1 << 1);
 	public static final int FILETYPE_INIBIN	= (1 << 2);
+	public static final int FILETYPE_DDS	= (1 << 3);
 
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
@@ -94,16 +95,23 @@ public class View extends JFrame {
     {
         JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
         fc.setMultiSelectionEnabled(false);
-		
+
 		if((typeFlags & FILETYPE_DIR) == 0) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			
+
 			if((typeFlags & FILETYPE_RAF) != 0)
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("RAF Index (.raf)", "raf"));
-			
-			if((typeFlags & FILETYPE_INIBIN) != 0)
+
+			if((typeFlags & FILETYPE_INIBIN) != 0) {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.inibin, .troybin)", "inibin", "troybin"));
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.inibin)", "inibin"));
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Binary INI File (.troybin)", "troybin"));
+			}
 			
+			if((typeFlags & FILETYPE_DDS) != 0) {
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("DirectDraw Surface (.dds)", "dds"));
+			}
+
 			fc.setAcceptAllFileFilterUsed(false);
 		} else {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

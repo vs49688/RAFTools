@@ -11,24 +11,26 @@ public class InibinReader {
 
 	private static final int FLAG_UNK1		= 0b0000000000000001;
 	private static final int FLAG_UNK2		= 0b0000000000000010;
-	private static final int FLAG_IDIV10	= 0b0000000000000100; // Integer divided by 10
-	private static final int FLAG_SHORT		= 0b0000000000001000; // 2-byte integers
-	private static final int FLAG_BYTE		= 0b0000000000010000; // 1-byte integers
-	private static final int FLAG_BITFIELD	= 0b0000000000100000; // 1-byte packed booleans
-	private static final int FLAG_UNK7		= 0b0000000001000000; // RGB colour (1 byte * 3 reads)?
-	private static final int FLAG_POSITION	= 0b0000000010000000; // Position (1 float * 3 reads)
-	private static final int FLAG_UNK9		= 0b0000000100000000;
-	private static final int FLAG_UNK10		= 0b0000001000000000;
-	private static final int FLAG_UNK11		= 0b0000010000000000; // RGBA colour (1 byte * 4 reads)?
-	private static final int FLAG_UNK12		= 0b0000100000000000;
-	private static final int FLAG_SOFFSETS	= 0b0001000000000000; // String table offsets
+	private static final int FLAG_IDIV10	= 0b0000000000000100;	// Integer divided by 10
+	private static final int FLAG_SHORT		= 0b0000000000001000;	// 2-byte integers
+	private static final int FLAG_BYTE		= 0b0000000000010000;	// 1-byte integers
+	private static final int FLAG_BITFIELD	= 0b0000000000100000;	// 1-byte packed booleans
+	private static final int FLAG_UNK7		= 0b0000000001000000;	// RGB colour (1 byte * 3 reads)?
+	private static final int FLAG_POSITION	= 0b0000000010000000;	// Position (1 float * 3 reads)
+	private static final int FLAG_UNK9		= 0b0000000100000000;	// Something (.troybin only) (2 byte blocks)
+	private static final int FLAG_UNK10		= 0b0000001000000000;	// Something (.troybin only) (8 byte blocks (double? long?))
+	private static final int FLAG_RGBA		= 0b0000010000000000;	// RGBA colour (1 byte * 4 reads)?
+	private static final int FLAG_UNK12		= 0b0000100000000000;	// Something (.troybin only) (16 byte blocks, 4 floats?)
+																	// Definately NOT 2 doubles, 4 ints, or 2 longs.
+	private static final int FLAG_SOFFSETS	= 0b0001000000000000;	// String table offsets
 	private static final int FLAG_UNK13		= 0b0010000000000000;
 	private static final int FLAG_UNK14		= 0b0100000000000000;
 	private static final int FLAG_UNK15		= 0b1000000000000000;
 	
 	private static final int FLAGS_KNOWN	= FLAG_UNK1 | FLAG_UNK2 |
 			FLAG_IDIV10 | FLAG_SHORT | FLAG_BYTE | FLAG_BITFIELD | FLAG_UNK7 |
-			FLAG_POSITION | FLAG_UNK11 | FLAG_SOFFSETS;
+			FLAG_POSITION | FLAG_UNK9 | FLAG_UNK10 | FLAG_RGBA | /*FLAG_UNK12 | */
+			FLAG_SOFFSETS;
 	
 	private static final Map<Integer, FlagHandler> m_FlagHandlers = _initHandlers();
 	
@@ -71,8 +73,20 @@ public class InibinReader {
 			_parsePosition(map, buffer);
 		});
 
-		ret.put(FLAG_UNK11, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
-			_parseUnk11(map, buffer);
+		ret.put(FLAG_UNK9, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk9(map, buffer);
+		});
+		
+		ret.put(FLAG_UNK10, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk10(map, buffer);
+		});
+
+		ret.put(FLAG_RGBA, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parsePossibleRGBA(map, buffer);
+		});
+
+		ret.put(FLAG_UNK12, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
+			_parseUnk12(map, buffer);
 		});
 
 		ret.put(FLAG_SOFFSETS, (FlagHandler) (Map<Integer, Value> map, ByteBuffer buffer, int stLen) -> {
@@ -83,7 +97,7 @@ public class InibinReader {
 	}
 
 	public static void main(String[] args) throws IOException, ParseException {
-		Map<Integer, Value> inibni = readInibin(Paths.get("/media/Windows/lolex/DATA/Characters/sruap_flag/SRUAP_flag.inibin"));
+		Map<Integer, Value> inibni = readInibin(Paths.get("C:\\Users\\Zane\\Desktop\\Particles\\000_void_test.troybin"));
 		
 		printMap(inibni);
 
@@ -150,7 +164,7 @@ public class InibinReader {
 		
 		/* Check if there are any unknown flags set */
 		if((flags & (~FLAGS_KNOWN)) != 0) {
-			throw new ParseException("Unknown flag set", -1);
+			//throw new ParseException("Unknown flag set", -1);
 		}
 		
 		/* Call each flag handler */
@@ -264,7 +278,39 @@ public class InibinReader {
 		}
 	}
 	
-	private static void _parseUnk11(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+	private static void _parseUnk9(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+		
+		//Map<Integer, Value> fuck = new HashMap<>();
+		for(int i = 0; i < keys.length; ++i) {
+			List<Value> tmp = new ArrayList<>();
+			for(int j = 0; j < 2; ++j) {
+				tmp.add(new Value(buffer.get() & 0xFF));
+			}
+
+			map.put(keys[i], new Value(tmp));
+			//fuck.put(keys[i], new Value(tmp));
+		}
+		
+		//printMap(fuck);
+		//System.exit(1);
+		
+	}
+	
+	private static void _parseUnk10(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+
+		for(int i = 0; i < keys.length; ++i) {
+			List<Value> tmp = new ArrayList<>();
+			for(int j = 0; j < 8; ++j) {
+				tmp.add(new Value(buffer.get() & 0xFF));
+			}
+
+			map.put(keys[i], new Value(tmp));
+		}
+	}
+	
+	private static void _parsePossibleRGBA(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
 		int[] keys = _readKeys(buffer);
 		
 		for(int i = 0; i < keys.length; ++i) {
@@ -277,9 +323,30 @@ public class InibinReader {
 		}
 	}
 
+	private static void _parseUnk12(Map<Integer, Value> map, ByteBuffer buffer) throws IOException, ParseException {
+		int[] keys = _readKeys(buffer);
+
+		Map<Integer, Value> fuck = new HashMap<>();
+		for(int i = 0; i < keys.length; ++i) {
+			List<Value> tmp = new ArrayList<>();
+			
+			for(int j = 0; j < 4; ++j) {
+				tmp.add(new Value(buffer.getFloat()));
+			}
+//			for(int j = 0; j < 16; ++j) {
+//				tmp.add(new Value(buffer.get() & 0xFF));
+//			}
+
+			map.put(keys[i], new Value(tmp));
+			fuck.put(keys[i], new Value(tmp));
+		}
+	}
+
 	private static void _parseStringOffsets(Map<Integer, Value> map, ByteBuffer buffer, int stLen) throws IOException, ParseException {
 		int[] keys = _readKeys(buffer);
 		
+		if(keys.length == 0)
+			throw new IOException("_PSO: no keys");
 		int[] offsets = new int[keys.length];
 		for(int i = 0; i < keys.length; ++i) {
 			offsets[i] = readUnsignedShort(buffer);
@@ -287,10 +354,13 @@ public class InibinReader {
 		
 		byte[] stringTable = new byte[stLen];
 		buffer.get(stringTable);
-		
+		Map<Integer, Value> fuck = new HashMap<>();
 		for(int i = 0; i < keys.length; ++i) {	
 			map.put(keys[i], new Value(scanForString(stringTable, offsets[i])));
+			fuck.put(keys[i], new Value(scanForString(stringTable, offsets[i])));
 		}
+		
+		int x = 0;
 	}
 
 	/**
@@ -340,19 +410,19 @@ public class InibinReader {
 		System.err.printf("Flags: 0b%s\n", binaryString(flags, 16));
 		System.err.printf("Unknown Flags: 0b%s\n", binaryString(flags & ~(FLAGS_KNOWN), 16));
 		
-		if((flags & FLAG_UNK1) != 0)			System.err.printf("FLAG_UNK1 ");
-		if((flags & FLAG_UNK2) != 0)			System.err.printf("FLAG_UNK2 ");
+		if((flags & FLAG_UNK1) != 0)		System.err.printf("FLAG_UNK1 ");
+		if((flags & FLAG_UNK2) != 0)		System.err.printf("FLAG_UNK2 ");
 		if((flags & FLAG_IDIV10) != 0)		System.err.printf("FLAG_IDIV10 ");
 		if((flags & FLAG_SHORT) != 0)		System.err.printf("FLAG_SHORT ");
-		if((flags & FLAG_BYTE) != 0)			System.err.printf("FLAG_BYTE ");
-		if((flags & FLAG_BITFIELD) != 0)		System.err.printf("FLAG_BITFIELD ");
+		if((flags & FLAG_BYTE) != 0)		System.err.printf("FLAG_BYTE ");
+		if((flags & FLAG_BITFIELD) != 0)	System.err.printf("FLAG_BITFIELD ");
 		if((flags & FLAG_UNK7) != 0)		System.err.printf("FLAG_UNK7 ");
 		if((flags & FLAG_POSITION) != 0)	System.err.printf("FLAG_POSITION ");
-		if((flags & FLAG_UNK9) != 0)			System.err.printf("FLAG_UNK9 ");
+		if((flags & FLAG_UNK9) != 0)		System.err.printf("FLAG_UNK9 ");
 		if((flags & FLAG_UNK10) != 0)		System.err.printf("FLAG_UNK10 ");
-		if((flags & FLAG_UNK11) != 0)		System.err.printf("FLAG_UNK11 ");
+		if((flags & FLAG_RGBA) != 0)		System.err.printf("FLAG_UNK11 ");
 		if((flags & FLAG_UNK12) != 0)		System.err.printf("FLAG_UNK12 ");
-		if((flags & FLAG_SOFFSETS) != 0)		System.err.printf("FLAG_SOFFSETS ");
+		if((flags & FLAG_SOFFSETS) != 0)	System.err.printf("FLAG_SOFFSETS ");
 		if((flags & FLAG_UNK13) != 0)		System.err.printf("FLAG_UNK13 ");
 		if((flags & FLAG_UNK14) != 0)		System.err.printf("FLAG_UNK14 ");
 		if((flags & FLAG_UNK15) != 0)		System.err.printf("FLAG_UNK15 ");

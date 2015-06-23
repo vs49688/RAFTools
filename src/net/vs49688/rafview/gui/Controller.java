@@ -19,6 +19,7 @@ public class Controller {
 	private final AboutDialog m_AboutDialog;
 	private final Console m_Console;
 	private final InibinViewer m_InibinViewer;
+	private final DDSViewer m_DDSViewer;
 	private final VersionDialog m_VerDialog;
 	
 	public Controller() {
@@ -29,9 +30,11 @@ public class Controller {
 		
 		m_Console = new Console(al);
 		m_InibinViewer = new InibinViewer(al);
+		m_DDSViewer = new DDSViewer(al);
 		
 		m_View.addTab(m_Console, "Console");
 		m_View.addTab(m_InibinViewer, "Inibin Viewer");
+		m_View.addTab(m_DDSViewer, "DDS Viewer");
 		
 		m_AboutDialog = new AboutDialog(m_View);
 		
@@ -86,6 +89,13 @@ public class Controller {
 					if(f != null) {
 						Map<Integer, Value> inibin = InibinReader.readInibin(f.toPath());
 						m_InibinViewer.setInibin(inibin);
+					}
+				} else if(cmd.equals("dds->loadexternal")) {
+					File f = m_View.showOpenDialog(View.FILETYPE_DDS);
+					
+					if(f != null) {
+						byte[] dds = null;
+						m_DDSViewer.setDDS(f.getName(), dds);
 					}
 				}
 			} catch(IOException | ParseException ex) {
