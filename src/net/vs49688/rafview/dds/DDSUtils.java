@@ -137,32 +137,6 @@ public class DDSUtils {
 			for(int i = 0; i < colours.length; ++i)
 				colours[i] = new ARGBColour();
 		}
-		
-		// I hate this, but Java has no unions */
-		public class ARGBColour {
-			private int a, r, g, b;
-
-			void set(int argb) {
-				a = (argb & 0xFF000000) >>> 24;
-				r = (argb & 0x00FF0000) >>> 16;
-				g = (argb & 0x0000FF00) >>> 8;
-				b = (argb & 0x000000FF);
-			}
-			
-			void setAlpha(int alpha) { a = alpha & 0xFF; }
-			void setRed(int red) { r = red & 0xFF; }
-			void setGreen(int green) { g = green & 0xFF; }
-			void setBlue(int blue) { b = blue & 0xFF; }
-			
-			int getAlpha() { return a; }
-			int getRed() { return r; }
-			int getGreen() { return g; }
-			int getBlue() { return b; }
-			
-			int get() {
-				return (a << 24) | (r << 16) | (g << 16) | b;
-			}
-		}
 	}
 	
 	private static BufferedImage _parseDXT(DDSImage.ImageInfo image, int version) {
@@ -172,96 +146,75 @@ public class DDSUtils {
 		
 		ByteBuffer rawData = image.getData();
 		
+		rawData.order(ByteOrder.LITTLE_ENDIAN);
+		
 		DXTBlock block = new DXTBlock();
 		
-		for(int j = 0; j < image.getHeight() - 4; j += 4) {
-			for(int i = 0; i < image.getWidth() - 4; i += 4) {
+		for(int j = 0; j < image.getHeight()/4; ++j) {
+			for(int i = 0; i < image.getWidth()/4; ++i) {
 				block.colours[0].set(rgb565.getPixel(rawData));
 				block.colours[1].set(rgb565.getPixel(rawData));
 
-				_calcDXT1ColComponent(block, 1); // Red
-				_calcDXT1ColComponent(block, 2); // Green
-				_calcDXT1ColComponent(block, 3); // Blue
-
-				block.colours[0].setAlpha(0xFF);
-				block.colours[1].setAlpha(0xFF);
-				block.colours[2].setAlpha(0xFF);
-				block.colours[3].setAlpha(0xFF);
-				
+				_calcDXT1ColComponent(block);
 				int table = rawData.getInt();
-				bimg.setRGB(i + 0, j + 0, block.colours[(table & 0b11000000000000000000000000000000) >>> 30].get());
-				bimg.setRGB(i + 1, j + 0, block.colours[(table & 0b00110000000000000000000000000000) >>> 28].get());
-				bimg.setRGB(i + 2, j + 0, block.colours[(table & 0b00001100000000000000000000000000) >>> 26].get());
-				bimg.setRGB(i + 3, j + 0, block.colours[(table & 0b00000011000000000000000000000000) >>> 24].get());
-				
-				bimg.setRGB(i + 0, j + 1, block.colours[(table & 0b00000000110000000000000000000000) >>> 22].get());
-				bimg.setRGB(i + 1, j + 1, block.colours[(table & 0b00000000001100000000000000000000) >>> 20].get());
-				bimg.setRGB(i + 2, j + 1, block.colours[(table & 0b00000000000011000000000000000000) >>> 18].get());
-				bimg.setRGB(i + 3, j + 1, block.colours[(table & 0b00000000000000110000000000000000) >>> 16].get());
-				
-				bimg.setRGB(i + 0, j + 2, block.colours[(table & 0b00000000000000001100000000000000) >>> 14].get());
-				bimg.setRGB(i + 1, j + 2, block.colours[(table & 0b00000000000000000011000000000000) >>> 12].get());
-				bimg.setRGB(i + 2, j + 2, block.colours[(table & 0b00000000000000000000110000000000) >>> 10].get());
-				bimg.setRGB(i + 3, j + 2, block.colours[(table & 0b00000000000000000000001100000000) >>>  8].get());
-				
-				bimg.setRGB(i + 0, j + 3, block.colours[(table & 0b00000000000000000000000011000000) >>>  6].get());
-				bimg.setRGB(i + 1, j + 3, block.colours[(table & 0b00000000000000000000000000110000) >>>  4].get());
-				bimg.setRGB(i + 2, j + 3, block.colours[(table & 0b00000000000000000000000000001100) >>>  2].get());
-				bimg.setRGB(i + 3, j + 3, block.colours[(table & 0b00000000000000000000000000000011) >>>  0].get());
-				
-				
-				//System.err.printf("0x%X\n", table);
-				//int x = 0;
+
+				_fuck2(i, j, table, block, bimg);
 			}
 		}
 		
 		return bimg;
 	}
 
-	private static void _calcDXT1ColComponent(DXTBlock block, int index){
+	private static void _fuck2(int i, int j, int table, DXTBlock block, BufferedImage bimg) {
+		bimg.setRGB(i*4 + 0, j*4 + 0, block.colours[(table & 0b00000000000000000000000000000011) >>>  0].get());
+		bimg.setRGB(i*4 + 1, j*4 + 0, block.colours[(table & 0b00000000000000000000000000001100) >>>  2].get());
+		bimg.setRGB(i*4 + 2, j*4 + 0, block.colours[(table & 0b00000000000000000000000000110000) >>>  4].get());
+		bimg.setRGB(i*4 + 3, j*4 + 0, block.colours[(table & 0b00000000000000000000000011000000) >>>  6].get());
+
+		bimg.setRGB(i*4 + 0, j*4 + 1, block.colours[(table & 0b00000000000000000000001100000000) >>>  8].get());
+		bimg.setRGB(i*4 + 1, j*4 + 1, block.colours[(table & 0b00000000000000000000110000000000) >>> 10].get());
+		bimg.setRGB(i*4 + 2, j*4 + 1, block.colours[(table & 0b00000000000000000011000000000000) >>> 12].get());
+		bimg.setRGB(i*4 + 3, j*4 + 1, block.colours[(table & 0b00000000000000001100000000000000) >>> 14].get());
+
+		bimg.setRGB(i*4 + 0, j*4 + 2, block.colours[(table & 0b00000000000000110000000000000000) >>> 16].get());
+		bimg.setRGB(i*4 + 1, j*4 + 2, block.colours[(table & 0b00000000000011000000000000000000) >>> 18].get());
+		bimg.setRGB(i*4 + 2, j*4 + 2, block.colours[(table & 0b00000000001100000000000000000000) >>> 20].get());
+		bimg.setRGB(i*4 + 3, j*4 + 2, block.colours[(table & 0b00000000110000000000000000000000) >>> 22].get());
+
+		bimg.setRGB(i*4 + 0, j*4 + 3, block.colours[(table & 0b00000011000000000000000000000000) >>> 24].get());
+		bimg.setRGB(i*4 + 1, j*4 + 3, block.colours[(table & 0b00001100000000000000000000000000) >>> 26].get());
+		bimg.setRGB(i*4 + 2, j*4 + 3, block.colours[(table & 0b00110000000000000000000000000000) >>> 28].get());
+		bimg.setRGB(i*4 + 3, j*4 + 3, block.colours[(table & 0b11000000000000000000000000000000) >>> 30].get());
+				
+	}
+
+	private static void _calcDXT1ColComponent(DXTBlock block){
 		
-		DXTBlock.ARGBColour cols[] = block.colours;
-	
-		int col0, col1, col2, col3;
-		if(index == 0) {
-			col0 = cols[0].getAlpha();
-			col1 = cols[1].getAlpha();
-		} else if(index == 1) {
-			col0 = cols[0].getRed();
-			col1 = cols[1].getRed();
-		} else if(index == 2) {
-			col0 = cols[0].getGreen();
-			col1 = cols[1].getGreen();
-		} else if(index == 3) {
-			col0 = cols[0].getBlue();
-			col1 = cols[1].getBlue();
-		} else {
-			throw new IllegalArgumentException("index < 0 || index > 3");
-		}
+		ARGBColour cols[] = block.colours;
+
+		int col0ARGB = cols[0].get();
+		int col1ARGB = cols[1].get();
 		
-		if(col0 > col1) {
-			col2 = (2 * col0 + col1) / 3;
-			col3 = (2 * col1 + col0) / 3;
-		} else {
-			col2 = (col0 + col1) / 2;
-			col3 = 0;
-		}
+		if(col0ARGB > col1ARGB)
+			cols[3].setAlpha(0xFF);
+		else
+			cols[3].setAlpha(0);
+
+		cols[0].setAlpha(0xFF);
+		cols[1].setAlpha(0xFF);
+		cols[2].setAlpha(0xFF);
 		
-		if(index == 0) {
-			cols[2].setAlpha(col2);
-			cols[3].setAlpha(col3);
-		} else if(index == 1) {
-			cols[2].setRed(col2);
-			cols[3].setRed(col3);
-		} else if(index == 2) {
-			cols[2].setGreen(col2);
-			cols[3].setGreen(col3);
-		} else if(index == 3) {
-			cols[2].setBlue(col2);
-			cols[3].setBlue(col3);
+		for(int i = 1; i <= 3; ++i) {
+			if(col0ARGB > col1ARGB) {
+				cols[2].set(i, (2 * cols[0].get(i) + cols[1].get(i)) / 3);
+				cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
+			} else {
+				cols[2].set(i, (cols[0].get(i) + cols[1].get(i)) / 2);
+				cols[3].set(i, 0x00);
+			}
 		}
 	}
-	
+
 //	private static void _calcDXT2345Colour(DXTBlock block) {
 //		int cols[] = block.colours;
 //		
