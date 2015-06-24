@@ -193,11 +193,19 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="pathLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="m_PathField" pref="674" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="pathLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="m_PathField" pref="548" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="m_StatusLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -210,7 +218,9 @@
                           <Component id="pathLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="m_PathField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="38" max="32767" attributes="0"/>
+                      <EmptySpace pref="8" max="32767" attributes="0"/>
+                      <Component id="m_StatusLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -229,6 +239,12 @@
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="m_StatusLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&lt;STATUS&gt;"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

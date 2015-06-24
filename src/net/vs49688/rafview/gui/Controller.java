@@ -146,6 +146,20 @@ public class Controller {
 						}
 
 					}).start();
+				} else if(node.name().toLowerCase().endsWith(".dds")) {
+					new Thread(() -> {
+						try {
+							byte[] data = fn.getLatestVersion().getSource().read();
+							SwingUtilities.invokeLater(() -> {
+								m_DDSViewer.setDDS(fn.name(), data);
+							});
+						} catch(Exception e) {
+							SwingUtilities.invokeLater(() -> {
+								m_View.showErrorDialog("ERROR", e.getMessage());
+							});
+						}
+
+					}).start();
 				}
 			}
 		}

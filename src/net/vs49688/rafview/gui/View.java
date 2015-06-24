@@ -50,6 +50,7 @@ public class View extends JFrame {
 		
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+		setStatus("");
 		/* This will cause onAdd() to be called for the root */
 		m_Model.getVFS().addNotifyHandler(new _NotifyHandler());
 	}
@@ -173,6 +174,7 @@ public class View extends JFrame {
         m_InfoPanel = new javax.swing.JPanel();
         m_PathField = new javax.swing.JTextField();
         javax.swing.JLabel pathLabel = new javax.swing.JLabel();
+        m_StatusLabel = new javax.swing.JLabel();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         m_OpenArchive = new javax.swing.JMenuItem();
@@ -206,15 +208,23 @@ public class View extends JFrame {
 
         pathLabel.setText("Path:");
 
+        m_StatusLabel.setText("<STATUS>");
+        m_StatusLabel.setToolTipText("");
+
         javax.swing.GroupLayout m_InfoPanelLayout = new javax.swing.GroupLayout(m_InfoPanel);
         m_InfoPanel.setLayout(m_InfoPanelLayout);
         m_InfoPanelLayout.setHorizontalGroup(
             m_InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, m_InfoPanelLayout.createSequentialGroup()
+            .addGroup(m_InfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pathLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
+                .addGroup(m_InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, m_InfoPanelLayout.createSequentialGroup()
+                        .addComponent(pathLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(m_PathField, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE))
+                    .addGroup(m_InfoPanelLayout.createSequentialGroup()
+                        .addComponent(m_StatusLabel)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         m_InfoPanelLayout.setVerticalGroup(
@@ -224,7 +234,9 @@ public class View extends JFrame {
                 .addGroup(m_InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pathLabel)
                     .addComponent(m_PathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(m_StatusLabel)
+                .addContainerGap())
         );
 
         mainInfoSplitter.setRightComponent(m_InfoPanel);
@@ -283,6 +295,13 @@ public class View extends JFrame {
 		});
 	}
 	
+	public void setStatus(String status) {
+		if(status == null)
+			status = "";
+		
+		m_StatusLabel.setText(status);
+	}
+	
     public void showErrorDialog(String title, String message)
     {
         showErrorDialog(this, title, message);
@@ -323,6 +342,7 @@ public class View extends JFrame {
 				
 				DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
 				m.insertNodeInto(tn, tnp, parent.getIndex(n));
+				setStatus(String.format("Adding %s...", n.getFullPath().toString()));
 			} else {
 				m_VFSTree.setModel(new DefaultTreeModel(tn));
 			}
@@ -338,6 +358,7 @@ public class View extends JFrame {
     private javax.swing.JMenuItem m_OpenArchive;
     private javax.swing.JMenuItem m_OpenDir;
     private javax.swing.JTextField m_PathField;
+    private javax.swing.JLabel m_StatusLabel;
     private javax.swing.JTabbedPane m_TabPane;
     private net.vs49688.rafview.gui.VFSViewTree m_VFSTree;
     // End of variables declaration//GEN-END:variables
