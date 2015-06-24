@@ -30,7 +30,11 @@
                   <Component id="m_ImagePanel" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="m_NameLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="337" max="32767" attributes="0"/>
+                      <EmptySpace pref="216" max="32767" attributes="0"/>
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="m_MipmapSpinner" min="-2" pref="43" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="m_LoadExternalBtn" min="-2" pref="160" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -47,6 +51,8 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="m_LoadExternalBtn" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="m_NameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="m_MipmapSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -80,5 +86,16 @@
         </DimensionLayout>
       </Layout>
     </Container>
+    <Component class="javax.swing.JSpinner" name="m_MipmapSpinner">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Mipmap Level:"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+      </AuxValues>
+    </Component>
   </SubComponents>
 </Form>
