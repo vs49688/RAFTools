@@ -4,6 +4,10 @@ import java.awt.image.*;
 import java.nio.*;
 import java.util.*;
 
+/* Resources:
+ * http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
+ * http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
+ */
 public class DDSUtils {
 
 	private static final Map<Integer, PixelTransform> m_Transforms = _createTransformMap();
@@ -85,6 +89,13 @@ public class DDSUtils {
 		return map;
 	}
 	
+	/**
+	 * Convert a DDS image into a A8R8G8B8 BufferedImage suitable for use in Swing.
+	 * @param dds The DDS image.
+	 * @param image The structure containing infomation about the specific mipmap
+	 * to be converted.
+	 * @return A A8R8G8B8 BufferedImage suitable for use in Swing.
+	 */
 	public static BufferedImage getSwingImage(DDSImage dds, DDSImage.ImageInfo image) {
 		
 		int pixelFormat = dds.getPixelFormat();
@@ -99,14 +110,21 @@ public class DDSUtils {
 			case DDSImage.D3DFMT_X8R8G8B8:
 			case DDSImage.D3DFMT_A8B8G8R8:
 			case DDSImage.D3DFMT_X8B8G8R8:
-				return _parseUncompressed(image, m_Transforms.get(pixelFormat));
+				return parseUncompressed(image, m_Transforms.get(pixelFormat));
 
 			case DDSImage.D3DFMT_DXT1:
 				return _parseDXT(image, 1);
+			case DDSImage.D3DFMT_DXT3:
+				return _parseDXT(image, 3);
 			case DDSImage.D3DFMT_DXT5:
 				return _parseDXT(image, 5);
+				
+			/* No one likes these, so don't bother with them. */
+			case DDSImage.D3DFMT_DXT2:
+			case DDSImage.D3DFMT_DXT4:
+			default:
+				return null;
 		}
-		return null;
 	}
 	
 	/** Read a 24-bit, little-endian integer. */
@@ -114,7 +132,14 @@ public class DDSUtils {
 		return (bb.get() & 0xFF) | ((bb.get() & 0xFF) << 8) | ((bb.get() & 0xFF) << 16);
 	}
 	
-	private static BufferedImage _parseUncompressed(DDSImage.ImageInfo image, PixelTransform transform) {
+	/**
+	 * Parse an uncompressed DDS image into a A8R8G8B8 BufferedImage.
+	 * @param image The DDS Image to convert.
+	 * @param transform The pixel transformation class corresponding the the
+	 * pixel format of the image.
+	 * @return A A8R8G8B8 BufferedImage capable for use in Swing.
+	 */
+	private static BufferedImage parseUncompressed(DDSImage.ImageInfo image, PixelTransform transform) {
 		BufferedImage bimg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		ByteBuffer rawData = image.getData();
 
@@ -130,15 +155,26 @@ public class DDSUtils {
 	}
 
 	private static class DXTBlock {
+		public final int[] alphaTable;
+		public final int[] alphaIndices;
 		public final ARGBColour[] colours;
 
 		public DXTBlock() {
 			colours = new ARGBColour[4];
 			for(int i = 0; i < colours.length; ++i)
 				colours[i] = new ARGBColour();
+			
+			alphaTable = new int[16];
+			alphaIndices = new int[16];
 		}
 	}
 	
+	/**
+	 * Parse an DXT-compressed image into a A8R8G8B8 BufferedImage.
+	 * @param image The DDS Image to convert.
+	 * @param version The version of DXT to parse, in the range [1, 5].
+	 * @return A A8R8G8B8 BufferedImage capable for use in Swing.
+	 */
 	private static BufferedImage _parseDXT(DDSImage.ImageInfo image, int version) {
 		BufferedImage bimg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		
@@ -152,43 +188,170 @@ public class DDSUtils {
 		
 		for(int j = 0; j < image.getHeight()/4; ++j) {
 			for(int i = 0; i < image.getWidth()/4; ++i) {
+				
+				/* DXT2 and DXT3 store 16 bits (4bpp * 16) alpha channel */
+				if(version == 2 || version == 3) {
+					/* Read the alphas into the table */
+					_parseAlphaTable(block.alphaTable, rawData.getLong());
+					
+					/* Create a 1:1 mapping of the pixel to the table.
+					 * This essentially converts the format to DXT4/5,
+					 * so I don't have to write special code. */
+					for(int k = 0; k < 16; ++k) {
+						block.alphaIndices[k] = k;
+					}
+				/* DXT4 and DXT5 store two 8-bit alpha values,
+				 * followed by a 48-bit table (3bpp * 16) indices */
+				} else if(version == 4 || version == 5) {
+					
+					/* Calculate the interpolated alphas from the two endpoints */
+					interpolateAlphas(block.alphaTable, rawData);
+					
+					/* Build the index table */
+					buildIndexTable(block.alphaIndices, rawData);
+				}
+				
 				block.colours[0].set(rgb565.getPixel(rawData));
 				block.colours[1].set(rgb565.getPixel(rawData));
 
-				_calcDXT1ColComponent(block);
-				int table = rawData.getInt();
+				if(version == 1) {
+					_calcDXT1ColComponent(block);
+				} else {
+					_calcDXTNot1ColComponent(block);
+				}
 
-				_fuck2(i, j, table, block, bimg);
+				applyTable(i, j, rawData.getInt(), block, bimg, version != 1);
 			}
 		}
 		
 		return bimg;
 	}
 
-	private static void _fuck2(int i, int j, int table, DXTBlock block, BufferedImage bimg) {
-		bimg.setRGB(i*4 + 0, j*4 + 0, block.colours[(table & 0b00000000000000000000000000000011) >>>  0].get());
-		bimg.setRGB(i*4 + 1, j*4 + 0, block.colours[(table & 0b00000000000000000000000000001100) >>>  2].get());
-		bimg.setRGB(i*4 + 2, j*4 + 0, block.colours[(table & 0b00000000000000000000000000110000) >>>  4].get());
-		bimg.setRGB(i*4 + 3, j*4 + 0, block.colours[(table & 0b00000000000000000000000011000000) >>>  6].get());
-
-		bimg.setRGB(i*4 + 0, j*4 + 1, block.colours[(table & 0b00000000000000000000001100000000) >>>  8].get());
-		bimg.setRGB(i*4 + 1, j*4 + 1, block.colours[(table & 0b00000000000000000000110000000000) >>> 10].get());
-		bimg.setRGB(i*4 + 2, j*4 + 1, block.colours[(table & 0b00000000000000000011000000000000) >>> 12].get());
-		bimg.setRGB(i*4 + 3, j*4 + 1, block.colours[(table & 0b00000000000000001100000000000000) >>> 14].get());
-
-		bimg.setRGB(i*4 + 0, j*4 + 2, block.colours[(table & 0b00000000000000110000000000000000) >>> 16].get());
-		bimg.setRGB(i*4 + 1, j*4 + 2, block.colours[(table & 0b00000000000011000000000000000000) >>> 18].get());
-		bimg.setRGB(i*4 + 2, j*4 + 2, block.colours[(table & 0b00000000001100000000000000000000) >>> 20].get());
-		bimg.setRGB(i*4 + 3, j*4 + 2, block.colours[(table & 0b00000000110000000000000000000000) >>> 22].get());
-
-		bimg.setRGB(i*4 + 0, j*4 + 3, block.colours[(table & 0b00000011000000000000000000000000) >>> 24].get());
-		bimg.setRGB(i*4 + 1, j*4 + 3, block.colours[(table & 0b00001100000000000000000000000000) >>> 26].get());
-		bimg.setRGB(i*4 + 2, j*4 + 3, block.colours[(table & 0b00110000000000000000000000000000) >>> 28].get());
-		bimg.setRGB(i*4 + 3, j*4 + 3, block.colours[(table & 0b11000000000000000000000000000000) >>> 30].get());
-				
+	/**
+	 * Apply the DXT colour index table to the image.
+	 * @param i The x position in the (image width/4).
+	 * @param j The y position in the (image height/4).
+	 * @param table The index table to apply to the image.
+	 * @param block The DXTBlock containing the colour and alpha data.
+	 * @param bimg The BufferedImage to receive the pixels.
+	 * @param useAlphaTable Do we use the DXTBlock's alpha table, or the alpha
+	 * value already in the colour. (Should be true for anything that's not
+	 * DXT1).
+	 */
+	private static void applyTable(int i, int j, int table, DXTBlock block, BufferedImage bimg, boolean useAlphaTable) {
+		
+		int mask = 0b11;
+		
+		for(int x = 0, k = 0; x < 4; ++x) for(int y = 0; y < 4; ++y, ++k) {
+			int pixel = block.colours[(table & (mask << (2*k))) >>> (2*k)].get();
+			
+			if(useAlphaTable) {
+				int alpha = block.alphaTable[block.alphaIndices[k]];
+				pixel = pixel & 0x00FFFFFF | (alpha << 24);
+			}
+			
+			bimg.setRGB(i*4 + y, j*4 + x, pixel);
+		}
+		
+//		bimg.setRGB(i*4 + 0, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000000011) >>>  0].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 0]] << 24);
+//		bimg.setRGB(i*4 + 1, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000001100) >>>  2].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 1]] << 24);
+//		bimg.setRGB(i*4 + 2, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000110000) >>>  4].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 2]] << 24);
+//		bimg.setRGB(i*4 + 3, j*4 + 0, (block.colours[(table & 0b00000000000000000000000011000000) >>>  6].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 3]] << 24);
+//
+//		bimg.setRGB(i*4 + 0, j*4 + 1, (block.colours[(table & 0b00000000000000000000001100000000) >>>  8].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 4]] << 24);
+//		bimg.setRGB(i*4 + 1, j*4 + 1, (block.colours[(table & 0b00000000000000000000110000000000) >>> 10].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 5]] << 24);
+//		bimg.setRGB(i*4 + 2, j*4 + 1, (block.colours[(table & 0b00000000000000000011000000000000) >>> 12].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 6]] << 24);
+//		bimg.setRGB(i*4 + 3, j*4 + 1, (block.colours[(table & 0b00000000000000001100000000000000) >>> 14].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 7]] << 24);
+//
+//		bimg.setRGB(i*4 + 0, j*4 + 2, (block.colours[(table & 0b00000000000000110000000000000000) >>> 16].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 8]] << 24);
+//		bimg.setRGB(i*4 + 1, j*4 + 2, (block.colours[(table & 0b00000000000011000000000000000000) >>> 18].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 9]] << 24);
+//		bimg.setRGB(i*4 + 2, j*4 + 2, (block.colours[(table & 0b00000000001100000000000000000000) >>> 20].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[10]] << 24);
+//		bimg.setRGB(i*4 + 3, j*4 + 2, (block.colours[(table & 0b00000000110000000000000000000000) >>> 22].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[11]] << 24);
+//
+//		bimg.setRGB(i*4 + 0, j*4 + 3, (block.colours[(table & 0b00000011000000000000000000000000) >>> 24].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[12]] << 24);
+//		bimg.setRGB(i*4 + 1, j*4 + 3, (block.colours[(table & 0b00001100000000000000000000000000) >>> 26].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[13]] << 24);
+//		bimg.setRGB(i*4 + 2, j*4 + 3, (block.colours[(table & 0b00110000000000000000000000000000) >>> 28].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[14]] << 24);
+//		bimg.setRGB(i*4 + 3, j*4 + 3, (block.colours[(table & 0b11000000000000000000000000000000) >>> 30].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[15]] << 24);
 	}
 
-	private static void _calcDXT1ColComponent(DXTBlock block){
+	/**
+	 * Parse a DXT2/3 alpha table into an array.
+	 * @param alphas The array to write the alpha values into.
+	 * @param rawTable The raw table.
+	 */
+	private static void _parseAlphaTable(int[] alphas, long rawTable) {
+		
+		long mask = 0b1111;
+		
+		for(int i = 0; i < 16; ++i) {
+			int alpha4 = (int)((rawTable & (mask << (long)(4*i))) >>> (4*i));
+			alphas[i] = (int)(255.0f/15.0f * alpha4);
+		}
+	}
+	
+	/**
+	 * Calculate the 8 interpolated alpha values from the two at the start of
+	 * the block.
+	 * @param alphas The array to receive the alpha values.
+	 * @param bb The buffer containing the data.
+	 */
+	private static void interpolateAlphas(int[] alphas, ByteBuffer bb) {
+		alphas[0] = bb.get() & 0xFF;
+		alphas[1] = bb.get() & 0xFF;
+		if(alphas[0] > alphas[1]) {
+			alphas[2] = (6 * alphas[0] + 1 * alphas[1]) / 7;
+			alphas[3] = (5 * alphas[0] + 2 * alphas[1]) / 7;
+			alphas[4] = (4 * alphas[0] + 3 * alphas[1]) / 7;
+			alphas[5] = (3 * alphas[0] + 4 * alphas[1]) / 7;
+			alphas[6] = (2 * alphas[0] + 5 * alphas[1]) / 7;
+			alphas[7] = (1 * alphas[0] + 6 * alphas[1]) / 7;
+		} else {
+			alphas[2] = (4 * alphas[0] + 1 * alphas[1]) / 5;
+			alphas[3] = (3 * alphas[0] + 2 * alphas[1]) / 5;
+			alphas[4] = (2 * alphas[0] + 3 * alphas[1]) / 5;
+			alphas[5] = (1 * alphas[0] + 4 * alphas[1]) / 5;
+			alphas[6] = 0x00;
+			alphas[7] = 0xFF;
+		}	
+	}
+	
+	/**
+	 * Build the alpha index table for a DXT4/5 image.
+	 * @param indices The array to receive the indices.
+	 * @param bb The buffer containing the index table.
+	 */
+	private static void buildIndexTable(int[] indices, ByteBuffer bb) {
+		final byte[] tmp = new byte[6];
+		bb.get(tmp);
+		
+		long rawIndices =
+			tmp[5] << 40 |
+			tmp[4] << 32 |
+			tmp[3] << 24 |
+			tmp[2] << 16 |
+			tmp[1] <<  8 |
+			tmp[0] <<  0;
+		
+		long mask = 0b111L;
+
+		for(int i = 0; i < 16; ++i) {
+			indices[i] = (int)((long)(rawIndices & (mask << 3*i)) >>> 3*i);
+			
+			assert(indices[i] > 7);
+		}
+	}
+	
+	private static void _calcDXTNot1ColComponent(DXTBlock block) {
+		
+		ARGBColour cols[] = block.colours;
+
+		for(int i = 1; i <= 3; ++i) {
+			cols[2].set(i, (2 * cols[0].get(i) + cols[1].get(i)) / 3);
+			cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
+		}
+	}
+	
+	private static void _calcDXT1ColComponent(DXTBlock block) {
 		
 		ARGBColour cols[] = block.colours;
 
@@ -215,14 +378,13 @@ public class DDSUtils {
 		}
 	}
 
-//	private static void _calcDXT2345Colour(DXTBlock block) {
-//		int cols[] = block.colours;
-//		
-//		cols[2] = (2 * cols[0] + cols[1]) / 3;
-//		cols[3] = (2 * cols[1] + cols[0]) / 3;
-//	}
 
 	private interface PixelTransform {
+		/**
+		 * Read a pixel from the buffer and convert it to A8R8G8B8.
+		 * @param bb The buffer containing the pixel.
+		 * @return An A8R8G8B8 pixel.
+		 */
 		public int getPixel(ByteBuffer bb);
 	}
 }

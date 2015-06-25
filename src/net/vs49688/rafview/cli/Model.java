@@ -149,7 +149,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return "0.3.1-alpha";
+		return "0.4.0-alpha";
 	}
 	
 	public static String getApplicationName() {
