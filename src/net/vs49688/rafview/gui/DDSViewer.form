@@ -29,13 +29,15 @@
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="m_ImagePanel" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="m_NameLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="216" max="32767" attributes="0"/>
+                      <Component id="m_NameLabel" pref="281" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="m_MipmapSpinner" min="-2" pref="43" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="m_LoadExternalBtn" min="-2" pref="160" max="-2" attributes="0"/>
+                      <Component id="m_ExportButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="m_LoadExternalBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -50,9 +52,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="m_LoadExternalBtn" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="m_NameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="m_MipmapSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="m_ExportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="m_NameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -64,11 +67,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Load External File"/>
         <Property name="actionCommand" type="java.lang.String" value="dds-&gt;loadexternal"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="m_NameLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;NAME GOES HERE&gt;"/>
       </Properties>
     </Component>
     <Container class="net.vs49688.rafview.gui.NavigableImagePanel" name="m_ImagePanel">
@@ -96,6 +94,19 @@
         <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="m_ExportButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Export"/>
+        <Property name="actionCommand" type="java.lang.String" value="dds-&gt;export"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="m_NameLabel">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="text" type="java.lang.String" value="&lt;NAME GOES HERE&gt;"/>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

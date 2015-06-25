@@ -2,11 +2,13 @@ package net.vs49688.rafview.gui;
 
 import net.vs49688.rafview.cli.Model;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
 import java.text.ParseException;
 import javax.swing.SwingUtilities;
 import java.util.*;
+import javax.imageio.ImageIO;
 import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.inibin.*;
@@ -96,6 +98,17 @@ public class Controller {
 					if(f != null) {
 						m_DDSViewer.setDDS(f.getName(), Files.readAllBytes(f.toPath()));
 					}
+				} else if(cmd.equals("dds->export")) {
+					File f = m_View.showSaveDialog(String.format("%s.png", m_DDSViewer.getDDSName()), View.FILETYPE_PNG);
+					
+					if(f != null) {
+						BufferedImage img = m_DDSViewer.getCurrentImage();
+						
+						if(!ImageIO.write(img, "PNG", f)) {
+							m_View.setStatus(String.format("Unexpected error writing %s", f.getName()));
+						}
+						
+					}
 				}
 			} catch(IOException | ParseException ex) {
 				m_View.showErrorDialog("ERROR", ex.getMessage());
@@ -168,9 +181,9 @@ public class Controller {
 		public void nodeExport(Node node, FileNode.Version version) {
 			File f;
 			if(node instanceof DirNode)
-				f = m_View.showSaveDialog("", true);
+				f = m_View.showSaveDialog("", View.FILETYPE_DIR);
 			else
-				f = m_View.showSaveDialog(node.name(), true);
+				f = m_View.showSaveDialog(node.name(), View.FILETYPE_ALL);
 			
 			if(f == null)
 				return;

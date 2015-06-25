@@ -13,6 +13,8 @@ import net.vs49688.rafview.dds.*;
 public class DDSViewer extends JPanel {
 
 	private final ArrayList<BufferedImage> m_Mipmaps;
+	private String m_DDSName;
+	private int m_CurrentIndex;
 	
 	public DDSViewer(ActionListener listener) {
 		m_Mipmaps = new ArrayList<>();
@@ -22,16 +24,23 @@ public class DDSViewer extends JPanel {
 		m_MipmapSpinner.setValue(1);
 		m_MipmapSpinner.setEnabled(false);
 		m_MipmapSpinner.addChangeListener(new MipmapChangeListener());
+		
+		m_ExportButton.addActionListener(listener);
+		m_ExportButton.setEnabled(false);
+		
+		m_CurrentIndex = -1;
 
 		setDDS("", null);
 	}
 
 	public final synchronized void setDDS(String name, byte[] dds) {
 		if(dds == null) {
-			m_NameLabel.setText("");
+			m_DDSName = "";
+			m_NameLabel.setText(m_DDSName);
 			return;
 		}
 		
+		m_DDSName = name;
 		m_NameLabel.setText(name);
 		
 		try {
@@ -58,9 +67,23 @@ public class DDSViewer extends JPanel {
 		}
 	}
 	
+	public String getDDSName() {
+		return m_DDSName;
+	}
+
+	public BufferedImage getCurrentImage() {
+		if(m_CurrentIndex < 0)
+			return null;
+		
+		return m_Mipmaps.get(m_CurrentIndex);
+	}
+	
 	private void _switchImage(int index) {
 		m_MipmapSpinner.setEnabled(true);
+		m_ExportButton.setEnabled(true);
 		m_ImagePanel.setImage(m_Mipmaps.get(index));
+		m_CurrentIndex = index;
+		
 	}
 	
 	private class MipmapChangeListener implements ChangeListener {
@@ -81,15 +104,14 @@ public class DDSViewer extends JPanel {
 
         javax.swing.ButtonGroup treatGroup = new javax.swing.ButtonGroup();
         m_LoadExternalBtn = new javax.swing.JButton();
-        m_NameLabel = new javax.swing.JLabel();
         m_ImagePanel = new net.vs49688.rafview.gui.NavigableImagePanel();
         m_MipmapSpinner = new javax.swing.JSpinner();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+        m_ExportButton = new javax.swing.JButton();
+        m_NameLabel = new javax.swing.JTextField();
 
         m_LoadExternalBtn.setText("Load External File");
         m_LoadExternalBtn.setActionCommand("dds->loadexternal");
-
-        m_NameLabel.setText("<NAME GOES HERE>");
 
         javax.swing.GroupLayout m_ImagePanelLayout = new javax.swing.GroupLayout(m_ImagePanel);
         m_ImagePanel.setLayout(m_ImagePanelLayout);
@@ -104,6 +126,13 @@ public class DDSViewer extends JPanel {
 
         jLabel1.setText("Mipmap Level:");
 
+        m_ExportButton.setText("Export");
+        m_ExportButton.setActionCommand("dds->export");
+
+        m_NameLabel.setEditable(false);
+        m_NameLabel.setText("<NAME GOES HERE>");
+        m_NameLabel.setOpaque(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -113,13 +142,15 @@ public class DDSViewer extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(m_ImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(m_NameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 216, Short.MAX_VALUE)
+                        .addComponent(m_NameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(m_MipmapSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(m_LoadExternalBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(m_ExportButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(m_LoadExternalBtn)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -130,18 +161,20 @@ public class DDSViewer extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(m_LoadExternalBtn)
-                    .addComponent(m_NameLabel)
                     .addComponent(m_MipmapSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(m_ExportButton)
+                    .addComponent(m_NameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton m_ExportButton;
     private net.vs49688.rafview.gui.NavigableImagePanel m_ImagePanel;
     private javax.swing.JButton m_LoadExternalBtn;
     private javax.swing.JSpinner m_MipmapSpinner;
-    private javax.swing.JLabel m_NameLabel;
+    private javax.swing.JTextField m_NameLabel;
     // End of variables declaration//GEN-END:variables
 }

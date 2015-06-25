@@ -15,6 +15,8 @@ public class View extends JFrame {
 	public static final int FILETYPE_RAF	= (1 << 1);
 	public static final int FILETYPE_INIBIN	= (1 << 2);
 	public static final int FILETYPE_DDS	= (1 << 3);
+	public static final int FILETYPE_PNG	= (1 << 4);
+	public static final int FILETYPE_ALL	= (1 << 5);
 
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
@@ -97,6 +99,49 @@ public class View extends JFrame {
         JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
         fc.setMultiSelectionEnabled(false);
 
+		addFileFilters(fc, typeFlags);
+
+        /* If we've cancelled, do nothing. */
+        if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+             return null;
+        
+        File f = fc.getSelectedFile();
+        m_LastOpenDirectory = f.getParent();
+        
+        return f;
+    }
+
+	
+    /**
+     * Show the Save File Dialog.
+	 * @param defaultName The default file name.
+	 * @param typeFlags The selection flags.
+	 * The FILETYPE_DIR flag, if set, tells the dialog to only allow
+	 * directory selection. Otherwise, the flags shall be made up of a
+	 * combination of the FILETYPE_RAF and FILETYPE_INIBIN flags.
+     * @return The selected file, or null if the dialog was canceled.
+     */
+    public File showSaveDialog(String defaultName, int typeFlags)
+    {
+        JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
+		
+		if((typeFlags & FILETYPE_DIR) == 0) {
+			fc.setSelectedFile(new File(defaultName));
+		}
+		
+		addFileFilters(fc, typeFlags);
+
+        /* If we've cancelled, do nothing. */
+        if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+             return null;
+        
+        File f = fc.getSelectedFile();
+        m_LastOpenDirectory = f.getParent();
+        
+        return f;
+    }
+
+	private static void addFileFilters(JFileChooser fc, int typeFlags) {
 		if((typeFlags & FILETYPE_DIR) == 0) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -113,50 +158,15 @@ public class View extends JFrame {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("DirectDraw Surface (.dds)", "dds"));
 			}
 
-			fc.setAcceptAllFileFilterUsed(false);
+			if((typeFlags & FILETYPE_PNG) != 0) {
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (.png)", "png"));
+			}
+			
+			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);
 		} else {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		}
-
-        /* If we've cancelled, do nothing. */
-        if(fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
-             return null;
-        
-        File f = fc.getSelectedFile();
-        m_LastOpenDirectory = f.getParent();
-        
-        return f;
-    }
-
-	
-    /**
-     * Show the Save File Dialog.
-	 * @param defaultName The default file name.
-	 * @param folders Select directories only?
-     * @return The selected file, or null if the dialog was canceled.
-     */
-    public File showSaveDialog(String defaultName, boolean folders)
-    {
-        JFileChooser fc = new JFileChooser(m_LastOpenDirectory);
-		
-		if(!folders) {
-			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			fc.setAcceptAllFileFilterUsed(false);
-			fc.setSelectedFile(new File(defaultName));
-		} else {
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		}
-
-        /* If we've cancelled, do nothing. */
-        if(fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-             return null;
-        
-        File f = fc.getSelectedFile();
-        m_LastOpenDirectory = f.getParent();
-        
-        return f;
-    }
-
+		}	
+	}
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always

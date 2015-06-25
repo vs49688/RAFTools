@@ -195,8 +195,9 @@ public class DDSUtils {
 					_parseAlphaTable(block.alphaTable, rawData.getLong());
 					
 					/* Create a 1:1 mapping of the pixel to the table.
-					 * This essentially converts the format to DXT4/5,
-					 * so I don't have to write special code. */
+					 * This essentially converts the format to DXT4/5
+					 * (except with indices > 7), so I don't have to write
+					 * special code. */
 					for(int k = 0; k < 16; ++k) {
 						block.alphaIndices[k] = k;
 					}
@@ -227,6 +228,34 @@ public class DDSUtils {
 		return bimg;
 	}
 
+	static int fuckdex[] = new int[] {
+		 0,  1,  2,  3,
+		 4,  5,  6,  7,
+		 8,  9, 10, 11,
+		12, 13, 14, 15
+	};
+	
+	static int fuckdex2[] = new int[] {
+		 3,  2,  1,  0,
+		 7,  6,  5,  4,
+		11, 10,  9,  8,
+		15, 14, 13, 12
+	};
+
+	static int fuckdex2a[] = new int[] {
+		 3,  2,  1,  0,
+		 7,  6,  5,  4,
+		11, 10,  9,  8,
+		15, 14, 13, 12
+	};
+	
+	static int fuckdex3[] = new int[] {
+		 3,  2,  1,  0,
+		 7,  6,  5,  4,
+		11, 10,  9,  8,
+		15, 14, 13, 12
+	};
+
 	/**
 	 * Apply the DXT colour index table to the image.
 	 * @param i The x position in the (image width/4).
@@ -246,7 +275,8 @@ public class DDSUtils {
 			int pixel = block.colours[(table & (mask << (2*k))) >>> (2*k)].get();
 			
 			if(useAlphaTable) {
-				int alpha = block.alphaTable[block.alphaIndices[k]];
+				
+				int alpha = 0xFF;//block.alphaTable[block.alphaIndices[fuckdex2a[k]]];
 				pixel = pixel & 0x00FFFFFF | (alpha << 24);
 			}
 			
@@ -312,35 +342,48 @@ public class DDSUtils {
 			alphas[5] = (1 * alphas[0] + 4 * alphas[1]) / 5;
 			alphas[6] = 0x00;
 			alphas[7] = 0xFF;
-		}	
+		}
 	}
 	
 	/**
 	 * Build the alpha index table for a DXT4/5 image.
-	 * @param indices The array to receive the indices.
+	 * @param idx The array to receive the indices.
 	 * @param bb The buffer containing the index table.
 	 */
-	private static void buildIndexTable(int[] indices, ByteBuffer bb) {
-		final byte[] tmp = new byte[6];
-		bb.get(tmp);
-		
-		long rawIndices =
-			tmp[5] << 40 |
-			tmp[4] << 32 |
-			tmp[3] << 24 |
-			tmp[2] << 16 |
-			tmp[1] <<  8 |
-			tmp[0] <<  0;
-		
-		long mask = 0b111L;
+	private static void buildIndexTable(int[] idx, ByteBuffer bb) {
+		final byte[] raw = new byte[3];
 
-		for(int i = 0; i < 16; ++i) {
-			indices[i] = (int)((long)(rawIndices & (mask << 3*i)) >>> 3*i);
-			
-			assert(indices[i] > 7);
-		}
+		bb.get(raw);
+		
+		idx[ 0] = (raw[2] & 0b00000111);
+		idx[ 1] = (raw[2] & 0b00111000) >>> 3;
+		idx[ 2] = (raw[2] & 0b11000000) >>> 6 |
+				  (raw[1] & 0b00000001) <<  2;
+		
+		idx[ 3] = (raw[1] & 0b00001110) >>> 1;
+		idx[ 4] = (raw[1] & 0b01110000) >>> 4;
+		idx[ 5] = (raw[1] & 0b10000000) >>> 7 |
+				  (raw[0] & 0b00000011) <<  1;
+		
+		idx[ 6] = (raw[0] & 0b00011100) >>> 2;
+		idx[ 7] = (raw[0] & 0b11100000) >>> 5;
+		
+		bb.get(raw);
+		
+		idx[ 8] = (raw[2] & 0b00000111);
+		idx[ 9] = (raw[2] & 0b00111000) >>> 3;
+		idx[10] = (raw[2] & 0b11000000) >>> 6 |
+				  (raw[1] & 0b00000001) <<  2;
+		
+		idx[11] = (raw[1] & 0b00001110) >>> 1;
+		idx[12] = (raw[1] & 0b01110000) >>> 4;
+		idx[13] = (raw[1] & 0b10000000) >>> 7 |
+				  (raw[0] & 0b00000011) <<  1;
+		
+		idx[14] = (raw[0] & 0b00011100) >>> 2;
+		idx[15] = (raw[0] & 0b11100000) >>> 5;
 	}
-	
+
 	private static void _calcDXTNot1ColComponent(DXTBlock block) {
 		
 		ARGBColour cols[] = block.colours;
@@ -349,6 +392,11 @@ public class DDSUtils {
 			cols[2].set(i, (2 * cols[0].get(i) + cols[1].get(i)) / 3);
 			cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
 		}
+		
+		cols[0].setAlpha(0);
+		cols[1].setAlpha(0);
+		cols[2].setAlpha(0);
+		cols[3].setAlpha(0);
 	}
 	
 	private static void _calcDXT1ColComponent(DXTBlock block) {

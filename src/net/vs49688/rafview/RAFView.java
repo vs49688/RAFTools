@@ -5,6 +5,8 @@ import net.vs49688.rafview.gui.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.interpreter.Interpreter;
 
+// http://wiki.xentax.com/index.php?title=Wwise_SoundBank_(*.bnk)
+
 public class RAFView {
 	
 	private static void printUsage() {
