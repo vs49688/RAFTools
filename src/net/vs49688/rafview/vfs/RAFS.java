@@ -226,17 +226,17 @@ public class RAFS {
 	/**
 	 * Extract a file or directory from the VFS.
 	 * @param vfsPath The path to extract.
-	 * @param outDir The output directory.
+	 * @param outPath The output file/directory.
 	 * @param version The version of the file to extract. If vfsPath is a directory, then
 	 * this parameter is ignored.
-	 * @throws IOException If an I/O error occurrs.
+	 * @throws IOException If an I/O error occurs.
 	 */
-	public void extract(Path vfsPath, Path outDir, String version) throws IOException {
+	public void extract(Path vfsPath, Path outPath, String version) throws IOException {
 		
 		if(vfsPath == null)
 			throw new IllegalArgumentException("vfsPath cannot be null");
 		
-		if(outDir == null)
+		if(outPath == null)
 			throw new IllegalArgumentException("outPath cannot be null");
 		
 		Node node = _findNodeByName(m_Root, vfsPath, 0);
@@ -244,10 +244,11 @@ public class RAFS {
 		if(node == null)
 			throw new IOException("Not found");
 		
-		if(node instanceof DirNode)
+		if(node instanceof DirNode) {
 			version = null;
+		}
 
-		_extractNode(node, outDir, version);
+		_extractNode(node, outPath, version);
 
 	}
 
@@ -268,7 +269,7 @@ public class RAFS {
 			}
 			
 			if(ver != null)
-				Files.write(outDir.resolve(fn.name()), ver.getSource().read());
+				Files.write(outDir, ver.getSource().read());
 			return;
 		}
 		
@@ -277,7 +278,7 @@ public class RAFS {
 		Files.createDirectories(outDir);
 		
 		for(final Node n: dn) {
-			_extractNode(n, outDir, version);
+			_extractNode(n, outDir.resolve(n.name()), version);
 		}
 	}
 	

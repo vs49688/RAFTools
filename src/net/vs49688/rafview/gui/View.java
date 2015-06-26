@@ -32,26 +32,7 @@ public class View extends JFrame {
 		/* Attempt to set the system look and feel. It doesn't really matter
 		 * if this fails. */
 		try {
-			
-			// Default JRE
-			//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			//UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-			//UIManager.setLookAndFeel("javax.swing.plaf.synth.SynthLookAndFeel");
-			//UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-			//UIManager.setLookAndFeel("javax.swing.plaf.multi.MultiLookAndFeel");
-			
-			// JTattoo
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.fast.FastLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.texture.TextureLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.luna.LunaLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
-			UIManager.setLookAndFeel("com.jtattoo.plaf.hifi.HiFiLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.aluminium.AluminiumLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.aero.AeroLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch(ReflectiveOperationException|UnsupportedLookAndFeelException e) {
 			
 		}
