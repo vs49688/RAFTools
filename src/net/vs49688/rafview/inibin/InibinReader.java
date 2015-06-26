@@ -29,7 +29,7 @@ public class InibinReader {
 	
 	private static final int FLAGS_KNOWN	= FLAG_UNK1 | FLAG_UNK2 |
 			FLAG_IDIV10 | FLAG_SHORT | FLAG_BYTE | FLAG_BITFIELD | FLAG_UNK7 |
-			FLAG_POSITION | FLAG_UNK9 | FLAG_UNK10 | FLAG_RGBA | /*FLAG_UNK12 | */
+			FLAG_POSITION | FLAG_UNK9 | FLAG_UNK10 | FLAG_RGBA | FLAG_UNK12 |
 			FLAG_SOFFSETS;
 	
 	private static final Map<Integer, FlagHandler> m_FlagHandlers = _initHandlers();
@@ -164,7 +164,7 @@ public class InibinReader {
 		
 		/* Check if there are any unknown flags set */
 		if((flags & (~FLAGS_KNOWN)) != 0) {
-			//throw new ParseException("Unknown flag set", -1);
+			throw new ParseException("Unknown flag set", -1);
 		}
 		
 		/* Call each flag handler */

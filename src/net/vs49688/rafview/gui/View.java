@@ -35,7 +35,7 @@ public class View extends JFrame {
 			
 			// Default JRE
 			//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+			//UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
 			//UIManager.setLookAndFeel("javax.swing.plaf.synth.SynthLookAndFeel");
 			//UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
 			//UIManager.setLookAndFeel("javax.swing.plaf.multi.MultiLookAndFeel");
@@ -47,7 +47,7 @@ public class View extends JFrame {
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.luna.LunaLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.hifi.HiFiLookAndFeel");
+			UIManager.setLookAndFeel("com.jtattoo.plaf.hifi.HiFiLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.aluminium.AluminiumLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.aero.AeroLookAndFeel");
