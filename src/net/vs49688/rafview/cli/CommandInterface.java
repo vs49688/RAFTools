@@ -56,7 +56,7 @@ public class CommandInterface {
 		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
 		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
 		//_write("/r/leagueoflegends (And Rito if they pls).\n");
-		_write(String.format("RAFTools comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
+		_write(String.format("%s comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
 		_write("permitted by applicable law. This build is an alpha-quality\n");
 		_write("release and should not be considered stable enough for everyday\nuse.\n");
 		
@@ -98,7 +98,6 @@ public class CommandInterface {
 	 * @return 
 	 */
 	public Interpreter.CommandResult parseString(String s) {
-		System.err.printf("PS: %s\n", s);
 		return m_Interpreter.executeCommand(s);
 	}
 	

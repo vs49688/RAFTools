@@ -164,7 +164,7 @@ public class RAFS {
 		// FIXME: assert(numFiles == stringtable.size())
 		
 		for(int i = 0; i < numFiles; ++i) {
-			int unk = b.getInt(); // Not sure what this is
+			int hash = b.getInt(); // Not sure what to do with this.
 			
 			int offset = b.getInt();
 			int size = b.getInt();
@@ -278,7 +278,10 @@ public class RAFS {
 		Files.createDirectories(outDir);
 		
 		for(final Node n: dn) {
-			_extractNode(n, outDir.resolve(n.name()), version);
+			if(n instanceof DirNode)
+				_extractNode(n, outDir, version);
+			else
+				_extractNode(n, outDir.resolve(n.name()), version);
 		}
 	}
 	
