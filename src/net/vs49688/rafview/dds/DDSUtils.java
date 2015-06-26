@@ -3,6 +3,9 @@ package net.vs49688.rafview.dds;
 import java.awt.image.*;
 import java.nio.*;
 import java.util.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import net.vs49688.rafview.gui.NavigableImagePanel;
 
 /* Resources:
  * http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
@@ -278,8 +281,9 @@ public class DDSUtils {
 	 * @param bb The buffer containing the data.
 	 */
 	private static void interpolateAlphas(int[] alphas, ByteBuffer bb) {
-		alphas[0] = bb.get() & 0xFF;
-		alphas[1] = bb.get() & 0xFF;
+		alphas[0] = (int)bb.get() & 0xFF;
+		alphas[1] = (int)bb.get() & 0xFF;
+
 		if(alphas[0] > alphas[1]) {
 			alphas[2] = (6 * alphas[0] + 1 * alphas[1]) / 7;
 			alphas[3] = (5 * alphas[0] + 2 * alphas[1]) / 7;
@@ -306,34 +310,38 @@ public class DDSUtils {
 		final byte[] raw = new byte[3];
 
 		bb.get(raw);
-		
-		idx[ 0] = (raw[2] & 0b00000111);
-		idx[ 1] = (raw[2] & 0b00111000) >>> 3;
-		idx[ 2] = (raw[2] & 0b11000000) >>> 6 |
+
+		idx[ 0] = (raw[0] & 0b00000111);
+		idx[ 1] = (raw[0] & 0b00111000) >>> 3;
+		idx[ 2] = (raw[0] & 0b11000000) >>> 6 |
 				  (raw[1] & 0b00000001) <<  2;
 		
 		idx[ 3] = (raw[1] & 0b00001110) >>> 1;
+		
+		
 		idx[ 4] = (raw[1] & 0b01110000) >>> 4;
 		idx[ 5] = (raw[1] & 0b10000000) >>> 7 |
-				  (raw[0] & 0b00000011) <<  1;
+				  (raw[2] & 0b00000011) <<  1;
 		
-		idx[ 6] = (raw[0] & 0b00011100) >>> 2;
-		idx[ 7] = (raw[0] & 0b11100000) >>> 5;
+		idx[ 6] = (raw[2] & 0b00011100) >>> 2;
+		idx[ 7] = (raw[2] & 0b11100000) >>> 5;
 		
 		bb.get(raw);
 		
-		idx[ 8] = (raw[2] & 0b00000111);
-		idx[ 9] = (raw[2] & 0b00111000) >>> 3;
-		idx[10] = (raw[2] & 0b11000000) >>> 6 |
+		idx[ 8] = (raw[0] & 0b00000111);
+		idx[ 9] = (raw[0] & 0b00111000) >>> 3;
+		idx[10] = (raw[0] & 0b11000000) >>> 6 |
 				  (raw[1] & 0b00000001) <<  2;
 		
 		idx[11] = (raw[1] & 0b00001110) >>> 1;
+		
+		
 		idx[12] = (raw[1] & 0b01110000) >>> 4;
 		idx[13] = (raw[1] & 0b10000000) >>> 7 |
-				  (raw[0] & 0b00000011) <<  1;
+				  (raw[2] & 0b00000011) <<  1;
 		
-		idx[14] = (raw[0] & 0b00011100) >>> 2;
-		idx[15] = (raw[0] & 0b11100000) >>> 5;
+		idx[14] = (raw[2] & 0b00011100) >>> 2;
+		idx[15] = (raw[2] & 0b11100000) >>> 5;
 	}
 
 	private static void _calcDXTNot1ColComponent(DXTBlock block) {
@@ -345,10 +353,10 @@ public class DDSUtils {
 			cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
 		}
 		
-		cols[0].setAlpha(0);
-		cols[1].setAlpha(0);
-		cols[2].setAlpha(0);
-		cols[3].setAlpha(0);
+		cols[0].setAlpha(0x00);
+		cols[1].setAlpha(0x00);
+		cols[2].setAlpha(0x00);
+		cols[3].setAlpha(0x00);
 	}
 	
 	private static void _calcDXT1ColComponent(DXTBlock block) {
@@ -386,5 +394,18 @@ public class DDSUtils {
 		 * @return An A8R8G8B8 pixel.
 		 */
 		public int getPixel(ByteBuffer bb);
+	}
+	
+	public static void main(String[] args) throws Exception {
+		DDSImage img = DDSImage.read("E:\\Zane\\Desktop\\Kalista_Skin01_R_alphaslice.dds");
+		//DDSImage img = DDSImage.read("E:\\Zane\\Desktop\\sample.dds");
+		
+		JFrame frame = new JFrame("DDSUtils Test");
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setSize(800, 600);
+		net.vs49688.rafview.gui.NavigableImagePanel panel = new NavigableImagePanel(getSwingImage(img, img.getMipMap(0)));
+		
+		frame.add(panel);
+		SwingUtilities.invokeLater(() -> { frame.setVisible(true); });
 	}
 }
