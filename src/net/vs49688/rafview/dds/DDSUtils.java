@@ -228,34 +228,6 @@ public class DDSUtils {
 		return bimg;
 	}
 
-	static int fuckdex[] = new int[] {
-		 0,  1,  2,  3,
-		 4,  5,  6,  7,
-		 8,  9, 10, 11,
-		12, 13, 14, 15
-	};
-	
-	static int fuckdex2[] = new int[] {
-		 3,  2,  1,  0,
-		 7,  6,  5,  4,
-		11, 10,  9,  8,
-		15, 14, 13, 12
-	};
-
-	static int fuckdex2a[] = new int[] {
-		 3,  2,  1,  0,
-		 7,  6,  5,  4,
-		11, 10,  9,  8,
-		15, 14, 13, 12
-	};
-	
-	static int fuckdex3[] = new int[] {
-		 3,  2,  1,  0,
-		 7,  6,  5,  4,
-		11, 10,  9,  8,
-		15, 14, 13, 12
-	};
-
 	/**
 	 * Apply the DXT colour index table to the image.
 	 * @param i The x position in the (image width/4).
@@ -276,32 +248,12 @@ public class DDSUtils {
 			
 			if(useAlphaTable) {
 				
-				int alpha = 0xFF;//block.alphaTable[block.alphaIndices[fuckdex2a[k]]];
+				int alpha = block.alphaTable[block.alphaIndices[k]];
 				pixel = pixel & 0x00FFFFFF | (alpha << 24);
 			}
 			
 			bimg.setRGB(i*4 + y, j*4 + x, pixel);
 		}
-		
-//		bimg.setRGB(i*4 + 0, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000000011) >>>  0].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 0]] << 24);
-//		bimg.setRGB(i*4 + 1, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000001100) >>>  2].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 1]] << 24);
-//		bimg.setRGB(i*4 + 2, j*4 + 0, (block.colours[(table & 0b00000000000000000000000000110000) >>>  4].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 2]] << 24);
-//		bimg.setRGB(i*4 + 3, j*4 + 0, (block.colours[(table & 0b00000000000000000000000011000000) >>>  6].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 3]] << 24);
-//
-//		bimg.setRGB(i*4 + 0, j*4 + 1, (block.colours[(table & 0b00000000000000000000001100000000) >>>  8].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 4]] << 24);
-//		bimg.setRGB(i*4 + 1, j*4 + 1, (block.colours[(table & 0b00000000000000000000110000000000) >>> 10].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 5]] << 24);
-//		bimg.setRGB(i*4 + 2, j*4 + 1, (block.colours[(table & 0b00000000000000000011000000000000) >>> 12].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 6]] << 24);
-//		bimg.setRGB(i*4 + 3, j*4 + 1, (block.colours[(table & 0b00000000000000001100000000000000) >>> 14].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 7]] << 24);
-//
-//		bimg.setRGB(i*4 + 0, j*4 + 2, (block.colours[(table & 0b00000000000000110000000000000000) >>> 16].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 8]] << 24);
-//		bimg.setRGB(i*4 + 1, j*4 + 2, (block.colours[(table & 0b00000000000011000000000000000000) >>> 18].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[ 9]] << 24);
-//		bimg.setRGB(i*4 + 2, j*4 + 2, (block.colours[(table & 0b00000000001100000000000000000000) >>> 20].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[10]] << 24);
-//		bimg.setRGB(i*4 + 3, j*4 + 2, (block.colours[(table & 0b00000000110000000000000000000000) >>> 22].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[11]] << 24);
-//
-//		bimg.setRGB(i*4 + 0, j*4 + 3, (block.colours[(table & 0b00000011000000000000000000000000) >>> 24].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[12]] << 24);
-//		bimg.setRGB(i*4 + 1, j*4 + 3, (block.colours[(table & 0b00001100000000000000000000000000) >>> 26].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[13]] << 24);
-//		bimg.setRGB(i*4 + 2, j*4 + 3, (block.colours[(table & 0b00110000000000000000000000000000) >>> 28].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[14]] << 24);
-//		bimg.setRGB(i*4 + 3, j*4 + 3, (block.colours[(table & 0b11000000000000000000000000000000) >>> 30].get() & 0x00FFFFFF) | block.alphaTable[block.alphaIndices[15]] << 24);
 	}
 
 	/**
