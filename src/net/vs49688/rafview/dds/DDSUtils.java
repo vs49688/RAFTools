@@ -103,7 +103,7 @@ public class DDSUtils {
 		
 		int pixelFormat = dds.getPixelFormat();
 		
-		dds.debugPrint();
+		//dds.debugPrint();
 		switch(pixelFormat) {
 			case DDSImage.D3DFMT_R5G6B5:
 			case DDSImage.D3DFMT_R8G8B8:
@@ -307,7 +307,7 @@ public class DDSUtils {
 	 * @param bb The buffer containing the index table.
 	 */
 	private static void buildIndexTable(int[] idx, ByteBuffer bb) {
-		final byte[] raw = new byte[3];
+		final byte[] raw = new byte[6];
 
 		bb.get(raw);
 
@@ -325,23 +325,21 @@ public class DDSUtils {
 		
 		idx[ 6] = (raw[2] & 0b00011100) >>> 2;
 		idx[ 7] = (raw[2] & 0b11100000) >>> 5;
+
+		idx[ 8] = (raw[3] & 0b00000111);
+		idx[ 9] = (raw[3] & 0b00111000) >>> 3;
+		idx[10] = (raw[3] & 0b11000000) >>> 6 |
+				  (raw[4] & 0b00000001) <<  2;
 		
-		bb.get(raw);
-		
-		idx[ 8] = (raw[0] & 0b00000111);
-		idx[ 9] = (raw[0] & 0b00111000) >>> 3;
-		idx[10] = (raw[0] & 0b11000000) >>> 6 |
-				  (raw[1] & 0b00000001) <<  2;
-		
-		idx[11] = (raw[1] & 0b00001110) >>> 1;
+		idx[11] = (raw[4] & 0b00001110) >>> 1;
 		
 		
-		idx[12] = (raw[1] & 0b01110000) >>> 4;
-		idx[13] = (raw[1] & 0b10000000) >>> 7 |
-				  (raw[2] & 0b00000011) <<  1;
+		idx[12] = (raw[4] & 0b01110000) >>> 4;
+		idx[13] = (raw[4] & 0b10000000) >>> 7 |
+				  (raw[5] & 0b00000011) <<  1;
 		
-		idx[14] = (raw[2] & 0b00011100) >>> 2;
-		idx[15] = (raw[2] & 0b11100000) >>> 5;
+		idx[14] = (raw[5] & 0b00011100) >>> 2;
+		idx[15] = (raw[5] & 0b11100000) >>> 5;
 	}
 
 	private static void _calcDXTNot1ColComponent(DXTBlock block) {

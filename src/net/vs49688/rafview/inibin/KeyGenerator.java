@@ -3,7 +3,6 @@ package net.vs49688.rafview.inibin;
 import java.io.*;
 import java.util.*;
 import org.ini4j.Ini;
-import org.ini4j.Profile;
 
 public class KeyGenerator {
 	
@@ -681,22 +680,6 @@ public class KeyGenerator {
 		"FloatVarsDecimals3",
 		"HideDurationInUI"
 	};
-
-	private static int hashString(String s) {
-		int hash = 0, tmp = 0;
-		
-		s = s.toLowerCase();
-		for(int i = 0; i < s.length(); ++i) {
-			hash = (hash << 4) + s.charAt(i);
-			tmp = hash & 0xF0000000;
-			if(tmp != 0) {
-				hash = hash ^ (tmp >>> 24);
-				hash = hash ^ tmp;
-			}
-		}
-		
-		return hash;
-	}
 	
 	private static int hashString2(String section, String variable) {
 		int hash = 0;
@@ -739,7 +722,7 @@ public class KeyGenerator {
 			printHashArray(p, "BuffData", buffDataValues);
 		}
 		
-		System.err.printf("[%s][%s]=%d, %d\n", "SpellData", "Cooldown1", hashString("SpellDataCooldown1"), hashString2("SpellData", "Cooldown1"));
+		System.err.printf("[%s][%s]=%d\n", "SpellData", "Cooldown1", hashString2("SpellData", "Cooldown1"));
 		
 		//loadKeys("inibin-knownkeys.ini");
 	}

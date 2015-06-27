@@ -148,6 +148,23 @@ public class RAFS {
 		return m_Root;
 	}
 	
+
+	private static int getPathHash(String s) {
+		int hash = 0, tmp = 0;
+		
+		s = s.toLowerCase();
+		for(int i = 0; i < s.length(); ++i) {
+			hash = (hash << 4) + s.charAt(i);
+			tmp = hash & 0xF0000000;
+			if(tmp != 0) {
+				hash = hash ^ (tmp >>> 24);
+				hash = hash ^ tmp;
+			}
+		}
+		
+		return hash;
+	}
+
 	/**
 	 * Read the file table, adding data sources to all the FileNodes.
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
@@ -412,7 +429,6 @@ public class RAFS {
 			m_Notify.stream().forEach((ion) -> {
 				ion.onAdd(n);
 			});
-		}
-		
+		}	
 	}
 }
