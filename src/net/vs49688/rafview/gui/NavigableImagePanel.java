@@ -807,37 +807,4 @@ public class NavigableImagePanel extends JPanel {
         String extension = name.substring(dotIndex + 1).toLowerCase();
         return (Arrays.binarySearch(getImageFormatExtensions(), extension) >= 0);
     }
-    
-    public static void main(String[] args) {
-//		if (args.length == 0) {
-//			System.out.println("Usage: java NavigableImagePanel imageFilename");
-//			System.exit(1);
-//		}
-        
-        final String filename = // args[0];
-                "C:\\Users\\Zane\\Desktop\\Wallpapers\\bg-default.jpg";
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                final JFrame frame = new JFrame("Navigable Image Panel");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                NavigableImagePanel panel = new NavigableImagePanel();
-                try {
-                    final BufferedImage image = ImageIO.read(new File(filename));
-                    panel.setImage(image);
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "",
-                            JOptionPane.ERROR_MESSAGE);
-                    System.exit(1);
-                }
-                panel.setNavigationImageEnabled(true);
-                frame.getContentPane().add(panel, BorderLayout.CENTER);
-                GraphicsEnvironment ge =
-                        GraphicsEnvironment.getLocalGraphicsEnvironment();
-                Rectangle bounds = ge.getMaximumWindowBounds();
-                frame.setSize(new Dimension(bounds.width, bounds.height));
-                frame.setVisible(true);
-            }
-        });
-    }
 }
