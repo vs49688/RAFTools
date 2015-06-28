@@ -10,6 +10,7 @@ import net.vs49688.rafview.gui.NavigableImagePanel;
 /* Resources:
  * http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
  * http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/bb694531(v=vs.85).aspx
  */
 public class DDSUtils {
 
@@ -247,7 +248,7 @@ public class DDSUtils {
 					_calcDXTNot1ColComponent(block);
 				}
 
-				applyTable(i, j, rawData.getInt(), block, bimg, version != 1);
+				applyTable(i, j, rawData.getInt(), block, bimg, version != 1, version % 2 == 0);
 			}
 		}
 		
@@ -264,8 +265,9 @@ public class DDSUtils {
 	 * @param useAlphaTable Do we use the DXTBlock's alpha table, or the alpha
 	 * value already in the colour. (Should be true for anything that's not
 	 * DXT1).
+	 * @param premultiplied Are the colours premultiplied by their alpha?
 	 */
-	private static void applyTable(int i, int j, int table, DXTBlock block, BufferedImage bimg, boolean useAlphaTable) {
+	private static void applyTable(int i, int j, int table, DXTBlock block, BufferedImage bimg, boolean useAlphaTable, boolean premultiplied) {
 		
 		int mask = 0b11;
 		
@@ -278,6 +280,10 @@ public class DDSUtils {
 				pixel.setAlpha(alpha);
 			}
 			
+			if(premultiplied) {
+				for(int w = 1; i <= 3; ++i)
+					pixel.set(w, pixel.get(w)/pixel.getAlpha());
+			}
 			bimg.setRGB(i*4 + y, j*4 + x, pixel.toARGB());
 		}
 	}
