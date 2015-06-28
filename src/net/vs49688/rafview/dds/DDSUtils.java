@@ -25,69 +25,92 @@ public class DDSUtils {
 			int g5 = (rawPixel & 0x07E0) >>> 5;
 			int b5 = (rawPixel & 0x001F);
 			
-			int r8 = (int)(255.0f/31.0f * r5);
-			int g8 = (int)(255.0f/63.0f * g5);
-			int b8 = (int)(255.0f/31.0f * b5);
+			float r = 1.0f/31.0f * r5;
+			float g = 1.0f/63.0f * g5;
+			float b = 1.0f/31.0f * b5;
 			
-			return 0xFF000000 | r8 << 16 | g8 << 8 | b8;
+			return new FloatColour(1.0f, r, g, b);
 		});
 		
 		map.put(DDSImage.D3DFMT_A1R5G5B5, (PixelTransform) (ByteBuffer bb) -> {
 			short rawPixel = bb.getShort();
-			
-			int a8 = (rawPixel & 0x8000) == 0 ? 0 : 0xFF;
-			
+
 			int r5 = (rawPixel & 0x7C00) >>> 10;
 			int g5 = (rawPixel & 0x03E0) >>> 5;
 			int b5 = (rawPixel & 0x001F);
 			
-			int r8 = (int)(255.0f/31.0f * r5);
-			int g8 = (int)(255.0f/31.0f * g5);
-			int b8 = (int)(255.0f/31.0f * b5);
+			float a = (rawPixel & 0x8000) == 0 ? 0.0f : 1.0f;
+			float r = 1.0f/31.0f * r5;
+			float g = 1.0f/31.0f * g5;
+			float b = 1.0f/31.0f * b5;
 			
-			return a8 << 24 | r8 << 16 | g8 << 8 | b8;
+			return new FloatColour(a, r, g, b);
 		});
 
 		map.put(DDSImage.D3DFMT_X1R5G5B5, (PixelTransform) (ByteBuffer bb) -> {
 			short rawPixel = bb.getShort();
-			
-			int a8 = 0xFF;
-			
+
 			int r5 = (rawPixel & 0x7C00) >>> 10;
 			int g5 = (rawPixel & 0x03E0) >>> 5;
 			int b5 = (rawPixel & 0x001F);
 			
-			int r8 = (int)(255.0f/31.0f * r5);
-			int g8 = (int)(255.0f/31.0f * g5);
-			int b8 = (int)(255.0f/31.0f * b5);
+			float r = 1.0f/31.0f * r5;
+			float g = 1.0f/31.0f * g5;
+			float b = 1.0f/31.0f * b5;
 			
-			return a8 << 24 | r8 << 16 | g8 << 8 | b8;
+			return new FloatColour(1.0f, r, g, b);
 		});
 
 		map.put(DDSImage.D3DFMT_R8G8B8, (PixelTransform) (ByteBuffer bb) -> {
-			return _read_le24(bb) & 0x00FFFFFF | 0xFF000000;
+			int p = _read_le24(bb);
+			
+			float r = ((p & 0x00FF0000) >> 16) / 255.0f;
+			float g = ((p & 0x0000FF00) >>  8) / 255.0f;
+			float b = ((p & 0x000000FF) >>  0) / 255.0f;
+			
+			return new FloatColour(1.0f, r, g, b);
 		});
 
 		map.put(DDSImage.D3DFMT_A8R8G8B8, (PixelTransform) (ByteBuffer bb) -> {
-			return bb.getInt();
+			int p = bb.getInt();
+			
+			float a = ((p & 0xFF000000) >> 24) / 255.0f;
+			float r = ((p & 0x00FF0000) >> 16) / 255.0f;
+			float g = ((p & 0x0000FF00) >>  8) / 255.0f;
+			float b = ((p & 0x000000FF) >>  0) / 255.0f;
+			
+			return new FloatColour(a, r, g, b);
 		});
 		
 		map.put(DDSImage.D3DFMT_X8R8G8B8, (PixelTransform) (ByteBuffer bb) -> {
-			return 0xFF000000 | (bb.getInt() & 0x00FFFFFF);
+			int p = bb.getInt();
+
+			float r = ((p & 0x00FF0000) >> 16) / 255.0f;
+			float g = ((p & 0x0000FF00) >>  8) / 255.0f;
+			float b = ((p & 0x000000FF) >>  0) / 255.0f;
+			
+			return new FloatColour(1.0f, r, g, b);
 		});
 		
 		map.put(DDSImage.D3DFMT_A8B8G8R8, (PixelTransform) (ByteBuffer bb) -> {
-			int pixel = bb.getInt();
-			return pixel & 0xFF00FF00 |
-				((pixel & 0x00FF0000) >> 16) |
-				((pixel & 0x000000FF) << 16);
+			int p = bb.getInt();
+			
+			float a = ((p & 0xFF000000) >> 24) / 255.0f;
+			float b = ((p & 0x00FF0000) >> 16) / 255.0f;
+			float g = ((p & 0x0000FF00) >>  8) / 255.0f;
+			float r = ((p & 0x000000FF) >>  0) / 255.0f;
+			
+			return new FloatColour(a, r, g, b);
 		});
 		
 		map.put(DDSImage.D3DFMT_X8B8G8R8, (PixelTransform) (ByteBuffer bb) -> {
-			int pixel = bb.getInt();
-			return 0xFF000000 | pixel & 0x0000FF00 |
-			((pixel & 0x00FF0000) >> 16) |
-			((pixel & 0x000000FF) << 16);
+			int p = bb.getInt();
+
+			float b = ((p & 0x00FF0000) >> 16) / 255.0f;
+			float g = ((p & 0x0000FF00) >>  8) / 255.0f;
+			float r = ((p & 0x000000FF) >>  0) / 255.0f;
+			
+			return new FloatColour(1.0f, r, g, b);
 		});
 		return map;
 	}
@@ -150,7 +173,7 @@ public class DDSUtils {
 
 		for(int j = 0; j < bimg.getHeight(); ++j) {
 			for(int i = 0; i < bimg.getWidth(); ++i) {
-				bimg.setRGB(i, j, transform.getPixel(rawData));
+				bimg.setRGB(i, j, transform.getPixel(rawData).toARGB());
 			}
 		}
 		
@@ -158,16 +181,16 @@ public class DDSUtils {
 	}
 
 	private static class DXTBlock {
-		public final int[] alphaTable;
+		public final float[] alphaTable;
 		public final int[] alphaIndices;
-		public final ARGBColour[] colours;
+		public final FloatColour[] colours;
 
 		public DXTBlock() {
-			colours = new ARGBColour[4];
+			colours = new FloatColour[4];
 			for(int i = 0; i < colours.length; ++i)
-				colours[i] = new ARGBColour();
+				colours[i] = new FloatColour();
 			
-			alphaTable = new int[16];
+			alphaTable = new float[16];
 			alphaIndices = new int[16];
 		}
 	}
@@ -247,15 +270,15 @@ public class DDSUtils {
 		int mask = 0b11;
 		
 		for(int x = 0, k = 0; x < 4; ++x) for(int y = 0; y < 4; ++y, ++k) {
-			int pixel = block.colours[(table & (mask << (2*k))) >>> (2*k)].get();
+			FloatColour pixel = block.colours[(table & (mask << (2*k))) >>> (2*k)];
 			
 			if(useAlphaTable) {
 				
-				int alpha = block.alphaTable[block.alphaIndices[k]];
-				pixel = pixel & 0x00FFFFFF | (alpha << 24);
+				float alpha = block.alphaTable[block.alphaIndices[k]];
+				pixel.setAlpha(alpha);
 			}
 			
-			bimg.setRGB(i*4 + y, j*4 + x, pixel);
+			bimg.setRGB(i*4 + y, j*4 + x, pixel.toARGB());
 		}
 	}
 
@@ -264,13 +287,13 @@ public class DDSUtils {
 	 * @param alphas The array to write the alpha values into.
 	 * @param rawTable The raw table.
 	 */
-	private static void _parseAlphaTable(int[] alphas, long rawTable) {
+	private static void _parseAlphaTable(float[] alphas, long rawTable) {
 		
 		long mask = 0b1111;
 		
 		for(int i = 0; i < 16; ++i) {
 			int alpha4 = (int)((rawTable & (mask << (long)(4*i))) >>> (4*i));
-			alphas[i] = (int)(255.0f/15.0f * alpha4);
+			alphas[i] = 1.0f/15.0f * alpha4;
 		}
 	}
 	
@@ -280,24 +303,28 @@ public class DDSUtils {
 	 * @param alphas The array to receive the alpha values.
 	 * @param bb The buffer containing the data.
 	 */
-	private static void interpolateAlphas(int[] alphas, ByteBuffer bb) {
-		alphas[0] = (int)bb.get() & 0xFF;
-		alphas[1] = (int)bb.get() & 0xFF;
+	private static void interpolateAlphas(float[] alphas, ByteBuffer bb) {
+		
+		int alpha0 = bb.get() & 0xFF;
+		int alpha1 = bb.get() & 0xFF;
+		
+		alphas[0] = alpha0 / 255.0f;
+		alphas[1] = alpha1 / 255.0f;
 
 		if(alphas[0] > alphas[1]) {
-			alphas[2] = (6 * alphas[0] + 1 * alphas[1]) / 7;
-			alphas[3] = (5 * alphas[0] + 2 * alphas[1]) / 7;
-			alphas[4] = (4 * alphas[0] + 3 * alphas[1]) / 7;
-			alphas[5] = (3 * alphas[0] + 4 * alphas[1]) / 7;
-			alphas[6] = (2 * alphas[0] + 5 * alphas[1]) / 7;
-			alphas[7] = (1 * alphas[0] + 6 * alphas[1]) / 7;
+			alphas[2] = ((6 * alpha0 + 1 * alpha1) / 7.0f) / 255.0f;
+			alphas[3] = ((5 * alpha0 + 2 * alpha1) / 7.0f) / 255.0f;
+			alphas[4] = ((4 * alpha0 + 3 * alpha1) / 7.0f) / 255.0f;
+			alphas[5] = ((3 * alpha0 + 4 * alpha1) / 7.0f) / 255.0f;
+			alphas[6] = ((2 * alpha0 + 5 * alpha1) / 7.0f) / 255.0f;
+			alphas[7] = ((1 * alpha0 + 6 * alpha1) / 7.0f) / 255.0f;
 		} else {
-			alphas[2] = (4 * alphas[0] + 1 * alphas[1]) / 5;
-			alphas[3] = (3 * alphas[0] + 2 * alphas[1]) / 5;
-			alphas[4] = (2 * alphas[0] + 3 * alphas[1]) / 5;
-			alphas[5] = (1 * alphas[0] + 4 * alphas[1]) / 5;
-			alphas[6] = 0x00;
-			alphas[7] = 0xFF;
+			alphas[2] = ((4 * alpha0 + 1 * alpha1) / 5.0f) / 255.0f;
+			alphas[3] = ((3 * alpha0 + 2 * alpha1) / 5.0f) / 255.0f;
+			alphas[4] = ((2 * alpha0 + 3 * alpha1) / 5.0f) / 255.0f;
+			alphas[5] = ((1 * alpha0 + 4 * alpha1) / 5.0f) / 255.0f;
+			alphas[6] = 0.0f;
+			alphas[7] = 1.0f;
 		}
 	}
 	
@@ -343,42 +370,41 @@ public class DDSUtils {
 	}
 
 	private static void _calcDXTNot1ColComponent(DXTBlock block) {
-		
-		ARGBColour cols[] = block.colours;
+		FloatColour cols[] = block.colours;
 
 		for(int i = 1; i <= 3; ++i) {
 			cols[2].set(i, (2 * cols[0].get(i) + cols[1].get(i)) / 3);
 			cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
 		}
 		
-		cols[0].setAlpha(0x00);
-		cols[1].setAlpha(0x00);
-		cols[2].setAlpha(0x00);
-		cols[3].setAlpha(0x00);
+		cols[0].setAlpha(0.0f);
+		cols[1].setAlpha(0.0f);
+		cols[2].setAlpha(0.0f);
+		cols[3].setAlpha(0.0f);
 	}
 	
 	private static void _calcDXT1ColComponent(DXTBlock block) {
 		
-		ARGBColour cols[] = block.colours;
+		FloatColour cols[] = block.colours;
 
-		int col0ARGB = cols[0].get();
-		int col1ARGB = cols[1].get();
+		int col0ARGB = cols[0].toARGB();
+		int col1ARGB = cols[1].toARGB();
 		
 		if(col0ARGB > col1ARGB)
-			cols[3].setAlpha(0xFF);
+			cols[3].setAlpha(1.0f);
 		else
-			cols[3].setAlpha(0);
+			cols[3].setAlpha(0.0f);
 
-		cols[0].setAlpha(0xFF);
-		cols[1].setAlpha(0xFF);
-		cols[2].setAlpha(0xFF);
+		cols[0].setAlpha(1.0f);
+		cols[1].setAlpha(1.0f);
+		cols[2].setAlpha(1.0f);
 		
 		for(int i = 1; i <= 3; ++i) {
 			if(col0ARGB > col1ARGB) {
-				cols[2].set(i, (2 * cols[0].get(i) + cols[1].get(i)) / 3);
-				cols[3].set(i, (2 * cols[1].get(i) + cols[0].get(i)) / 3);
+				cols[2].set(i, (2.0f * cols[0].get(i) + cols[1].get(i)) / 3.0f);
+				cols[3].set(i, (2.0f * cols[1].get(i) + cols[0].get(i)) / 3.0f);
 			} else {
-				cols[2].set(i, (cols[0].get(i) + cols[1].get(i)) / 2);
+				cols[2].set(i, (cols[0].get(i) + cols[1].get(i)) / 2.0f);
 				cols[3].set(i, 0x00);
 			}
 		}
@@ -389,9 +415,9 @@ public class DDSUtils {
 		/**
 		 * Read a pixel from the buffer and convert it to A8R8G8B8.
 		 * @param bb The buffer containing the pixel.
-		 * @return An A8R8G8B8 pixel.
+		 * @return A pixel.
 		 */
-		public int getPixel(ByteBuffer bb);
+		public FloatColour getPixel(ByteBuffer bb);
 	}
 	
 	public static void main(String[] args) throws Exception {
