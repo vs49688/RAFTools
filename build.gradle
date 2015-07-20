@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'net.vs49688.rafview.RAFView'
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+	
+    //mavenCentral()
+}
+
+dependencies {
+	compile ':ini4j:0.5.4'
+	compile ':ini4j:0.5.4:javadoc'
+	compile ':ini4j:0.5.4:sources'
+}
