@@ -1,3 +1,23 @@
+/*
+ * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ *    Contact: zane.vaniperen@uqconnect.edu.au
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2, and only
+ * version 2 as published by the Free Software Foundation. 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Any and all GPL restrictions may be circumvented with permission from the
+ * the original author.
+ */
 package net.vs49688.rafview.cli;
 
 import javax.swing.SwingUtilities;
@@ -54,19 +74,21 @@ public class CommandInterface {
 			Model.getApplicationName(),	Model.getVersionString(),
 			Model.getCopyrightYear(), Model.getCopyrightHolder()));
 		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
+
+		/* Back in the day... :) */
 		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
 		//_write("/r/leagueoflegends (And Rito if they pls).\n");
+
 		_write(String.format("%s comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
-		_write("permitted by applicable law. This build is an alpha-quality\n");
-		_write("release and should not be considered stable enough for everyday\nuse.\n");
+		_write("permitted by applicable law. This is free software; see the\n");
+		_write("source for copying conditions.\n");
+		_write("This build is an alpha-quality release and should not be\n");
+		_write("considered stable enough for everyday use.\n\n");
 		
 		_write("Type `help' for more information.\n");
-
-		//_write("type `show w'.  This is free software, and you are welcome\n");
-		//_write("to redistribute it under certain conditions; type `show c' \n");
-		//_write("for details.\n");
+		
 	}
-	
+
 	public void setFuckupHandler(IFuckedUp handler) {
 		m_ExtFuckupHandler = handler;
 	}
