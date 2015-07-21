@@ -42,6 +42,7 @@ public class Open implements ICommand {
 		m_Model.addFile(Paths.get(args[1]), args[2]);
 		
 		m_Console.append(String.format("Opened %s...\n", args[1]));
+		m_Model.getVFS().fireCompletion();
 	}
 
 	@Override

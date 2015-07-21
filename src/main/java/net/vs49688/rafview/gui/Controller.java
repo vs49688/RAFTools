@@ -48,6 +48,7 @@ public class Controller {
 		ActionListener al = new MenuListener();
 		
 		m_Model = new Model();
+		m_Model.getVFS().addNotifyHandler(new _TreeNotifyHandler());
 		m_View = new View(m_Model, al, new _TreeOpHandler());
 		
 		m_Console = new Console(al);
@@ -227,6 +228,38 @@ public class Controller {
 			result.getException().printStackTrace();
 			m_View.showErrorDialog("ERROR", result.getException().getMessage());
 		}
+	}
 	
+	private class _TreeNotifyHandler implements IOperationsNotify {
+
+		@Override
+		public void onClear() {
+			
+		}
+
+		@Override
+		public void onModify(Node n) {
+			
+		}
+
+		@Override
+		public void onAdd(Node n) {
+			if(n instanceof FileNode) {
+				m_View.setStatus(String.format("Adding %s...", n.getFullPath().toString()));
+			}
+		}
+		
+		@Override
+		public void onExtract(Node n) {
+			if(n instanceof FileNode) {
+				m_View.setStatus(String.format("Extracting %s...", n.getFullPath().toString()));
+			}
+		}
+		
+		@Override
+		public void onComplete() {
+			m_View.setStatus("Complete");
+		}
+		
 	}
 }

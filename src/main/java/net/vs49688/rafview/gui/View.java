@@ -374,10 +374,19 @@ public class View extends JFrame {
 				
 				DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
 				m.insertNodeInto(tn, tnp, parent.getIndex(n));
-				setStatus(String.format("Adding %s...", n.getFullPath().toString()));
 			} else {
 				m_VFSTree.setModel(new DefaultTreeModel(tn));
 			}
+		}
+		
+		@Override
+		public void onExtract(Node n) {
+			
+		}
+		
+		@Override
+		public void onComplete() {
+			
 		}
 	}
 

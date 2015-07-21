@@ -38,7 +38,7 @@ public class RAFS {
 	private final DirNode m_Root;
 	
 	/** The mapping of paths to their RAFDataFile objects */
-	private final Map<Path, RAFDataFile> m_DataFiles;
+	private final Map<Path, PossiblyZippedSynchronisedFile> m_DataFiles;
 
 	private final IOperationsNotify m_NotifyDispatch;
 	private final List<IOperationsNotify> m_Notify;
@@ -210,11 +210,11 @@ public class RAFS {
 			FileNode fn = indexMap.get(index);
 
 			/* If we've already got this file loaded, don't load it again */
-			RAFDataFile rdf;
+			PossiblyZippedSynchronisedFile rdf;
 			if(m_DataFiles.containsKey(dat)) {
 				rdf = m_DataFiles.get(dat);
 			} else {
-				rdf = new RAFDataFile(dat);
+				rdf = new PossiblyZippedSynchronisedFile(dat);
 				m_DataFiles.put(dat, rdf);
 			}
 			
@@ -287,6 +287,7 @@ public class RAFS {
 
 		_extractNode(node, outPath, version);
 
+		m_NotifyDispatch.onComplete();
 	}
 
 	private void _extractNode(Node root, Path outDir, String version) throws IOException {
@@ -305,8 +306,9 @@ public class RAFS {
 				}
 			}
 			
-			if(ver != null)
+			if(ver != null) {
 				Files.write(outDir, ver.getSource().read());
+			}
 			return;
 		}
 		
@@ -388,6 +390,13 @@ public class RAFS {
 	}
 	
 	/**
+	 * Fire a completion event.
+	 */
+	public void fireCompletion() {
+		m_NotifyDispatch.onComplete();
+	}
+	
+	/**
 	 * Read the string table.
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
 	 * position where the string table starts.
@@ -449,6 +458,20 @@ public class RAFS {
 			m_Notify.stream().forEach((ion) -> {
 				ion.onAdd(n);
 			});
-		}	
+		}
+		
+		@Override
+		public void onExtract(Node n) {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onExtract(n);
+			});
+		}
+		
+		@Override
+		public void onComplete() {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onComplete();
+			});
+		}
 	}
 }

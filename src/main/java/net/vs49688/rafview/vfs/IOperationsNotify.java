@@ -39,4 +39,8 @@ public interface IOperationsNotify {
 	//public void onDelete(Node n);
 	
 	//public void onOverwrite(Node n1, Node n2);
+	
+	public void onExtract(Node n);
+	
+	public void onComplete();
 }
