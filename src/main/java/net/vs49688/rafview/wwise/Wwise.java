@@ -23,8 +23,6 @@ package net.vs49688.rafview.wwise;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import net.vs49688.rafview.sources.*;
 
@@ -41,80 +39,88 @@ public class Wwise {
 	private static final int SECTION_STID = makeLEIntFromBytes('S', 'T', 'I', 'D');
 	private static final int SECTION_STMG = makeLEIntFromBytes('B', 'T', 'M', 'G');
 
-	private static int makeLEIntFromBytes(char a, char b, char c, char d) {
-		return ((d & 0xFF) << 24) | ((c & 0xFF) << 16) | ((b & 0xFF) << 8) | (a & 0xFF);
+	private final Map<Long, DataSource> m_WEMFiles;
+	
+	private Wwise() {
+		m_WEMFiles = new HashMap<>();
 	}
 	
-	private static String sectionTypeToString(int section) {
-		ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-		bb.putInt(section);
-		return new String(bb.array());
+	public static Wwise load(MappedByteBuffer buffer) throws WwiseFormatException {
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		
+		Wwise wwise = new Wwise();
+		Map<Integer, Section> sectionMap = new HashMap<>();
+
+		/* Read all the sections in the file */
+		for(; buffer.hasRemaining();) {
+			int section = buffer.getInt();
+			System.err.printf("Found %s section\n", sectionTypeToString(section));
+
+			if(sectionMap.containsKey(section))
+				throw new WwiseFormatException(String.format("Multiple %s sections found (offset %d).", sectionTypeToString(section), buffer.limit()));
+
+			long bytes = buffer.getInt() & 0xFFFFFFFFL;
+
+			long nextBlock = buffer.position() + bytes;
+
+			if(section == SECTION_BKHD) {
+				sectionMap.put(SECTION_BKHD, new BankHeader(section, bytes, buffer));
+			} else if(section == SECTION_DIDX) {
+				sectionMap.put(SECTION_DIDX, new DataIndex(section, bytes, buffer));
+			} else if(section == SECTION_DATA) {
+				sectionMap.put(SECTION_DATA, new Data(section, bytes, buffer));
+			} else if(section == SECTION_ENVS) {
+				throw new UnsupportedOperationException("ENVS section found, but not implemented. Please send this file to the developer.");
+			} else if(section == SECTION_FXPR) {
+				throw new UnsupportedOperationException("FXPR section found, but not implemented. Please send this file to the developer.");
+			} else if(section == SECTION_HIRC) {
+				throw new UnsupportedOperationException("HIRC section found, but not implemented. Please send this file to the developer.");
+			} else if(section == SECTION_STID) {
+				throw new UnsupportedOperationException("STID section found, but not implemented. Please send this file to the developer.");
+			} else if(section == SECTION_STMG) {
+				throw new UnsupportedOperationException("STMG section found, but not implemented. Please send this file to the developer.");
+			} else {
+				throw new WwiseFormatException("Unknown section encountered");
+			}
+
+			/* How I wished ByteBuffer used longs */
+			buffer.position((int)nextBlock);
+		}
+
+		/* Now that all the sections have been read, start reading the content */
+
+		SynchronisedFile bnk = new SynchronisedFile(buffer);
+
+		wwise.loadWEM(bnk, sectionMap);
+		return wwise;
 	}
 	
 	public static void main(String[] args) throws Exception {
 		File f = new File("F:\\Wwise\\SFX\\Characters\\Vayne\\Skins\\Base\\Vayne_Base_SFX_audio.bnk");
+		
+		Wwise wwise = null;
+		
 		try(FileInputStream fis = new FileInputStream(f)) {
 			MappedByteBuffer buffer;
 			
 			try(FileChannel fChannel = fis.getChannel()) {
 				buffer = fChannel.map(FileChannel.MapMode.READ_ONLY, 0, fChannel.size());
-				buffer.order(ByteOrder.LITTLE_ENDIAN);
 			}
 
-			Map<Integer, Section> sectionMap = new HashMap<>();
-			
-			/* Read all the sections in the file */
-			for(; buffer.hasRemaining();) {
-				int section = buffer.getInt();
-				System.err.printf("Found %s section\n", sectionTypeToString(section));
-				
-				if(sectionMap.containsKey(section))
-					throw new WwiseFormatException(String.format("Multiple %s sections found (offset %d).", sectionTypeToString(section), buffer.limit()));
-				
-				long bytes = buffer.getInt() & 0xFFFFFFFFL;
-
-				long nextBlock = buffer.position() + bytes;
-				
-				if(section == SECTION_BKHD) {
-					sectionMap.put(SECTION_BKHD, new BankHeader(section, bytes, buffer));
-				} else if(section == SECTION_DIDX) {
-					sectionMap.put(SECTION_DIDX, new DataIndex(section, bytes, buffer));
-				} else if(section == SECTION_DATA) {
-					sectionMap.put(SECTION_DATA, new Data(section, bytes, buffer));
-				} else if(section == SECTION_ENVS) {
-					throw new UnsupportedOperationException("ENVS section found, but not implemented. Please send this file to the developer.");
-				} else if(section == SECTION_FXPR) {
-					throw new UnsupportedOperationException("FXPR section found, but not implemented. Please send this file to the developer.");
-				} else if(section == SECTION_HIRC) {
-					throw new UnsupportedOperationException("HIRC section found, but not implemented. Please send this file to the developer.");
-				} else if(section == SECTION_STID) {
-					throw new UnsupportedOperationException("STID section found, but not implemented. Please send this file to the developer.");
-				} else if(section == SECTION_STMG) {
-					throw new UnsupportedOperationException("STMG section found, but not implemented. Please send this file to the developer.");
-				} else {
-					throw new WwiseFormatException("Unknown section encountered");
-				}
-				
-				/* How I wished ByteBuffer used longs */
-				buffer.position((int)nextBlock);
-			}
-			
-			/* Now that all the sections have been read, start reading the content */
-			
-			SynchronisedFile bnk = new SynchronisedFile(f.toPath());
-			
-			loadWEM(bnk, sectionMap);
+			wwise = load(buffer);
 		}
+		
+		int x = 0;
 	}
 	
-	private static Map<Long, DataSource> loadWEM(SynchronisedFile bnk, Map<Integer, Section> sections) throws WwiseFormatException, IOException {
+	private void loadWEM(SynchronisedFile bnk, Map<Integer, Section> sections) throws WwiseFormatException {
 		
 		DataIndex didx = (DataIndex)sections.getOrDefault(SECTION_DIDX, null);
 		Data data = (Data)sections.getOrDefault(SECTION_DATA, null);
 		
 		/* If they both don't exist, we don't have any embedded WEMs */
 		if(didx == null && data == null) {
-			return new HashMap<>();
+			return;
 		/* If we have no DataIndex, but have a Data section, then it's a bad file. */
 		} else if(didx == null && data != null) {
 			throw new WwiseFormatException("Found DATA section with no DIDX.");
@@ -125,18 +131,25 @@ public class Wwise {
 
 		List<DataIndex.WEMEntry> idx = didx.getWEMList();
 		
-		Map<Long, DataSource> wem = new HashMap<>(idx.size());
-		
 		for(final DataIndex.WEMEntry entry : idx) {
-			wem.put(entry.id, bnk.createDataSource(data.getOffset() + (int)entry.offset, (int)entry.length));
+			m_WEMFiles.put(entry.id, bnk.createDataSource(data.getOffset() + (int)entry.offset, (int)entry.length));
 		}
 		
-		return wem;
 //		for(final Long l : wem.keySet()) {
 //			DataSource ds = wem.get(l);
 //			
 //			Files.write(Paths.get("C:", "wem", String.format("%d.wem", l)), ds.read());
 //		}
 
+	}
+	
+	private static int makeLEIntFromBytes(char a, char b, char c, char d) {
+		return ((d & 0xFF) << 24) | ((c & 0xFF) << 16) | ((b & 0xFF) << 8) | (a & 0xFF);
+	}
+	
+	private static String sectionTypeToString(int section) {
+		ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+		bb.putInt(section);
+		return new String(bb.array());
 	}
 }

@@ -33,7 +33,6 @@ public class SynchronisedFile {
 	private final MappedByteBuffer m_ByteBuffer;
 	private final long m_Size;
 	private final Object m_Monitor;
-	private final Path m_Path;
 	
 	/**
 	 * Open a file.
@@ -49,8 +48,24 @@ public class SynchronisedFile {
 			m_ByteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 			m_Size = fc.size();
 		}
+
+		m_Monitor = new Object();
+	}
+	
+	/**
+	 * Wrap a memory-mapped file.
+	 * 
+	 * This only works because memory-mapped files stay mapped until they're GC'd.
+	 * @param buffer The buffer to wrap.
+	 * @throws IllegalArgumentException If buffer == null.
+	 */
+	public SynchronisedFile(MappedByteBuffer buffer) throws IllegalArgumentException {
+		if(buffer == null)
+			throw new IllegalArgumentException("buffer cannot be null");
 		
-		m_Path = path;
+		m_Size = buffer.limit();
+		m_ByteBuffer = buffer;
+		
 		m_Monitor = new Object();
 	}
 	

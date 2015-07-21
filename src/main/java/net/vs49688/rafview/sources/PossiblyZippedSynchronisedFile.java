@@ -1,6 +1,7 @@
 package net.vs49688.rafview.sources;
 
 import java.io.*;
+import java.nio.MappedByteBuffer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.*;
@@ -9,6 +10,10 @@ public class PossiblyZippedSynchronisedFile extends SynchronisedFile {
 
 	public PossiblyZippedSynchronisedFile(Path path) throws IOException, IllegalArgumentException {
 		super(path);
+	}
+
+	public PossiblyZippedSynchronisedFile(MappedByteBuffer buffer) throws IllegalArgumentException {
+		super(buffer);
 	}
 	
 	@Override
