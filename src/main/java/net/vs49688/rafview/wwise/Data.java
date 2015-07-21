@@ -20,12 +20,19 @@
  */
 package net.vs49688.rafview.wwise;
 
-public class Section {
-	private final int m_Type;
-	private final long m_Length;
+import java.nio.*;
+
+public class Data extends Section {
+
+	private final int m_Offset;
 	
-	public Section(int type, long length) {
-		m_Type = type;
-		m_Length = length;
+	public Data(int type, long length, ByteBuffer buffer) {
+		super(type, length);
+		
+		m_Offset = buffer.position();
+	}
+	
+	public int getOffset() {
+		return m_Offset;
 	}
 }
