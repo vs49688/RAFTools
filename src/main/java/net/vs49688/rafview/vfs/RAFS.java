@@ -287,6 +287,7 @@ public class RAFS {
 
 		_extractNode(node, outPath, version);
 
+		m_NotifyDispatch.onComplete();
 	}
 
 	private void _extractNode(Node root, Path outDir, String version) throws IOException {
@@ -305,8 +306,9 @@ public class RAFS {
 				}
 			}
 			
-			if(ver != null)
+			if(ver != null) {
 				Files.write(outDir, ver.getSource().read());
+			}
 			return;
 		}
 		
@@ -388,6 +390,13 @@ public class RAFS {
 	}
 	
 	/**
+	 * Fire a completion event.
+	 */
+	public void fireCompletion() {
+		m_NotifyDispatch.onComplete();
+	}
+	
+	/**
 	 * Read the string table.
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
 	 * position where the string table starts.
@@ -449,6 +458,20 @@ public class RAFS {
 			m_Notify.stream().forEach((ion) -> {
 				ion.onAdd(n);
 			});
-		}	
+		}
+		
+		@Override
+		public void onExtract(Node n) {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onExtract(n);
+			});
+		}
+		
+		@Override
+		public void onComplete() {
+			m_Notify.stream().forEach((ion) -> {
+				ion.onComplete();
+			});
+		}
 	}
 }

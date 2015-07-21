@@ -32,6 +32,7 @@ public class Model {
 	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 	private final RAFS m_VFS;
 	
+	
 	public Model() {
 		m_VFS = new RAFS();
 	}
@@ -39,6 +40,7 @@ public class Model {
 	public void addFile(Path file, String version) throws IOException {
 		Path dat = Paths.get(file.getParent().toString(), String.format("%s.dat", file.getFileName().toString()));
 		m_VFS.addFile(file, dat, version);
+		
 	}
 	
 	public void openLolDirectory(Path path) throws IOException {
@@ -76,7 +78,7 @@ public class Model {
 					if(octet < 0 || octet > 255)
 						return false;
 				}
-			} catch(Exception e) {
+			} catch(NumberFormatException e) {
 				return false;
 			}
 			
@@ -94,6 +96,7 @@ public class Model {
 		/* Add them */
 		for(final String v : versions)
 			addVersion(vfs, filearchives, v);
+		
 	}
 	
 	private static void addVersion(RAFS vfs, Path filearchives, String version) throws IOException {
