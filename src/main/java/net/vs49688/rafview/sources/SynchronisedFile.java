@@ -27,21 +27,21 @@ import java.nio.file.*;
 import java.util.zip.*;
 
 /**
- * A representation of a RAF data file.
+ * Provides a way to get a synchronised DataSource from a file.
  */
-public class RAFDataFile {
+public class SynchronisedFile {
 	private final MappedByteBuffer m_ByteBuffer;
 	private final long m_Size;
 	private final Object m_Monitor;
 	private final Path m_Path;
 	
 	/**
-	 * Open a RAF data file (.raf.dat)
+	 * Open a file.
 	 * @param path The path to the file.
 	 * @throws IOException If an I/O error occurred.
 	 * @throws IllegalArgumentException If path == null.
 	 */
-	public RAFDataFile(Path path) throws IOException, IllegalArgumentException {
+	public SynchronisedFile(Path path) throws IOException, IllegalArgumentException {
 		if(path == null)
 			throw new IllegalArgumentException("Path cannot be null");
 		
@@ -58,7 +58,7 @@ public class RAFDataFile {
 	 * Get the size of the file in bytes.
 	 * @return The size of the file in bytes.
 	 */
-	public long getSize() {
+	public final long getSize() {
 		return m_Size;
 	}
 	
@@ -72,7 +72,7 @@ public class RAFDataFile {
 	 * @return A DataSource using the specified offset and size.
 	 * @throws IllegalArgumentException 
 	 */
-	public DataSource createDataSource(int offset, int size) throws IllegalArgumentException {
+	public final DataSource createDataSource(int offset, int size) throws IllegalArgumentException {
 		return new ChunkSource(offset, size);
 	}
 	
@@ -85,30 +85,18 @@ public class RAFDataFile {
 	 */
 	private byte[] safeRead(int offset, int size) throws IOException {
 		
-		byte[] compressed = new byte[size], tmp = new byte[1024];
-		Inflater inf = new Inflater();
+		byte[] compressed = new byte[size];
 		
 		synchronized(m_Monitor) {
 			m_ByteBuffer.position(offset);
 			m_ByteBuffer.get(compressed, 0, size);
 		}
-
-		inf.setInput(compressed);
 		
-		try(ByteArrayOutputStream bos = new ByteArrayOutputStream(size)) {	
-			while(!inf.finished())
-				bos.write(tmp, 0, inf.inflate(tmp));
+		return decompress(compressed, size);
+	}
 
-			tmp = bos.toByteArray();
-		} catch(DataFormatException e) {
-			/* We're uncompressed, just return the raw data */
-			return compressed;
-		} catch(IOException e) {
-			throw e;
-		}
-		
-		inf.end();
-		return tmp;
+	protected byte[] decompress(byte[] data, int size) throws IOException {
+		return data;
 	}
 	
 	private class ChunkSource implements DataSource {
@@ -128,17 +116,11 @@ public class RAFDataFile {
 			if(size < 0)
 				throw new IllegalArgumentException("Cannot have a negative size");
 			
-			if((offset + size) > RAFDataFile.this.m_Size)
+			if((offset + size) > SynchronisedFile.this.m_Size)
 				throw new IllegalArgumentException("Offset + size out of bounds");
 
 			m_Offset = offset;
 			m_Size = size;
-		}
-		
-		@Override
-		public long size() {
-			/* They're compressed, so we don't know the size */
-			return -1;
 		}
 
 		@Override

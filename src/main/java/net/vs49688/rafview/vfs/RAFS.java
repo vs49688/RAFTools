@@ -38,7 +38,7 @@ public class RAFS {
 	private final DirNode m_Root;
 	
 	/** The mapping of paths to their RAFDataFile objects */
-	private final Map<Path, RAFDataFile> m_DataFiles;
+	private final Map<Path, PossiblyZippedSynchronisedFile> m_DataFiles;
 
 	private final IOperationsNotify m_NotifyDispatch;
 	private final List<IOperationsNotify> m_Notify;
@@ -210,11 +210,11 @@ public class RAFS {
 			FileNode fn = indexMap.get(index);
 
 			/* If we've already got this file loaded, don't load it again */
-			RAFDataFile rdf;
+			PossiblyZippedSynchronisedFile rdf;
 			if(m_DataFiles.containsKey(dat)) {
 				rdf = m_DataFiles.get(dat);
 			} else {
-				rdf = new RAFDataFile(dat);
+				rdf = new PossiblyZippedSynchronisedFile(dat);
 				m_DataFiles.put(dat, rdf);
 			}
 			
