@@ -21,6 +21,7 @@
 package net.vs49688.rafview.sources;
 
 import java.io.*;
+import java.nio.file.Files;
 
 /**
  * The interface for a data source.
@@ -42,4 +43,8 @@ public interface DataSource {
 	public byte[] read() throws IOException;
 	
 	public void close();
+	
+	public static void dumpToFile(DataSource ds, java.nio.file.Path path) throws IOException {
+		Files.write(path, ds.read());
+	}
 }

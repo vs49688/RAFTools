@@ -23,6 +23,7 @@ package net.vs49688.rafview.wwise;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.nio.file.Paths;
 import java.util.*;
 import net.vs49688.rafview.sources.*;
 
@@ -70,15 +71,15 @@ public class Wwise {
 			} else if(section == SECTION_DATA) {
 				sectionMap.put(SECTION_DATA, new Data(section, bytes, buffer));
 			} else if(section == SECTION_ENVS) {
-				throw new UnsupportedOperationException("ENVS section found, but not implemented. Please send this file to the developer.");
+				sectionMap.put(SECTION_ENVS, new ENVS(section, bytes, buffer));
 			} else if(section == SECTION_FXPR) {
-				throw new UnsupportedOperationException("FXPR section found, but not implemented. Please send this file to the developer.");
+				sectionMap.put(SECTION_FXPR, new FXPR(section, bytes, buffer));
 			} else if(section == SECTION_HIRC) {
-				throw new UnsupportedOperationException("HIRC section found, but not implemented. Please send this file to the developer.");
+				sectionMap.put(SECTION_HIRC, new HIRC(section, bytes, buffer));
 			} else if(section == SECTION_STID) {
-				throw new UnsupportedOperationException("STID section found, but not implemented. Please send this file to the developer.");
+				sectionMap.put(SECTION_STID, new STID(section, bytes, buffer));
 			} else if(section == SECTION_STMG) {
-				throw new UnsupportedOperationException("STMG section found, but not implemented. Please send this file to the developer.");
+				sectionMap.put(SECTION_STMG, new STMG(section, bytes, buffer));
 			} else {
 				throw new WwiseFormatException("Unknown section encountered");
 			}
@@ -96,7 +97,7 @@ public class Wwise {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		File f = new File("F:\\Wwise\\SFX\\Characters\\Vayne\\Skins\\Base\\Vayne_Base_SFX_audio.bnk");
+		File f = new File("F:\\Wwise\\SFX\\Characters\\Ezreal\\Skins\\Base\\Ezreal_Base_SFX_events.bnk");
 		
 		Wwise wwise = null;
 		
@@ -110,6 +111,9 @@ public class Wwise {
 			wwise = load(buffer);
 		}
 		
+		for(final Long id : wwise.m_WEMFiles.keySet()) {
+			DataSource.dumpToFile(wwise.m_WEMFiles.get(id), Paths.get("C:", "wem", String.format("%d.wem", id)));
+		}
 		int x = 0;
 	}
 	

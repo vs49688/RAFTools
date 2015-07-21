@@ -29,9 +29,6 @@ public class BankHeader extends Section {
 	
 	public BankHeader(int section, long length, ByteBuffer data) throws WwiseFormatException {
 		super(section, length);
-		
-		if(length != 24)
-			throw new WwiseFormatException(String.format("BKHD: Invalid section length. Expected 24, got %d.", length));
 
 		m_Version = (long)data.getInt() & 0xFFFFFFFFL;
 		m_ID = (long)data.getInt() & 0xFFFFFFFFL;
