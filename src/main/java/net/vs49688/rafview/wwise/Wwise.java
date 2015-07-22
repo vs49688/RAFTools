@@ -67,7 +67,7 @@ public class Wwise {
 		/* Read all the sections in the file */
 		for(; buffer.hasRemaining();) {
 			int section = buffer.getInt();
-			System.err.printf("Found %s section\n", sectionTypeToString(section));
+			//System.err.printf("Found %s section\n", sectionTypeToString(section));
 
 			if(sectionMap.containsKey(section))
 				throw new WwiseFormatException(String.format("Multiple %s sections found (offset %d).", sectionTypeToString(section), buffer.limit()));

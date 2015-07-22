@@ -172,7 +172,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return "0.4.1-alpha";
+		return "0.4.2-alpha-wwise";
 	}
 	
 	public static String getApplicationName() {

@@ -3,16 +3,26 @@ package net.vs49688.rafview.gui;
 import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import net.vs49688.rafview.sources.*;
 import net.vs49688.rafview.wwise.*;
 
 public class WwiseViewer extends JPanel {
 
-	public WwiseViewer(ActionListener listener) {
+	private final OpHandler m_OpHandler;
+	private Wwise m_CurrentFile;
+	
+	public WwiseViewer(ActionListener listener, OpHandler handler) {
+		
+		m_OpHandler = handler;
+	
 		initComponents();
 		
 		m_ExtractBtn.addActionListener(listener);
 		m_LoadExternalBtn.addActionListener(listener);
+		m_AudioList.addMouseListener(new _RightClickListener());
+		m_AudioList.addListSelectionListener(new _Selection());
+		m_AudioList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		setSoundbank("", null);
 	}
 
@@ -30,8 +40,9 @@ public class WwiseViewer extends JPanel {
         m_AudioList = new javax.swing.JList();
         javax.swing.JPanel detailPanel = new javax.swing.JPanel();
         m_ExtractBtn = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
         javax.swing.JPanel eventsTab = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
 
         m_LoadExternalBtn.setText("Load External File");
         m_LoadExternalBtn.setActionCommand("wwise->loadexternal");
@@ -53,19 +64,27 @@ public class WwiseViewer extends JPanel {
 
         m_ExtractBtn.setText("Extract");
 
+        jLabel2.setText("TODO: Display WEM info.");
+
         javax.swing.GroupLayout detailPanelLayout = new javax.swing.GroupLayout(detailPanel);
         detailPanel.setLayout(detailPanelLayout);
         detailPanelLayout.setHorizontalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailPanelLayout.createSequentialGroup()
-                .addContainerGap(383, Short.MAX_VALUE)
+                .addContainerGap(503, Short.MAX_VALUE)
                 .addComponent(m_ExtractBtn)
                 .addContainerGap())
+            .addGroup(detailPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         detailPanelLayout.setVerticalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailPanelLayout.createSequentialGroup()
-                .addContainerGap(305, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 320, Short.MAX_VALUE)
                 .addComponent(m_ExtractBtn)
                 .addContainerGap())
         );
@@ -97,10 +116,24 @@ public class WwiseViewer extends JPanel {
 
         tabbedPane.addTab("Audio", audioTab);
 
-        eventsTab.setLayout(new java.awt.GridBagLayout());
+        jLabel1.setText("TODO: Implement Wwise event parsing.");
 
-        jLabel1.setText("There is nothing here yet.");
-        eventsTab.add(jLabel1, new java.awt.GridBagConstraints());
+        javax.swing.GroupLayout eventsTabLayout = new javax.swing.GroupLayout(eventsTab);
+        eventsTab.setLayout(eventsTabLayout);
+        eventsTabLayout.setHorizontalGroup(
+            eventsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(eventsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap(532, Short.MAX_VALUE))
+        );
+        eventsTabLayout.setVerticalGroup(
+            eventsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(eventsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap(398, Short.MAX_VALUE))
+        );
 
         tabbedPane.addTab("Events", eventsTab);
 
@@ -114,12 +147,12 @@ public class WwiseViewer extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(m_LoadExternalBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(tabbedPane)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(tabbedPane)
+                .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(m_LoadExternalBtn)
@@ -130,6 +163,7 @@ public class WwiseViewer extends JPanel {
 
 	public final void setSoundbank(String name, Wwise wwise) {
 		if(wwise == null) {
+			m_CurrentFile = null;
 			m_NameLabel.setText("");
 			m_AmountLabel.setText("0 embedded WEM files.");
 			m_AudioList.setModel(new DefaultListModel<>());
@@ -147,10 +181,71 @@ public class WwiseViewer extends JPanel {
 		m_AudioList.setModel(lm);
 		m_NameLabel.setText(name);
 		m_AmountLabel.setText(String.format("%d embedded WEM files.", wems.size()));
+		
+		m_CurrentFile = wwise;
+	}
+
+	private class _RightClickListener extends MouseAdapter {
+		@Override
+		public void mousePressed(MouseEvent e) {
+
+			if(SwingUtilities.isRightMouseButton(e)) {
+				int row = m_AudioList.locationToIndex(e.getPoint());
+				m_AudioList.setSelectedIndex(row);
+			}
+			Long l = (Long)m_AudioList.getSelectedValue();
+			if(l == null)
+				return;
+
+			if(SwingUtilities.isRightMouseButton(e)) {
+				JPopupMenu m_ContextMenu = createPopupMenu(l, m_CurrentFile);
+				m_AudioList.add(m_ContextMenu);
+				m_ContextMenu.show(e.getComponent(), e.getX(), e.getY());
+				
+			}
+		}
+	}
+	
+	private JPopupMenu createPopupMenu(Long id, Wwise wwise) {
+		JPopupMenu m = new JPopupMenu();
+		
+		JMenuItem item = new JMenuItem("Extract");
+		item.addActionListener((ActionEvent ae) -> {
+			m_OpHandler.onExtract(id, wwise);
+		});
+		m.add(item);
+		
+		item = new JMenuItem("Extract All");
+		item.addActionListener((ActionEvent ae) -> {
+			m_OpHandler.onExtractAll(id, wwise);
+		});
+		m.add(item);
+
+		return m;
+	}
+
+	private class _Selection implements ListSelectionListener {	
+
+		@Override
+		public void valueChanged(ListSelectionEvent lse) {
+			if(!lse.getValueIsAdjusting())
+				return;
+			
+			Long l = (Long)m_AudioList.getSelectedValue();
+			if(l == null)
+				return;
+			
+			m_OpHandler.onSelect(l, m_CurrentFile);
+		}
+	}
+	public interface OpHandler {
+		public void onSelect(Long id, Wwise wwise);
+		public void onExtract(Long id, Wwise wwise);
+		public void onExtractAll(Long id, Wwise wwise);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel m_AmountLabel;
     private javax.swing.JList m_AudioList;
     private javax.swing.JButton m_ExtractBtn;

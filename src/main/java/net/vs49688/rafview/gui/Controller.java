@@ -65,7 +65,7 @@ public class Controller {
 		m_Console = new Console(al);
 		m_InibinViewer = new InibinViewer(al);
 		m_DDSViewer = new DDSViewer(al);
-		m_WwiseViewer = new WwiseViewer(al);
+		m_WwiseViewer = new WwiseViewer(al, new _WwiseNotifyHandler());
 		
 		m_View.addTab(m_Console, "Console");
 		m_View.addTab(m_InibinViewer, "Inibin Viewer");
@@ -237,6 +237,25 @@ public class Controller {
 		@Override
 		public void onComplete() {
 			m_View.setStatus("Complete");
+		}
+		
+	}
+	
+	private class _WwiseNotifyHandler implements WwiseViewer.OpHandler {
+
+		@Override
+		public void onSelect(Long id, Wwise wwise) {
+			System.err.printf("selected %d\n", id);
+		}
+
+		@Override
+		public void onExtract(Long id, Wwise wwise) {
+			System.err.printf("extract %d\n", id);
+		}
+
+		@Override
+		public void onExtractAll(Long id, Wwise wwise) {
+			System.err.printf("extractall %d\n", id);
 		}
 		
 	}

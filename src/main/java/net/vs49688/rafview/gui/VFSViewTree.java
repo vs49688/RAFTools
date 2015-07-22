@@ -96,7 +96,7 @@ public class VFSViewTree extends JTree {
 		return (Node)((DefaultMutableTreeNode)this.getLastSelectedPathComponent()).getUserObject();
 	}
 	
-	private class _Mouse implements MouseListener {
+	private class _Mouse extends MouseAdapter {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -111,26 +111,6 @@ public class VFSViewTree extends JTree {
 				m_ContextMenu.show(e.getComponent(), e.getX(), e.getY());
 				
 			}
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			
 		}
 	}
 	
