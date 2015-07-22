@@ -20,12 +20,13 @@
  */
 package net.vs49688.rafview.cli.commands;
 
+import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 
 public class Show implements ICommand {
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	
-	public Show(Appendable con) {
+	public Show(PrintStream con) {
 		m_Console = con;
 	}
 	
@@ -36,13 +37,13 @@ public class Show implements ICommand {
 		
 		switch(args[1].toLowerCase()) {
 			case "c":
-				m_Console.append("This version of RAFTools is a preview build for\n");
-				m_Console.append("the users of /r/leagueoflegends. It is an alpha-quality\n");
-				m_Console.append("release and should not be considered stable for everyday\n");
-				m_Console.append("use.\n");
+				m_Console.printf("This version of RAFTools is a preview build for\n");
+				m_Console.printf("the users of /r/leagueoflegends. It is an alpha-quality\n");
+				m_Console.printf("release and should not be considered stable for everyday\n");
+				m_Console.printf("use.\n");
 				break;
 			case "w":
-				m_Console.append("show: TODO: Show warranty information\n");
+				m_Console.printf("show: TODO: Show warranty information\n");
 				break;
 			default:
 				throw new CommandException(cmdLine, "show: invalid argument");

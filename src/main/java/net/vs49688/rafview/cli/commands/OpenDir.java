@@ -20,6 +20,7 @@
  */
 package net.vs49688.rafview.cli.commands;
 
+import java.io.*;
 import java.nio.file.Paths;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
@@ -27,9 +28,9 @@ import net.vs49688.rafview.interpreter.*;
 public class OpenDir implements ICommand {
 
 	private final Model m_Model;
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	
-	public OpenDir(Appendable out, Model model) {
+	public OpenDir(PrintStream out, Model model) {
 		m_Console = out;
 		m_Model = model;
 	}
@@ -41,7 +42,7 @@ public class OpenDir implements ICommand {
 
 		m_Model.openLolDirectory(Paths.get(args[1]));
 		
-		m_Console.append(String.format("Opened LoL directory %s...\n", args[1]));
+		m_Console.printf("Opened LoL directory %s...\n", args[1]);
 		
 		m_Model.getVFS().fireCompletion();
 	}

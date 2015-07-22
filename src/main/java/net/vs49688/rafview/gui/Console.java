@@ -20,6 +20,7 @@
  */
 package net.vs49688.rafview.gui;
 
+import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -70,6 +71,20 @@ public class Console extends JPanel implements Appendable {
 		
 	}
 
+	public PrintStream getStream() {
+		return new PrintStream(new OutputStream() {
+
+			@Override
+			public void write(int b) throws IOException {
+				append((char)b);
+			}
+			
+			@Override
+			public void write(byte[] b) throws IOException {
+				append(new String(b));
+			}
+		});
+	}
 	/*public void submit() {
 
 		if(m_Interpreter != null) {

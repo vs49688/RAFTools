@@ -20,14 +20,15 @@
  */
 package net.vs49688.rafview.cli.commands;
 
+import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 import java.util.*;
 
 public class Help implements ICommand {
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	private final List<ICommand> m_Handlers;
 	
-	public Help(Appendable con) {
+	public Help(PrintStream con) {
 		m_Console = con;
 		m_Handlers = new LinkedList<>();
 	}
@@ -44,8 +45,8 @@ public class Help implements ICommand {
 		m_Console.append("Available commands:\n");
 		
 		for(final ICommand cmd : m_Handlers) {
-			m_Console.append(String.format("%s %s\n", cmd.getCommand(), cmd.getUsageString()));
-			m_Console.append(String.format("  %s\n", cmd.getDescription()));
+			m_Console.printf("%s %s\n", cmd.getCommand(), cmd.getUsageString());
+			m_Console.printf("  %s\n", cmd.getDescription());
 		}
 	}
 

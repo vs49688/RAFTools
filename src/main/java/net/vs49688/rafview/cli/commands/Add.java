@@ -21,15 +21,16 @@
 package net.vs49688.rafview.cli.commands;
 
 import java.nio.file.Paths;
+import java.io.*;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 
 public class Add implements ICommand {
 
 	private final Model m_Model;
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	
-	public Add(Appendable out, Model model) {
+	public Add(PrintStream out, Model model) {
 		m_Console = out;
 		m_Model = model;
 	}
@@ -41,7 +42,7 @@ public class Add implements ICommand {
 
 		m_Model.addFile(Paths.get(args[1]), args[2]);
 		
-		m_Console.append(String.format("Added %s...\n", args[1]));
+		m_Console.printf("Added %s...\n", args[1]);
 	}
 
 	@Override

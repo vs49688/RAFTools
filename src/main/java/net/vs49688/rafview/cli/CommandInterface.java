@@ -21,6 +21,7 @@
 package net.vs49688.rafview.cli;
 
 import javax.swing.SwingUtilities;
+import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.cli.commands.*;
 
@@ -38,9 +39,10 @@ public class CommandInterface {
 	ICommand m_ExtractCommand;
 	ICommand m_RamInfoCommand;
 	ICommand m_ForceGC;
+	ICommand m_DumpCommand;
 	Help m_HelpCommand;
 	
-	public CommandInterface(Appendable out, Model model) {
+	public CommandInterface(PrintStream out, Model model) {
 		m_Out = out;
 		m_ExtFuckupHandler = null;
 		m_Model = model;
@@ -53,6 +55,7 @@ public class CommandInterface {
 		m_Interpreter.registerCommand((m_ExtractCommand = new Extract(out, model)));
 		m_Interpreter.registerCommand((m_RamInfoCommand = new RamInfo(out)));
 		m_Interpreter.registerCommand((m_ForceGC = new ForceGC()));
+		m_Interpreter.registerCommand((m_DumpCommand = new Dump(out, model)));
 		
 		m_HelpCommand = new Help(out);
 		m_HelpCommand.addHandler(m_HelpCommand);
