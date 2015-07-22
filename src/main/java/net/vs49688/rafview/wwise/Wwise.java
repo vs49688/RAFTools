@@ -23,7 +23,7 @@ package net.vs49688.rafview.wwise;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import net.vs49688.rafview.sources.*;
 
@@ -46,7 +46,19 @@ public class Wwise {
 		m_WEMFiles = new HashMap<>();
 	}
 	
+	public Map<Long, DataSource> getWEMs() {
+		return Collections.unmodifiableMap(m_WEMFiles);
+	}
+	
+	public static Wwise load(byte[] data) throws WwiseFormatException {
+		return load(ByteBuffer.wrap(data));
+	}
+	
 	public static Wwise load(MappedByteBuffer buffer) throws WwiseFormatException {
+		return load((ByteBuffer)buffer);
+	}
+	
+	private static Wwise load(ByteBuffer buffer) throws WwiseFormatException {
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
 		
 		Wwise wwise = new Wwise();
@@ -111,9 +123,7 @@ public class Wwise {
 			wwise = load(buffer);
 		}
 		
-		for(final Long id : wwise.m_WEMFiles.keySet()) {
-			DataSource.dumpToFile(wwise.m_WEMFiles.get(id), Paths.get("C:", "wem", String.format("%d.wem", id)));
-		}
+		wwise.dumpWEMsToFolder(Paths.get("C:", "wem"));
 		int x = 0;
 	}
 	
@@ -138,13 +148,13 @@ public class Wwise {
 		for(final DataIndex.WEMEntry entry : idx) {
 			m_WEMFiles.put(entry.id, bnk.createDataSource(data.getOffset() + (int)entry.offset, (int)entry.length));
 		}
-		
-//		for(final Long l : wem.keySet()) {
-//			DataSource ds = wem.get(l);
-//			
-//			Files.write(Paths.get("C:", "wem", String.format("%d.wem", l)), ds.read());
-//		}
-
+	}
+	
+	public void dumpWEMsToFolder(Path folder) throws IOException {
+		for(final Long id : m_WEMFiles.keySet()) {
+			DataSource ds = m_WEMFiles.get(id);
+			Files.write(folder.resolve(String.format("%d.wem", id)), ds.read());
+		}
 	}
 	
 	private static int makeLEIntFromBytes(char a, char b, char c, char d) {

@@ -33,6 +33,7 @@ import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.inibin.*;
 import net.vs49688.rafview.interpreter.*;
+import net.vs49688.rafview.wwise.Wwise;
 
 public class Controller {
 	private final View m_View;
@@ -43,6 +44,7 @@ public class Controller {
 	private final InibinViewer m_InibinViewer;
 	private final DDSViewer m_DDSViewer;
 	private final VersionDialog m_VerDialog;
+	private final WwiseViewer m_WwiseViewer;
 	
 	public Controller() {
 		ActionListener al = new MenuListener();
@@ -54,10 +56,12 @@ public class Controller {
 		m_Console = new Console(al);
 		m_InibinViewer = new InibinViewer(al);
 		m_DDSViewer = new DDSViewer(al);
+		m_WwiseViewer = new WwiseViewer(al);
 		
 		m_View.addTab(m_Console, "Console");
 		m_View.addTab(m_InibinViewer, "Inibin Viewer");
 		m_View.addTab(m_DDSViewer, "DDS Viewer");
+		m_View.addTab(m_WwiseViewer, "Wwise Viewer");
 		
 		m_AboutDialog = new AboutDialog(m_View);
 		
@@ -193,6 +197,21 @@ public class Controller {
 							});
 						}
 
+					}).start();
+				} else if(node.name().toLowerCase().endsWith(".bnk")) {
+					new Thread(() -> {
+						try {
+							byte[] data = fn.getLatestVersion().getSource().read();
+							Wwise wwise = Wwise.load(data);
+							
+							SwingUtilities.invokeLater(() -> {
+								m_WwiseViewer.setSoundbank(fn.name(), wwise);
+							});
+						} catch(Exception e) {
+							SwingUtilities.invokeLater(() -> {
+								m_View.showErrorDialog("ERROR", e.getMessage());
+							});
+						}
 					}).start();
 				}
 			}

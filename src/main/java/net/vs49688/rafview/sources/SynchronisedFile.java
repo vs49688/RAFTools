@@ -30,7 +30,7 @@ import java.util.zip.*;
  * Provides a way to get a synchronised DataSource from a file.
  */
 public class SynchronisedFile {
-	private final MappedByteBuffer m_ByteBuffer;
+	private final ByteBuffer m_ByteBuffer;
 	private final long m_Size;
 	private final Object m_Monitor;
 	
@@ -53,13 +53,12 @@ public class SynchronisedFile {
 	}
 	
 	/**
-	 * Wrap a memory-mapped file.
+	 * Wrap a ButeBuffer.
 	 * 
-	 * This only works because memory-mapped files stay mapped until they're GC'd.
 	 * @param buffer The buffer to wrap.
 	 * @throws IllegalArgumentException If buffer == null.
 	 */
-	public SynchronisedFile(MappedByteBuffer buffer) throws IllegalArgumentException {
+	public SynchronisedFile(ByteBuffer buffer) throws IllegalArgumentException {
 		if(buffer == null)
 			throw new IllegalArgumentException("buffer cannot be null");
 		

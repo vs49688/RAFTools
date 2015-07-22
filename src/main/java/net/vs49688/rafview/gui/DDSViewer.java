@@ -71,6 +71,7 @@ public class DDSViewer extends JPanel {
 			m_Mipmaps.ensureCapacity(ddsImage.getNumMipMaps());
 
 			/* Convert them to Swing images */
+			// FIXME: Check for RuntimeException here
 			for(final DDSImage.ImageInfo image : ddsImage.getAllMipMaps()) {
 				m_Mipmaps.add(DDSUtils.getSwingImage(ddsImage, image));
 			}
