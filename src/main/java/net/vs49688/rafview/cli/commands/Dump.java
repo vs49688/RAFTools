@@ -20,54 +20,47 @@
  */
 package net.vs49688.rafview.cli.commands;
 
-import java.nio.file.Paths;
 import java.io.*;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 
-public class Extract implements ICommand {
+public class Dump implements ICommand {
 
 	private final Model m_Model;
 	private final PrintStream m_Console;
 	
-	public Extract(PrintStream out, Model model) {
+	public Dump(PrintStream out, Model model) {
 		m_Console = out;
 		m_Model = model;
 	}
 	
 	@Override
 	public void process(String cmdLine, String[] args) throws CommandException, Exception {
-		if(args.length < 3)
-			throw new CommandException(cmdLine, getUsageString());
-		
-		String outDir = args[args.length-1];
-		
-		for(int i = 1; i < args.length-1; ++i) {
-			String version;
-			String file[] = args[i].trim().split(":", 2);
-			if(file.length == 1) {
-				version = null;
-			} else {
-				version = file[1];
-			}
-			
-			
-			m_Model.getVFS().extract(Paths.get(file[0]), Paths.get(outDir), version);
+		if(args.length != 2)
+			throw new CommandException(cmdLine, "dump: Invalid arguments");
+
+		PrintStream stream;
+		if(args[1].equals("-")) {
+			stream = m_Console;
+		} else {
+			stream = new PrintStream(new File(args[1]));
 		}
+		
+		m_Model.getVFS().dumpPaths(stream);
 	}
 
 	@Override
 	public String getCommand() {
-		return "extract";
+		return "dump";
 	}
 
 	@Override
 	public String getUsageString() {
-		return "file1[:version]... [file2[:version]... [...]] output_directory";
+		return "[-|path_to_file]";
 	}
 	
 	@Override
 	public String getDescription() {
-		return "Extract a file or directory";
+		return "Dump the currently-loaded VFS index.";
 	}
 }

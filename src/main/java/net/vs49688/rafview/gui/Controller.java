@@ -63,7 +63,7 @@ public class Controller {
 		
 		m_VerDialog = new VersionDialog(m_View);
 		
-		m_CLI = new CommandInterface(m_Console, m_Model);
+		m_CLI = new CommandInterface(m_Console.getStream(), m_Model);
 	
 		m_CLI.setFuckupHandler(new _FuckupHandler());
 		

@@ -20,13 +20,14 @@
  */
 package net.vs49688.rafview.cli.commands;
 
+import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 
 public class RamInfo implements ICommand {
 
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	
-	public RamInfo(Appendable out) {
+	public RamInfo(PrintStream out) {
 		m_Console = out;
 	}
 	
@@ -35,10 +36,10 @@ public class RamInfo implements ICommand {
 		long mb = 1048576;
 		Runtime r = Runtime.getRuntime();
 		
-		m_Console.append(String.format("Total Memory: %d MB\n", r.totalMemory() / mb));
-		m_Console.append(String.format("Free Memory:  %d MB\n", r.freeMemory() / mb));
-		m_Console.append(String.format("Used Memory:  %d MB\n", (r.totalMemory() - r.freeMemory()) / mb));
-		m_Console.append(String.format("Max Memory:   %d MB\n", r.maxMemory() / mb));
+		m_Console.printf("Total Memory: %d MB\n", r.totalMemory() / mb);
+		m_Console.printf("Free Memory:  %d MB\n", r.freeMemory() / mb);
+		m_Console.printf("Used Memory:  %d MB\n", (r.totalMemory() - r.freeMemory()) / mb);
+		m_Console.printf("Max Memory:   %d MB\n", r.maxMemory() / mb);
 	}
 
 	@Override

@@ -230,16 +230,16 @@ public class RAFS {
 	/**
 	 * 
 	 */
-	public void dumpPaths() {
-		_dumpPaths(m_Root, 0);
+	public void dumpPaths(PrintStream stream) {
+		_dumpPaths(m_Root, stream, 0);
 	}
 	
-	private void _dumpPaths(Node node, int tab) {
+	private void _dumpPaths(Node node, PrintStream stream, int tab) {
 		
 		for(int i = 0; i < tab; ++i)
-			System.out.print("  ");
+			stream.print("  ");
 
-		System.out.printf("%d: %s%s\n", node.getUID(),
+		stream.printf("%d: %s%s\n", node.getUID(),
 				node.name() == null ? "" : node.name(),
 				node instanceof DirNode ? "/" : "");
 		
@@ -248,15 +248,15 @@ public class RAFS {
 			
 			for(final FileNode.Version v : fn.getVersions()) {
 				for(int i = 0; i <= tab; ++i)
-					System.out.print("  ");
+					stream.print("  ");
 				
-				System.out.printf("V: %s\n", v.toString());
+				stream.printf("V: %s\n", v.toString());
 			}
 		}
 		
 		if(node instanceof DirNode) {
 			for(final Node n : (DirNode)node)
-				_dumpPaths(n, tab + 1);	
+				_dumpPaths(n, stream, tab + 1);	
 		}
 	}
 

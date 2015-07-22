@@ -20,6 +20,7 @@
  */
 package net.vs49688.rafview.cli.commands;
 
+import java.io.*;
 import java.nio.file.Paths;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
@@ -27,9 +28,9 @@ import net.vs49688.rafview.interpreter.*;
 public class Open implements ICommand {
 
 	private final Model m_Model;
-	private final Appendable m_Console;
+	private final PrintStream m_Console;
 	
-	public Open(Appendable out, Model model) {
+	public Open(PrintStream out, Model model) {
 		m_Console = out;
 		m_Model = model;
 	}
@@ -41,7 +42,7 @@ public class Open implements ICommand {
 		m_Model.getVFS().clear();
 		m_Model.addFile(Paths.get(args[1]), args[2]);
 		
-		m_Console.append(String.format("Opened %s...\n", args[1]));
+		m_Console.printf("Opened %s...\n", args[1]);
 		m_Model.getVFS().fireCompletion();
 	}
 
