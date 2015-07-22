@@ -11,6 +11,8 @@ public class WwiseViewer extends JPanel {
 	public WwiseViewer(ActionListener listener) {
 		initComponents();
 		
+		m_ExtractBtn.addActionListener(listener);
+		m_LoadExternalBtn.addActionListener(listener);
 		setSoundbank("", null);
 	}
 
@@ -27,11 +29,12 @@ public class WwiseViewer extends JPanel {
         javax.swing.JScrollPane audioScrollPane = new javax.swing.JScrollPane();
         m_AudioList = new javax.swing.JList();
         javax.swing.JPanel detailPanel = new javax.swing.JPanel();
+        m_ExtractBtn = new javax.swing.JButton();
         javax.swing.JPanel eventsTab = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
         m_LoadExternalBtn.setText("Load External File");
-        m_LoadExternalBtn.setActionCommand("inibin->loadexternal");
+        m_LoadExternalBtn.setActionCommand("wwise->loadexternal");
 
         m_NameLabel.setEditable(false);
         m_NameLabel.setText("<NAME GOES HERE>");
@@ -48,15 +51,23 @@ public class WwiseViewer extends JPanel {
 
         audioSplitPane.setLeftComponent(audioScrollPane);
 
+        m_ExtractBtn.setText("Extract");
+
         javax.swing.GroupLayout detailPanelLayout = new javax.swing.GroupLayout(detailPanel);
         detailPanel.setLayout(detailPanelLayout);
         detailPanelLayout.setHorizontalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 460, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailPanelLayout.createSequentialGroup()
+                .addContainerGap(383, Short.MAX_VALUE)
+                .addComponent(m_ExtractBtn)
+                .addContainerGap())
         );
         detailPanelLayout.setVerticalGroup(
             detailPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 339, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailPanelLayout.createSequentialGroup()
+                .addContainerGap(305, Short.MAX_VALUE)
+                .addComponent(m_ExtractBtn)
+                .addContainerGap())
         );
 
         audioSplitPane.setRightComponent(detailPanel);
@@ -108,7 +119,7 @@ public class WwiseViewer extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
+                .addComponent(tabbedPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(m_LoadExternalBtn)
@@ -134,18 +145,15 @@ public class WwiseViewer extends JPanel {
 		}
 
 		m_AudioList.setModel(lm);
-		
 		m_NameLabel.setText(name);
+		m_AmountLabel.setText(String.format("%d embedded WEM files.", wems.size()));
 	}
-	
-	private void lel() {
-		
-	}
-	
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel m_AmountLabel;
     private javax.swing.JList m_AudioList;
+    private javax.swing.JButton m_ExtractBtn;
     private javax.swing.JButton m_LoadExternalBtn;
     private javax.swing.JTextField m_NameLabel;
     // End of variables declaration//GEN-END:variables

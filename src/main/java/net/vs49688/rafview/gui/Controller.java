@@ -33,6 +33,7 @@ import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.inibin.*;
 import net.vs49688.rafview.interpreter.*;
+import net.vs49688.rafview.sources.DataSource;
 import net.vs49688.rafview.wwise.Wwise;
 
 public class Controller {
@@ -46,8 +47,16 @@ public class Controller {
 	private final VersionDialog m_VerDialog;
 	private final WwiseViewer m_WwiseViewer;
 	
+	private final DelayLoader m_InibinLoader;
+	private final DelayLoader m_DDSLoader;
+	private final DelayLoader m_WwiseLoader;
+	
 	public Controller() {
 		ActionListener al = new MenuListener();
+		
+		m_InibinLoader = new InibinDelayedLoader();
+		m_DDSLoader = new DDSDelayedLoader();
+		m_WwiseLoader = new WwiseDelayedLoader();
 		
 		m_Model = new Model();
 		m_Model.getVFS().addNotifyHandler(new _TreeNotifyHandler());
@@ -111,31 +120,24 @@ public class Controller {
 				} else if(cmd.equals("inibin->export")) {
 
 				} else if(cmd.equals("inibin->loadexternal")) {
-					File f = m_View.showOpenDialog(View.FILETYPE_INIBIN);
-					
-					if(f != null) {
-						Map<Integer, Value> inibin = InibinReader.readInibin(f.toPath());
-						m_InibinViewer.setInibin(inibin);
-					}
+					m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN));
 				} else if(cmd.equals("dds->loadexternal")) {
-					File f = m_View.showOpenDialog(View.FILETYPE_DDS);
-					
-					if(f != null) {
-						m_DDSViewer.setDDS(f.getName(), Files.readAllBytes(f.toPath()));
-					}
+					m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS));
 				} else if(cmd.equals("dds->export")) {
 					File f = m_View.showSaveDialog(String.format("%s.png", m_DDSViewer.getDDSName()), View.FILETYPE_PNG);
 					
 					if(f != null) {
 						BufferedImage img = m_DDSViewer.getCurrentImage();
-						
+
 						if(!ImageIO.write(img, "PNG", f)) {
 							m_View.setStatus(String.format("Unexpected error writing %s", f.getName()));
 						}
 						
 					}
-				}
-			} catch(IOException | ParseException ex) {
+				} else if(cmd.equals("wwise->loadexternal")) {
+					m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK));
+				} 
+			} catch(IOException ex) {
 				m_View.showErrorDialog("ERROR", ex.getMessage());
 			}
 		}
@@ -165,54 +167,11 @@ public class Controller {
 				
 				if(node.name().toLowerCase().endsWith(".inibin") ||
 					node.name().toLowerCase().endsWith(".troybin")) {
-					/* Spawn a background thread to do the task for us, we
-					 * don't want to do it on the GUI thread */
-					
-					// TODO: Thread-pool this
-					new Thread(() -> {
-						try {
-							byte[] data = fn.getLatestVersion().getSource().read();
-							Map<Integer, Value> kek = InibinReader.readInibin(data);
-
-							SwingUtilities.invokeLater(() -> {
-								m_InibinViewer.setInibin(kek);
-							});
-						} catch(Exception e) {
-							SwingUtilities.invokeLater(() -> {
-								m_View.showErrorDialog("ERROR", e.getMessage());
-							});
-						}
-
-					}).start();
+					m_InibinLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
 				} else if(node.name().toLowerCase().endsWith(".dds")) {
-					new Thread(() -> {
-						try {
-							byte[] data = fn.getLatestVersion().getSource().read();
-							SwingUtilities.invokeLater(() -> {
-								m_DDSViewer.setDDS(fn.name(), data);
-							});
-						} catch(Exception e) {
-							SwingUtilities.invokeLater(() -> {
-								m_View.showErrorDialog("ERROR", e.getMessage());
-							});
-						}
-
-					}).start();
+					m_DDSLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
 				} else if(node.name().toLowerCase().endsWith(".bnk")) {
-					new Thread(() -> {
-						try {
-							byte[] data = fn.getLatestVersion().getSource().read();
-							Wwise wwise = Wwise.load(data);
-							
-							SwingUtilities.invokeLater(() -> {
-								m_WwiseViewer.setSoundbank(fn.name(), wwise);
-							});
-						} catch(Exception e) {
-							SwingUtilities.invokeLater(() -> {
-								m_View.showErrorDialog("ERROR", e.getMessage());
-							});
-						}
-					}).start();
+					m_WwiseLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
 				}
 			}
 		}
@@ -281,4 +240,57 @@ public class Controller {
 		}
 		
 	}
+	
+	private class WwiseDelayedLoader extends DelayLoader {
+		@Override
+		protected void load(String name, byte[] data) throws Exception {
+			Wwise wwise = Wwise.load(data);
+				
+			SwingUtilities.invokeLater(() -> {
+				m_WwiseViewer.setSoundbank(name, wwise);
+			});
+		}
+
+		@Override
+		protected void onException(Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				m_View.showErrorDialog("ERROR", e.getMessage());
+			});
+		}
+	};
+	
+	private class DDSDelayedLoader extends DelayLoader {
+		@Override
+		protected void load(String name, byte[] data) throws Exception {
+			SwingUtilities.invokeLater(() -> {
+					m_DDSViewer.setDDS(name, data);
+			});
+		}
+
+		@Override
+		protected void onException(Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				m_View.showErrorDialog("ERROR", e.getMessage());
+			});
+		}
+	};
+
+	private class InibinDelayedLoader extends DelayLoader {
+
+		@Override
+		protected void load(String name, byte[] data) throws Exception {
+			Map<Integer, Value> inibin = InibinReader.readInibin(data);
+
+			SwingUtilities.invokeLater(() -> {
+				m_InibinViewer.setInibin(inibin);
+			});
+		}
+
+		@Override
+		protected void onException(Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				m_View.showErrorDialog("ERROR", e.getMessage());
+			});
+		}
+	};
 }
