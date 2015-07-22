@@ -37,7 +37,8 @@ public class View extends JFrame {
 	public static final int FILETYPE_DDS	= (1 << 3);
 	public static final int FILETYPE_PNG	= (1 << 4);
 	public static final int FILETYPE_BNK	= (1 << 5);
-	public static final int FILETYPE_ALL	= (1 << 6);
+	public static final int FILETYPE_WEM	= (1 << 6);
+	public static final int FILETYPE_ALL	= (1 << 7);
 
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
@@ -187,6 +188,10 @@ public class View extends JFrame {
 			
 			if((typeFlags & FILETYPE_BNK) != 0) {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("Audiokinetic Wwise Soundbank (.bnk)", "bnk"));
+			}
+			
+			if((typeFlags & FILETYPE_WEM) != 0) {
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Audiokinetic Wwise WEM (.wem)", "wem"));
 			}
 			
 			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);

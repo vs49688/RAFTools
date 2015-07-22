@@ -217,7 +217,7 @@ public class WwiseViewer extends JPanel {
 		
 		item = new JMenuItem("Extract All");
 		item.addActionListener((ActionEvent ae) -> {
-			m_OpHandler.onExtractAll(id, wwise);
+			m_OpHandler.onExtractAll(wwise);
 		});
 		m.add(item);
 
@@ -241,7 +241,7 @@ public class WwiseViewer extends JPanel {
 	public interface OpHandler {
 		public void onSelect(Long id, Wwise wwise);
 		public void onExtract(Long id, Wwise wwise);
-		public void onExtractAll(Long id, Wwise wwise);
+		public void onExtractAll(Wwise wwise);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

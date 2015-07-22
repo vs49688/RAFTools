@@ -50,6 +50,7 @@ public class Controller {
 	private final DelayLoader m_InibinLoader;
 	private final DelayLoader m_DDSLoader;
 	private final DelayLoader m_WwiseLoader;
+	private final DelayWriter m_DelayWriter;
 	
 	public Controller() {
 		ActionListener al = new MenuListener();
@@ -57,6 +58,7 @@ public class Controller {
 		m_InibinLoader = new InibinDelayedLoader();
 		m_DDSLoader = new DDSDelayedLoader();
 		m_WwiseLoader = new WwiseDelayedLoader();
+		m_DelayWriter = new _DelayWriter();
 		
 		m_Model = new Model();
 		m_Model.getVFS().addNotifyHandler(new _TreeNotifyHandler());
@@ -95,51 +97,43 @@ public class Controller {
 			
 			//System.err.printf("Got %s\n", cmd);
 			
-			try {
-				if(cmd.equals("file->exit")) {
-					m_CLI.stop();
-					m_View.setVisible(false);
-					m_View.dispose();
-				} else if(cmd.equals("file->openarchive")) {
-					File f = m_View.showOpenDialog(View.FILETYPE_RAF);
-					if(f != null) {			
-						m_CLI.parseString(String.format("open \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
-					}
-				} else if(cmd.equals("file->addarchive")) {
-					File f = m_View.showOpenDialog(View.FILETYPE_RAF);
-					if(f != null)
-						m_CLI.parseString(String.format("add \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
-				} else if(cmd.equals("file->openlol")) {
-					File f = m_View.showOpenDialog(View.FILETYPE_DIR);
-					if(f != null)
-						m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
-				} else if(cmd.equals("console->submit")) {				
-					m_CLI.parseString(m_Console.getCommandText());
-				} else if(cmd.equals("help->about")) {
-					m_AboutDialog.setVisible(true);
-				} else if(cmd.equals("inibin->export")) {
 
-				} else if(cmd.equals("inibin->loadexternal")) {
-					m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN));
-				} else if(cmd.equals("dds->loadexternal")) {
-					m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS));
-				} else if(cmd.equals("dds->export")) {
-					File f = m_View.showSaveDialog(String.format("%s.png", m_DDSViewer.getDDSName()), View.FILETYPE_PNG);
-					
-					if(f != null) {
-						BufferedImage img = m_DDSViewer.getCurrentImage();
+			if(cmd.equals("file->exit")) {
+				m_CLI.stop();
+				m_View.setVisible(false);
+				m_View.dispose();
+			} else if(cmd.equals("file->openarchive")) {
+				File f = m_View.showOpenDialog(View.FILETYPE_RAF);
+				if(f != null) {			
+					m_CLI.parseString(String.format("open \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
+				}
+			} else if(cmd.equals("file->addarchive")) {
+				File f = m_View.showOpenDialog(View.FILETYPE_RAF);
+				if(f != null)
+					m_CLI.parseString(String.format("add \"%s\" \"%s\"", f.toString(), _getVersionFromDialog()));
+			} else if(cmd.equals("file->openlol")) {
+				File f = m_View.showOpenDialog(View.FILETYPE_DIR);
+				if(f != null)
+					m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
+			} else if(cmd.equals("console->submit")) {				
+				m_CLI.parseString(m_Console.getCommandText());
+			} else if(cmd.equals("help->about")) {
+				m_AboutDialog.setVisible(true);
+			} else if(cmd.equals("inibin->export")) {
 
-						if(!ImageIO.write(img, "PNG", f)) {
-							m_View.setStatus(String.format("Unexpected error writing %s", f.getName()));
-						}
-						
-					}
-				} else if(cmd.equals("wwise->loadexternal")) {
-					m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK));
-				} 
-			} catch(IOException ex) {
-				m_View.showErrorDialog("ERROR", ex.getMessage());
-			}
+			} else if(cmd.equals("inibin->loadexternal")) {
+				m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN));
+			} else if(cmd.equals("dds->loadexternal")) {
+				m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS));
+			} else if(cmd.equals("dds->export")) {
+				File f = m_View.showSaveDialog(String.format("%s.png", m_DDSViewer.getDDSName()), View.FILETYPE_PNG);
+
+				if(f != null) {
+					m_DelayWriter.delayWriteImage(m_DDSViewer.getCurrentImage(), "PNG", f);
+				}
+			} else if(cmd.equals("wwise->loadexternal")) {
+				m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK));
+			} 
 		}
 	}
 
@@ -245,17 +239,31 @@ public class Controller {
 
 		@Override
 		public void onSelect(Long id, Wwise wwise) {
-			System.err.printf("selected %d\n", id);
+			//System.err.printf("selected %d\n", id);
 		}
 
 		@Override
 		public void onExtract(Long id, Wwise wwise) {
-			System.err.printf("extract %d\n", id);
+			File f = m_View.showSaveDialog(String.format("%d.wem", id), View.FILETYPE_WEM);
+			
+			if(f == null)
+				return;
+			
+			m_DelayWriter.delayWrite(f.toPath(), wwise.getWEMs().get(id));
 		}
 
 		@Override
-		public void onExtractAll(Long id, Wwise wwise) {
-			System.err.printf("extractall %d\n", id);
+		public void onExtractAll(Wwise wwise) {
+			File f = m_View.showSaveDialog("", View.FILETYPE_DIR);
+			
+			if(f == null)
+				return;
+			
+			Map<Long, DataSource> wems = wwise.getWEMs();
+			
+			for(final Long id : wems.keySet()) {
+				m_DelayWriter.delayWrite(f.toPath().resolve(String.format("%d.wem", id)), wems.get(id));
+			}
 		}
 		
 	}
@@ -305,6 +313,15 @@ public class Controller {
 			});
 		}
 
+		@Override
+		protected void onException(Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				m_View.showErrorDialog("ERROR", e.getMessage());
+			});
+		}
+	};
+	
+	private class _DelayWriter extends DelayWriter {
 		@Override
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {

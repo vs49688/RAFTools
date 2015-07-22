@@ -20,32 +20,44 @@
  */
 package net.vs49688.rafview.gui;
 
+import java.awt.Graphics;
+import java.awt.image.*;
 import java.io.*;
 import java.nio.file.*;
+import javax.imageio.*;
 import net.vs49688.rafview.sources.*;
 
-public abstract class DelayLoader {
+public abstract class DelayWriter {
 	
-	protected abstract void load(String name, byte[] data) throws Exception;
+	//protected abstract void write(Path f, byte[] data) throws Exception;
 	protected abstract void onException(Exception e);
 	
-	public void delayLoad(String name, DataSource ds) {
+	public void delayWriteImage(BufferedImage image, String formatName, File output) {
+		/* This is going to be used by the DDS viewer, so we'll need to copy the image.
+		 * It's better in the long run anyway */
+		BufferedImage backup = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+		Graphics g = backup.getGraphics();
+		g.drawImage(backup, 0, 0, null);
+		
 		new Thread(() -> {
 			try {
-				load(name, ds.read());
+				//ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				if(!ImageIO.write(image, formatName, output/*bos*/))
+					throw new Exception(String.format("No appropriate writer for %s was found", formatName));
+				//bos.flush();
+				
+				
+				//write(output.toPath(), bos.toByteArray());
 			} catch(Exception e) {
 				onException(e);
 			}
 		}).start();
 	}
 	
-	public void delayLoad(File f) {
-		if(f == null)
-			return;
-		
+	public void delayWrite(Path path, DataSource ds) {
 		new Thread(() -> {
 			try {
-				load(f.getName(), Files.readAllBytes(f.toPath()));
+				Files.write(path, ds.read());
 			} catch(Exception e) {
 				onException(e);
 			}
