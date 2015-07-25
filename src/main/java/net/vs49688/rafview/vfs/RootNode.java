@@ -33,7 +33,7 @@ public class RootNode extends DirNode {
 	public String toString() {
 		return "/";
 	}
-	
+
 	@Override
 	public Path getFullPath() {
 		return Paths.get("/");

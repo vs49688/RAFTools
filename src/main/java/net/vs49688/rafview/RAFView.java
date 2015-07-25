@@ -48,7 +48,7 @@ public class RAFView {
 				
 				while(res.getState() != Interpreter.CommandResult.State.COMPLETE) {}
 				
-				System.out.print("> ");
+				System.out.printf("%s> ", model.getCurrentDirectory());
 			}
 		}
 		

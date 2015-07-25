@@ -330,16 +330,20 @@ public class RAFS {
 	 * @return 
 	 */
 	public Node getNodeFromPath(Path vfsPath) {
-		return _findNodeByName(m_Root, vfsPath, 0);
+		return _findNodeByName(m_Root, vfsPath.normalize(), 0);
 	}
 	
 	public Node getNodeFromPath(Node root, Path vfsPath) {
-		return _findNodeByName(root, vfsPath, 0);
+		if(root instanceof FileNode) {
+			throw new IllegalArgumentException("root is not a directory");
+		}
+		
+		return _findNodeByName(root, vfsPath.normalize(), 0);
 	}
 	
 	/**
 	 * Traverse the tree using a string as a path
-	 * @param root The node to start searching from.
+	 * @param root The node to start searching from. Must be a directory.
 	 * @param path The path we're searching for.
 	 * @param component The component index we're up to in the path.
 	 * @return If found, the node. Otherwise, null.
@@ -351,9 +355,24 @@ public class RAFS {
 
 		DirNode n = (DirNode)root;
 		
+		Path pcomp = path.getName(component);
+		String compName = pcomp.toString();
+		
+		if(compName.equals(".") || compName.isEmpty()) {
+			return _findNodeByName(root, path, component+1);
+		} else if(compName.equals("..")) {
+			DirNode parent = root.getParent();
+			/* If we have no parent, we're at the root, so stay there */
+			if(parent == null)
+				parent = n;
+			
+			return _findNodeByName(parent, path, component+1);
+		}
+		
 		for(final Node c : n) {
-			if(c.name().equalsIgnoreCase(path.getName(component).toString()))
+			if(c.name().equalsIgnoreCase(compName)) {
 				return _findNodeByName(c, path, component + 1);
+			}
 		}
 		
 		return null;
