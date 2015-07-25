@@ -81,13 +81,23 @@ public class LS implements ICommand {
 			return;
 		}
 
-		dumpNode(cmdLine, flags, node);
+		dumpNode(flags, node);
 	}
 	
-	private void dumpNode(String cmdLine, int flags, Node node) {
+	private void dumpNode(int flags, Node node) {
 		
 		if((flags & FLAG_LONG) == 0) {
-			m_Console.printf("%s\n", node.name());
+			if(node instanceof DirNode) {
+				DirNode dn = (DirNode)node;
+				
+				for(final Node n : dn) {
+					m_Console.printf("%s\n", n.name());
+				}
+			
+			} else {
+				m_Console.printf("%s\n", node.name());
+			}
+		
 			return;
 		}
 		
