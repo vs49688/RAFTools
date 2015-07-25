@@ -44,6 +44,7 @@ public class CommandInterface {
 	
 	ICommand m_UnixPwd;
 	ICommand m_UnixLs;
+	ICommand m_UnixCd;
 	
 	Help m_HelpCommand;
 	
@@ -64,6 +65,7 @@ public class CommandInterface {
 		
 		m_Interpreter.registerCommand((m_UnixPwd = new PWD(out, model)));
 		m_Interpreter.registerCommand((m_UnixLs = new LS(out, model)));
+		m_Interpreter.registerCommand((m_UnixCd = new CD(out, model)));
 		
 		m_HelpCommand = new Help(out);
 		m_HelpCommand.addHandler(m_HelpCommand);
@@ -75,6 +77,7 @@ public class CommandInterface {
 		m_HelpCommand.addHandler(m_ForceGC);
 		m_HelpCommand.addHandler(m_UnixPwd);
 		m_HelpCommand.addHandler(m_UnixLs);
+		m_HelpCommand.addHandler(m_UnixCd);
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		

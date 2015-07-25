@@ -32,7 +32,7 @@ public class Model {
 	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 	private final RAFS m_VFS;
 	
-	private final Path m_CurrentDir;
+	private Path m_CurrentDir;
 	
 	
 	public Model() {
@@ -53,6 +53,10 @@ public class Model {
 
 	public Path getCurrentDirectory() {
 		return m_CurrentDir;
+	}
+	
+	public void setCurrentDirectory(Path path) {
+		m_CurrentDir = path;
 	}
 	
 	public RAFS getVFS() {

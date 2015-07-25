@@ -108,7 +108,7 @@ public class LS implements ICommand {
 			if(dn instanceof RootNode) {
 				m_Console.printf("/:\n");
 			} else {
-				m_Console.printf("%s:\n", dn.name());
+				m_Console.printf("%s:\n", dn.getFullPath().toString());
 			}
 			m_Console.printf("total %d\n", dn.getChildCount());
 			
