@@ -325,6 +325,15 @@ public class RAFS {
 	}
 	
 	/**
+	 * 
+	 * @param vfsPath
+	 * @return 
+	 */
+	public Node getNodeFromPath(Path vfsPath) {
+		return _findNodeByName(m_Root, vfsPath, 0);
+	}
+	
+	/**
 	 * Traverse the tree using a string as a path
 	 * @param root The node to start searching from.
 	 * @param path The path we're searching for.

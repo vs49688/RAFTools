@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.cli.commands.*;
+import net.vs49688.rafview.cli.commands.unix.*;
 
 public class CommandInterface {
 	
@@ -40,6 +41,10 @@ public class CommandInterface {
 	ICommand m_RamInfoCommand;
 	ICommand m_ForceGC;
 	ICommand m_DumpCommand;
+	
+	ICommand m_UnixPwd;
+	ICommand m_UnixLs;
+	
 	Help m_HelpCommand;
 	
 	public CommandInterface(PrintStream out, Model model) {
@@ -57,6 +62,9 @@ public class CommandInterface {
 		m_Interpreter.registerCommand((m_ForceGC = new ForceGC()));
 		m_Interpreter.registerCommand((m_DumpCommand = new Dump(out, model)));
 		
+		m_Interpreter.registerCommand((m_UnixPwd = new PWD(out, model)));
+		m_Interpreter.registerCommand((m_UnixLs = new LS(out, model)));
+		
 		m_HelpCommand = new Help(out);
 		m_HelpCommand.addHandler(m_HelpCommand);
 		m_HelpCommand.addHandler(m_OpenCommand);
@@ -65,6 +73,8 @@ public class CommandInterface {
 		m_HelpCommand.addHandler(m_ExtractCommand);
 		m_HelpCommand.addHandler(m_RamInfoCommand);
 		m_HelpCommand.addHandler(m_ForceGC);
+		m_HelpCommand.addHandler(m_UnixPwd);
+		m_HelpCommand.addHandler(m_UnixLs);
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		

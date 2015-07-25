@@ -32,9 +32,12 @@ public class Model {
 	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 	private final RAFS m_VFS;
 	
+	private final Path m_CurrentDir;
+	
 	
 	public Model() {
 		m_VFS = new RAFS();
+		m_CurrentDir = m_VFS.getRoot().getFullPath();
 	}
 	
 	public void addFile(Path file, String version) throws IOException {
@@ -48,6 +51,10 @@ public class Model {
 		addAll(m_VFS, path);
 	}
 
+	public Path getCurrentDirectory() {
+		return m_CurrentDir;
+	}
+	
 	public RAFS getVFS() {
 		return m_VFS;
 	}

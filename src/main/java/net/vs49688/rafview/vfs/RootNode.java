@@ -20,6 +20,9 @@
  */
 package net.vs49688.rafview.vfs;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class RootNode extends DirNode {
 
 	public RootNode(IOperationsNotify notify) {
@@ -29,5 +32,10 @@ public class RootNode extends DirNode {
 	@Override
 	public String toString() {
 		return "/";
+	}
+	
+	@Override
+	public Path getFullPath() {
+		return Paths.get("/");
 	}
 }
