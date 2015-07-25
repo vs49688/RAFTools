@@ -37,9 +37,9 @@ public class LS implements ICommand {
 		}
 		
 		if(paths.isEmpty()) {
-			lel(cmdLine, flags, m_Model.getCurrentDirectory());
+			dumpPath(cmdLine, flags, m_Model.getCurrentDirectory());
 		} else for(final String path : paths) {
-			lel(cmdLine, flags, path);
+			dumpPath(cmdLine, flags, path);
 		}
 		
 	}
@@ -64,15 +64,15 @@ public class LS implements ICommand {
 		return flags;
 	}
 	
-	private void lel(String cmdLine, int flags, String path) throws CommandException {
+	private void dumpPath(String cmdLine, int flags, String path) throws CommandException {
 		try {
-			lel(cmdLine, flags, Paths.get(path));
+			dumpPath(cmdLine, flags, Paths.get(path));
 		} catch(InvalidPathException e) {
 			m_Console.printf("ls: Cannot access %s: %s\n", e.toString());
 		}
 	}
 	
-	private void lel(String cmdLine, int flags, Path path) throws CommandException {
+	private void dumpPath(String cmdLine, int flags, Path path) throws CommandException {
 		RAFS vfs = m_Model.getVFS();
 		Node node = vfs.getNodeFromPath(path);
 		
@@ -81,10 +81,10 @@ public class LS implements ICommand {
 			return;
 		}
 
-		lel(cmdLine, flags, node);
+		dumpNode(cmdLine, flags, node);
 	}
 	
-	private void lel(String cmdLine, int flags, Node node) {
+	private void dumpNode(String cmdLine, int flags, Node node) {
 		
 		if((flags & FLAG_LONG) == 0) {
 			m_Console.printf("%s\n", node.name());
