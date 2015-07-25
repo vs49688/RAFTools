@@ -41,13 +41,9 @@ public abstract class DelayWriter {
 		
 		new Thread(() -> {
 			try {
-				//ByteArrayOutputStream bos = new ByteArrayOutputStream();
 				if(!ImageIO.write(image, formatName, output/*bos*/))
 					throw new Exception(String.format("No appropriate writer for %s was found", formatName));
-				//bos.flush();
-				
-				
-				//write(output.toPath(), bos.toByteArray());
+
 			} catch(Exception e) {
 				onException(e);
 			}
