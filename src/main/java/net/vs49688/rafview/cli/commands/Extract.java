@@ -22,6 +22,7 @@ package net.vs49688.rafview.cli.commands;
 
 import java.nio.file.Paths;
 import java.io.*;
+import java.nio.file.Path;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 
@@ -51,8 +52,11 @@ public class Extract implements ICommand {
 				version = file[1];
 			}
 			
+			boolean relative = (!file[0].startsWith("/") && !file[0].startsWith("\\"));
+			Path rawPath = Paths.get(file[0]);
+			Path vfsPath = relative ? m_Model.getCurrentDirectory().resolve(rawPath) : rawPath;
 			
-			m_Model.getVFS().extract(Paths.get(file[0]), Paths.get(outDir), version);
+			m_Model.getVFS().extract(vfsPath, Paths.get(outDir), version);
 		}
 	}
 
