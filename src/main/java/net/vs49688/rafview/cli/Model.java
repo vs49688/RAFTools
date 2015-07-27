@@ -41,7 +41,7 @@ public class Model {
 	}
 	
 	public void addFile(Path file, String version) throws IOException {
-		Path dat = Paths.get(file.getParent().toString(), String.format("%s.dat", file.getFileName().toString()));
+		Path dat = Paths.get(String.format("%s.dat", file.toString()));
 		m_VFS.addFile(file, dat, version);
 		
 	}
