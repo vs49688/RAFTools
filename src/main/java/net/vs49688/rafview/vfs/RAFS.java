@@ -160,7 +160,7 @@ public class RAFS {
 
 			/* Read the file list */
 			buffer.position(lOffset);
-			readFileList(buffer, indexMap, versionName, dat);
+			readFileList(buffer, indexMap, st, versionName, dat);
 		}
 	}
 
@@ -190,25 +190,32 @@ public class RAFS {
 	 * @param b The ByteBuffer containing the data. Is expected to be at the 
 	 * position where the file table starts.
 	 * @param indexMap The mapping of string table indices to their FileNodes.
+	 * @param rawPaths The list of raw paths (using the same indices as indexMap).
 	 * @param version The version of files in the file table. Should be of the
 	 * form "X.X.X.X"
 	 * @param dat The path to the data file.
 	 * @throws IOException If an I/O error occurred.
 	 */
-	private void readFileList(ByteBuffer b, List<FileNode> indexMap, String version, Path dat) throws IOException {
+	private void readFileList(ByteBuffer b, List<FileNode> indexMap, List<String> rawPaths, String version, Path dat) throws IOException {
 		int numFiles = b.getInt();
 		
 		// FIXME: assert(numFiles == stringtable.size())
 		
 		for(int i = 0; i < numFiles; ++i) {
-			int hash = b.getInt(); // Not sure what to do with this.
+			int hash = b.getInt();
 			
 			int offset = b.getInt();
 			int size = b.getInt();
 			int index = b.getInt();
 			
+			int calcHash = getPathHash(rawPaths.get(index));
+			
+			if(hash != calcHash) {
+				throw new IOException(String.format("%s: Hash mismatch for %s. Expected %d, got %d", version, rawPaths.get(index), calcHash, hash));
+			}
+			
 			FileNode fn = indexMap.get(index);
-
+			
 			/* If we've already got this file loaded, don't load it again */
 			PossiblyZippedSynchronisedFile rdf;
 			if(m_DataFiles.containsKey(dat)) {

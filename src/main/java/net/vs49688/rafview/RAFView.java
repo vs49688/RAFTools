@@ -25,8 +25,6 @@ import net.vs49688.rafview.gui.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.interpreter.Interpreter;
 
-// http://wiki.xentax.com/index.php?title=Wwise_SoundBank_(*.bnk)
-
 public class RAFView {
 	
 	private static void printUsage() {
@@ -42,7 +40,7 @@ public class RAFView {
 		cli.start();
 		
 		try(Scanner stdin = new Scanner(System.in)) {
-			System.out.print("> ");
+			System.out.printf("%s> ", model.getCurrentDirectory());
 			while(stdin.hasNextLine()) {
 				Interpreter.CommandResult res = cli.parseString(stdin.nextLine());
 				
