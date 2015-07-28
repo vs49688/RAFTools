@@ -22,13 +22,10 @@ package net.vs49688.rafview.gui;
 
 import net.vs49688.rafview.cli.Model;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
-import java.text.ParseException;
 import javax.swing.SwingUtilities;
 import java.util.*;
-import javax.imageio.ImageIO;
 import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.inibin.*;

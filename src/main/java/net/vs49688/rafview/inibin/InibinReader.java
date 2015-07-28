@@ -430,19 +430,19 @@ public class InibinReader {
 		System.err.printf("Flags: 0b%s\n", binaryString(flags, 16));
 		System.err.printf("Unknown Flags: 0b%s\n", binaryString(flags & ~(FLAGS_KNOWN), 16));
 		
-		if((flags & FLAG_UNK1) != 0)		System.err.printf("FLAG_UNK1 ");
-		if((flags & FLAG_UNK2) != 0)		System.err.printf("FLAG_UNK2 ");
+		if((flags & FLAG_UNK1) != 0)			System.err.printf("FLAG_UNK1 ");
+		if((flags & FLAG_UNK2) != 0)			System.err.printf("FLAG_UNK2 ");
 		if((flags & FLAG_IDIV10) != 0)		System.err.printf("FLAG_IDIV10 ");
 		if((flags & FLAG_SHORT) != 0)		System.err.printf("FLAG_SHORT ");
-		if((flags & FLAG_BYTE) != 0)		System.err.printf("FLAG_BYTE ");
-		if((flags & FLAG_BITFIELD) != 0)	System.err.printf("FLAG_BITFIELD ");
+		if((flags & FLAG_BYTE) != 0)			System.err.printf("FLAG_BYTE ");
+		if((flags & FLAG_BITFIELD) != 0)		System.err.printf("FLAG_BITFIELD ");
 		if((flags & FLAG_UNK7) != 0)		System.err.printf("FLAG_UNK7 ");
 		if((flags & FLAG_POSITION) != 0)	System.err.printf("FLAG_POSITION ");
-		if((flags & FLAG_UNK9) != 0)		System.err.printf("FLAG_UNK9 ");
+		if((flags & FLAG_UNK9) != 0)			System.err.printf("FLAG_UNK9 ");
 		if((flags & FLAG_UNK10) != 0)		System.err.printf("FLAG_UNK10 ");
-		if((flags & FLAG_RGBA) != 0)		System.err.printf("FLAG_UNK11 ");
+		if((flags & FLAG_RGBA) != 0)			System.err.printf("FLAG_UNK11 ");
 		if((flags & FLAG_UNK12) != 0)		System.err.printf("FLAG_UNK12 ");
-		if((flags & FLAG_SOFFSETS) != 0)	System.err.printf("FLAG_SOFFSETS ");
+		if((flags & FLAG_SOFFSETS) != 0)		System.err.printf("FLAG_SOFFSETS ");
 		if((flags & FLAG_UNK13) != 0)		System.err.printf("FLAG_UNK13 ");
 		if((flags & FLAG_UNK14) != 0)		System.err.printf("FLAG_UNK14 ");
 		if((flags & FLAG_UNK15) != 0)		System.err.printf("FLAG_UNK15 ");
