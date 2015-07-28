@@ -202,8 +202,8 @@ public class Controller {
 
 		@Override
 		public void onFuckup(Interpreter.CommandResult result) {
-			result.getException().printStackTrace();
 			m_View.showErrorDialog("ERROR", result.getException().getMessage());
+			result.getException().printStackTrace(System.err);
 		}
 	}
 	
@@ -287,6 +287,7 @@ public class Controller {
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				m_View.showErrorDialog("ERROR", e.getMessage());
+				e.printStackTrace(System.err);
 			});
 		}
 	};
@@ -303,6 +304,7 @@ public class Controller {
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				m_View.showErrorDialog("ERROR", e.getMessage());
+				e.printStackTrace(System.err);
 			});
 		}
 	};
@@ -322,6 +324,7 @@ public class Controller {
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				m_View.showErrorDialog("ERROR", e.getMessage());
+				e.printStackTrace(System.err);
 			});
 		}
 	};
@@ -346,6 +349,7 @@ public class Controller {
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				m_View.showErrorDialog("ERROR", e.getMessage());
+				e.printStackTrace(System.err);
 			});
 		}
 	};
@@ -355,6 +359,7 @@ public class Controller {
 		protected void onException(Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				m_View.showErrorDialog("ERROR", e.getMessage());
+				e.printStackTrace(System.err);
 			});
 		}
 	};

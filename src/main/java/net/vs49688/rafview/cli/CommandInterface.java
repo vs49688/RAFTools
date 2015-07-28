@@ -149,6 +149,8 @@ public class CommandInterface {
 			
 			if(m_ExtFuckupHandler != null)
 				m_ExtFuckupHandler.onFuckup(result);
+			
+			result.getException().printStackTrace(System.err);
 		}
 	}
 }

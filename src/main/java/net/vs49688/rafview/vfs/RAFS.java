@@ -106,17 +106,17 @@ public class RAFS {
 
 			/* Check the magic number */
 			if((magic = buffer.getInt()) != RAFIDX_MAGIC)
-				throw new IOException(String.format("Invalid magic number. Expected 0x%X, got 0x%X\n", RAFIDX_MAGIC, magic));
+				throw new IOException(String.format("%s: Invalid magic number. Expected 0x%X, got 0x%X\n", versionName, RAFIDX_MAGIC, magic));
 
 			/* Make sure we're version 1 */
 			if((version = buffer.getInt()) != 1)
-				throw new IOException(String.format("Unsupported version %d\n", version));
+				throw new IOException(String.format("%s: Unsupported version %d\n", versionName, version));
 
 			/* No idea what this does. Appears to be always 0 */
 			mgrIndex = buffer.getInt();
 			
 			if(mgrIndex != 0) {
-				System.err.printf("WARNING: mgrIndex field non-zero. Please take note of this and email the developer.\n");
+				System.err.printf("%s: WARNING: mgrIndex field non-zero. Please take note of this and email the developer.\n", versionName);
 			}
 			
 			/* Read the file list and string offsets */
