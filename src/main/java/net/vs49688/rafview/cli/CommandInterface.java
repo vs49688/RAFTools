@@ -81,7 +81,9 @@ public class CommandInterface {
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		
-		printGPL();
+		//printGPL();
+		
+		printCLS();
 	}
 	
 	private void printGPL() {
@@ -105,6 +107,24 @@ public class CommandInterface {
 		
 	}
 
+	private void printCLS() {
+		_write(String.format("%s %s - Copyright (C) %d %s\n",
+			Model.getApplicationName(),	Model.getVersionString(),
+			Model.getCopyrightYear(), Model.getCopyrightHolder()));
+		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
+
+		/* Back in the day... :) */
+		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
+		//_write("/r/leagueoflegends (And Rito if they pls).\n");
+
+		_write(String.format("%s comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
+		_write("permitted by applicable law. This build is an alpha-quality\n");
+		_write("release and should not be considered stable enough for everyday\n");
+		_write("use.\n");
+		
+		_write("Type `help' for more information.\n");
+	}
+	
 	public void setFuckupHandler(IFuckedUp handler) {
 		m_ExtFuckupHandler = handler;
 	}

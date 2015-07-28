@@ -33,12 +33,13 @@ import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.sources.DataSource;
 import net.vs49688.rafview.wwise.Wwise;
 import org.ini4j.Ini;
+import org.ini4j.Profile.Section;
 
 public class Controller {
 	private final View m_View;
 	private final Model m_Model;
 	private final CommandInterface m_CLI;
-	private final AboutDialog m_AboutDialog;
+	private final AboutDialogCLS m_AboutDialog;
 	private final Console m_Console;
 	private final InibinViewer m_InibinViewer;
 	private final DDSViewer m_DDSViewer;
@@ -74,7 +75,7 @@ public class Controller {
 		m_View.addTab(m_DDSViewer, "DDS Viewer");
 		m_View.addTab(m_WwiseViewer, "Wwise Viewer");
 		
-		m_AboutDialog = new AboutDialog(m_View);
+		m_AboutDialog = new AboutDialogCLS(m_View);
 		
 		m_VerDialog = new VersionDialog(m_View);
 		
@@ -335,10 +336,10 @@ public class Controller {
 			Ini ini = new Ini();
 			ini.load(new ByteArrayInputStream(data));
 
-			outMap.put("Data", parseInibinKeys(ini.get("Data")));
-			outMap.put("SpellData", parseInibinKeys(ini.get("SpellData")));
-			outMap.put("BuffData", parseInibinKeys(ini.get("BuffData")));
-			
+			for(final Section section : ini.values()) {
+				outMap.put(section.getName(), parseInibinKeys(ini.get(section.getName())));
+			}
+
 			m_InibinViewer.setKeyMappings(outMap);
 		}
 
@@ -380,21 +381,6 @@ public class Controller {
 			
 			outMap.put(key, s);
 		}
-		return outMap;
-	}
-	
-	private static Map<String, Map<Integer, String>> loadInibinKeys(String name) throws IOException {
-		Ini ini = new Ini();
-		
-		Map<String, Map<Integer, String>> outMap = new HashMap<>();
-		try(FileReader r = new FileReader(new File(name))) {
-			ini.load(r);
-			
-			outMap.put("Data", parseInibinKeys(ini.get("Data")));
-			outMap.put("SpellData", parseInibinKeys(ini.get("SpellData")));
-			outMap.put("BuffData", parseInibinKeys(ini.get("BuffData")));			
-		}
-		
 		return outMap;
 	}
 }

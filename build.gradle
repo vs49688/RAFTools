@@ -7,22 +7,67 @@ if (!hasProperty('mainClass')) {
     ext.mainClass = 'net.vs49688.rafview.RAFView'
 }
 
+ext {
+	gitHash = getCheckedOutGitCommitHash()
+	gitShortHash = gitHash.take 7
+}
+
+
 repositories {
     flatDir {
         dirs 'libs'
     }
-	
-    //mavenCentral()
 }
 
 dependencies {
 	compile ':ini4j:0.5.4'
-	compile ':ini4j:0.5.4:javadoc'
-	compile ':ini4j:0.5.4:sources'
+	//compile ':ini4j:0.5.4:javadoc'
+	//compile ':ini4j:0.5.4:sources'
+}
+
+compileJava {
+	regenGitConfig()
 }
 
 jar {
     manifest {
         attributes 'Main-Class': 'net.vs49688.rafview.RAFView'
     }
+	
+	// Embed all the dependencies into the main jar
+	from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+}
+
+
+// Pinched from https://gist.github.com/JonasGroeger/7620911
+def getCheckedOutGitCommitHash() {
+    def gitFolder = "${projectDir}/.git/"
+    /*
+     * '.git/HEAD' contains either
+     *      in case of detached head: the currently checked out commit hash
+     *      otherwise: a reference to a file containing the current commit hash
+     */
+    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
+    def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
+    // def isRef = head.length > 1     // ref: refs/heads/master
+
+    if(isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
+
+    def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
+	refHead.text.trim()
+}
+
+def regenGitConfig() {
+	def code = "package net.vs49688.rafview.cli;\n\n" +
+		"// This file is regenered by gradle everytime it's built\n\n" +
+		"public class GitInfo {\n " +
+		"	public static String getShortCommitHash() {\n" +
+		"		return \"${ext.gitShortHash}\";\n" +
+		"	}\n\n" +
+		"	public static String getCommitHash() {\n" +
+		"		return \"${ext.gitHash}\";\n" +
+		"	}\n\n" +
+		"}\n"
+	
+	new File("${projectDir}/src/main/java/net/vs49688/rafview/cli/GitInfo.java").write(code)
 }

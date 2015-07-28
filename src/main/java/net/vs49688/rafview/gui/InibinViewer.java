@@ -81,7 +81,7 @@ public class InibinViewer extends JPanel {
 		m_TextArea.setText("");
 		
 		Set<Integer> knownKeys = new HashSet<>();
-		Map<String, Map<String, Value>> displayValues = new LinkedHashMap<>();
+		Map<String, Map<String, Value>> displayValues = new HashMap<>();
 		
 		/* Iterate over each key and add it to the correct section (if found) */
 		for(final Integer key : map.keySet()) {

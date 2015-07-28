@@ -183,7 +183,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return "0.4.3-alpha";
+		return String.format("0.4.3-alpha~%s", GitInfo.getShortCommitHash());
 	}
 	
 	public static String getApplicationName() {

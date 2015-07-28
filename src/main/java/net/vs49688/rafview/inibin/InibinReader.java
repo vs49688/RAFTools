@@ -116,13 +116,6 @@ public class InibinReader {
 		return ret;
 	}
 
-	public static void main(String[] args) throws IOException, ParseException {
-		Map<Integer, Value> inibni = readInibin(Paths.get("C:\\Users\\Zane\\Desktop\\Particles\\000_void_test.troybin"));
-		
-		printMap(inibni);
-
-	}
-	
 	public static Map<Integer, Value> readInibin(Path path) throws IOException, ParseException {
 		
 		try(FileInputStream rfis = new FileInputStream(path.toFile())) {

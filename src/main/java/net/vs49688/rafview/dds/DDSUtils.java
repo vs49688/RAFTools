@@ -447,7 +447,7 @@ public class DDSUtils {
 		public FloatColour getPixel(ByteBuffer bb);
 	}
 	
-	public static void main(String[] args) throws Exception {
+	public static void main2(String[] args) throws Exception {
 		DDSImage img = DDSImage.read("E:\\Zane\\Desktop\\Kalista_Skin01_R_alphaslice.dds");
 		//DDSImage img = DDSImage.read("E:\\Zane\\Desktop\\sample.dds");
 		
