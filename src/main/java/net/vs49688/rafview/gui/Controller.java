@@ -35,6 +35,7 @@ import net.vs49688.rafview.inibin.*;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.sources.DataSource;
 import net.vs49688.rafview.wwise.Wwise;
+import org.ini4j.Ini;
 
 public class Controller {
 	private final View m_View;
@@ -48,6 +49,7 @@ public class Controller {
 	private final WwiseViewer m_WwiseViewer;
 	
 	private final DelayLoader m_InibinLoader;
+	private final DelayLoader m_InibinMapLoader;
 	private final DelayLoader m_DDSLoader;
 	private final DelayLoader m_WwiseLoader;
 	private final DelayWriter m_DelayWriter;
@@ -56,6 +58,7 @@ public class Controller {
 		ActionListener al = new MenuListener();
 		
 		m_InibinLoader = new InibinDelayedLoader();
+		m_InibinMapLoader = new InibinMapDelayedLoader();
 		m_DDSLoader = new DDSDelayedLoader();
 		m_WwiseLoader = new WwiseDelayedLoader();
 		m_DelayWriter = new _DelayWriter();
@@ -123,6 +126,8 @@ public class Controller {
 
 			} else if(cmd.equals("inibin->loadexternal")) {
 				m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN));
+			} else if(cmd.equals("inibin->loadmappings")) {
+				m_InibinMapLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INI));
 			} else if(cmd.equals("dds->loadexternal")) {
 				m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS));
 			} else if(cmd.equals("dds->export")) {
@@ -321,6 +326,30 @@ public class Controller {
 		}
 	};
 	
+	private class InibinMapDelayedLoader extends DelayLoader {
+
+		@Override
+		protected void load(String name, byte[] data) throws Exception {
+			Map<String, Map<Integer, String>> outMap = new HashMap<>();
+			
+			Ini ini = new Ini();
+			ini.load(new ByteArrayInputStream(data));
+
+			outMap.put("Data", parseInibinKeys(ini.get("Data")));
+			outMap.put("SpellData", parseInibinKeys(ini.get("SpellData")));
+			outMap.put("BuffData", parseInibinKeys(ini.get("BuffData")));
+			
+			m_InibinViewer.setKeyMappings(outMap);
+		}
+
+		@Override
+		protected void onException(Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				m_View.showErrorDialog("ERROR", e.getMessage());
+			});
+		}
+	};
+	
 	private class _DelayWriter extends DelayWriter {
 		@Override
 		protected void onException(Exception e) {
@@ -329,4 +358,41 @@ public class Controller {
 			});
 		}
 	};
+	
+	private static Map<Integer, String> parseInibinKeys(Ini.Section section) {
+		Map<Integer, String> outMap = new HashMap<>();
+		
+		if(section == null)
+			return outMap;
+
+		
+		for(final String s : section.keySet()) {
+			int key;
+			
+			try {
+				key = Integer.parseInt(section.get(s));
+			} catch(NumberFormatException e) {
+				// Invalid key, skip.
+				continue;
+			}
+			
+			outMap.put(key, s);
+		}
+		return outMap;
+	}
+	
+	private static Map<String, Map<Integer, String>> loadInibinKeys(String name) throws IOException {
+		Ini ini = new Ini();
+		
+		Map<String, Map<Integer, String>> outMap = new HashMap<>();
+		try(FileReader r = new FileReader(new File(name))) {
+			ini.load(r);
+			
+			outMap.put("Data", parseInibinKeys(ini.get("Data")));
+			outMap.put("SpellData", parseInibinKeys(ini.get("SpellData")));
+			outMap.put("BuffData", parseInibinKeys(ini.get("BuffData")));			
+		}
+		
+		return outMap;
+	}
 }

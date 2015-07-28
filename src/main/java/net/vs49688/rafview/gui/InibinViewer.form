@@ -33,11 +33,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="m_RAWRadio" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="m_ChampionRadio" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="m_AbilityRadio" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="217" max="32767" attributes="0"/>
-                      <Component id="m_LoadExternalBtn" min="-2" pref="160" max="-2" attributes="0"/>
+                      <Component id="m_MappingsRadio" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="136" max="32767" attributes="0"/>
+                      <Component id="m_LoadMappingsBtn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="m_LoadExternalBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -48,16 +48,18 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="445" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="321" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="m_RAWRadio" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="m_ChampionRadio" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="m_AbilityRadio" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="m_MappingsRadio" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="treatAsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="m_LoadExternalBtn" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="m_LoadExternalBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="m_LoadMappingsBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -67,14 +69,17 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="m_LoadExternalBtn">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Load External File"/>
         <Property name="actionCommand" type="java.lang.String" value="inibin-&gt;loadexternal"/>
+        <Property name="label" type="java.lang.String" value="Load File"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="m_RAWRadio">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="treatGroup"/>
+        </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Dialog" size="12" style="0"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Raw"/>
         <Property name="actionCommand" type="java.lang.String" value="raw"/>
@@ -83,25 +88,16 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_onTreatmentChange"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JRadioButton" name="m_ChampionRadio">
+    <Component class="javax.swing.JRadioButton" name="m_MappingsRadio">
       <Properties>
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="treatGroup"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Champion"/>
-        <Property name="actionCommand" type="java.lang.String" value="champion"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_onTreatmentChange"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JRadioButton" name="m_AbilityRadio">
-      <Properties>
-        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-          <ComponentRef name="treatGroup"/>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Dialog" size="12" style="0"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Ability"/>
-        <Property name="actionCommand" type="java.lang.String" value="ability"/>
+        <Property name="text" type="java.lang.String" value="Mappings"/>
+        <Property name="actionCommand" type="java.lang.String" value="mappings"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_onTreatmentChange"/>
@@ -109,6 +105,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="treatAsLabel">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Dialog" size="12" style="0"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Treat as:"/>
       </Properties>
       <AuxValues>
@@ -134,5 +133,11 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="m_LoadMappingsBtn">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Load Mappings"/>
+        <Property name="actionCommand" type="java.lang.String" value="inibin-&gt;loadmappings"/>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>

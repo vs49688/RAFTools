@@ -31,14 +31,15 @@ import net.vs49688.rafview.vfs.*;
 
 public class View extends JFrame {
 
-	public static final int FILETYPE_DIR	= (1 << 0);
+	public static final int FILETYPE_DIR		= (1 << 0);
 	public static final int FILETYPE_RAF	= (1 << 1);
 	public static final int FILETYPE_INIBIN	= (1 << 2);
-	public static final int FILETYPE_DDS	= (1 << 3);
+	public static final int FILETYPE_DDS		= (1 << 3);
 	public static final int FILETYPE_PNG	= (1 << 4);
 	public static final int FILETYPE_BNK	= (1 << 5);
 	public static final int FILETYPE_WEM	= (1 << 6);
-	public static final int FILETYPE_ALL	= (1 << 7);
+	public static final int FILETYPE_INI		= (1 << 7);
+	public static final int FILETYPE_ALL		= (1 << 8);
 
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
@@ -192,6 +193,10 @@ public class View extends JFrame {
 			
 			if((typeFlags & FILETYPE_WEM) != 0) {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("Audiokinetic Wwise WEM (.wem)", "wem"));
+			}
+			
+			if((typeFlags & FILETYPE_INI) != 0) {
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("Configuration Files (.ini)", "ini"));
 			}
 			
 			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);
