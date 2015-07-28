@@ -3,15 +3,18 @@ apply plugin: 'java'
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-if (!hasProperty('mainClass')) {
-    ext.mainClass = 'net.vs49688.rafview.RAFView'
+task(git) {
+	ext.hash = getCheckedOutGitCommitHash()
+	ext.shortHash = ext.hash.take 7
 }
+
+compileJava.dependsOn git
 
 ext {
-	gitHash = getCheckedOutGitCommitHash()
-	gitShortHash = gitHash.take 7
+	if (!hasProperty('mainClass')) {
+		mainClass = 'net.vs49688.rafview.RAFView'
+	}
 }
-
 
 repositories {
     flatDir {
@@ -38,6 +41,32 @@ jar {
 	from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
 }
 
+task(generateProguardConfig, dependsOn: [git]) {
+	def rtLocation = "";
+	
+		for(jar in System.properties["sun.boot.class.path"].split(File.pathSeparator)) {
+		if(jar.endsWith("rt.jar")) {
+			rtLocation = jar
+			break
+		}
+	}
+
+	String outputName = project.name + "~" + project.git.shortHash + ".jar"
+	
+	String template = new File("${projectDir}/proguard.conf.template").text
+	template = template.replace("\${inJar}", jar.archivePath.toString())
+	template = template.replace("\${outJar}", new File(jar.archivePath.getParent(), outputName).toString())
+	template = template.replace("\${rtJar}", rtLocation)
+	
+	new File("${projectDir}/proguard.conf").write(template)
+}
+
+task(obfuscate, dependsOn: [generateProguardConfig, jar]) {
+	javaexec {
+		main="-jar";
+		args=["proguard.jar", "@proguard.conf"]
+	}
+}
 
 // Pinched from https://gist.github.com/JonasGroeger/7620911
 def getCheckedOutGitCommitHash() {
@@ -62,10 +91,10 @@ def regenGitConfig() {
 		"// This file is regenered by gradle everytime it's built\n\n" +
 		"public class GitInfo {\n " +
 		"	public static String getShortCommitHash() {\n" +
-		"		return \"${ext.gitShortHash}\";\n" +
+		"		return \"${git.shortHash}\";\n" +
 		"	}\n\n" +
 		"	public static String getCommitHash() {\n" +
-		"		return \"${ext.gitHash}\";\n" +
+		"		return \"${git.hash}\";\n" +
 		"	}\n\n" +
 		"}\n"
 	
