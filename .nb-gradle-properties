@@ -6,16 +6,7 @@
       <display-name>generateProguardConfig</display-name>
       <non-blocking>no</non-blocking>
       <task-names>
-        <name must-exist="yes">generateProguardConfig</name>
-      </task-names>
-      <task-args/>
-      <task-jvm-args/>
-    </task>
-    <task>
-      <display-name>obfuscate</display-name>
-      <non-blocking>no</non-blocking>
-      <task-names>
-        <name must-exist="no">obfuscate</name>
+        <name must-exist="no">generateProguardConfig</name>
       </task-names>
       <task-args/>
       <task-jvm-args/>
