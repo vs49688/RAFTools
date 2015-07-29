@@ -7,7 +7,6 @@
 -forceprocessing
 -optimizationpasses 4
 -allowaccessmodification
--mergeinterfacesaggressively
 -overloadaggressively
 -verbose
 
