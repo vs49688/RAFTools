@@ -1,5 +1,7 @@
 # RAFTools
 
+![](http://celestia.vs49688.net/jenkins/buildStatus/icon?job=RAFTools)
+
 A viewing/extraction toolkit for League of Legends RAF files.
 
 ### Features
@@ -8,6 +10,9 @@ A viewing/extraction toolkit for League of Legends RAF files.
  * DDS Viewing/Exporting (including Mipmaps)
  * Preliminary Wwise Soundbank extraction
  * CLI and GUI interfaces
+
+### Download
+http://celestia.vs49688.net/jenkins/job/RAFTools/
 
 ### Usage
 Usage is pretty straightforward:
