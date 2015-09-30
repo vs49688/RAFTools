@@ -81,9 +81,8 @@ public class CommandInterface {
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		
-		//printGPL();
-		
-		printCLS();
+		printGPL();
+		//printCLS();
 	}
 	
 	private void printGPL() {

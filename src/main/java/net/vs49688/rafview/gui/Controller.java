@@ -39,7 +39,8 @@ public class Controller {
 	private final View m_View;
 	private final Model m_Model;
 	private final CommandInterface m_CLI;
-	private final AboutDialogCLS m_AboutDialog;
+	//private final AboutDialogCLS m_AboutDialog;
+	private final AboutDialogGPL m_AboutDialog;
 	private final Console m_Console;
 	private final InibinViewer m_InibinViewer;
 	private final DDSViewer m_DDSViewer;
@@ -75,7 +76,8 @@ public class Controller {
 		m_View.addTab(m_DDSViewer, "DDS Viewer");
 		m_View.addTab(m_WwiseViewer, "Wwise Viewer");
 		
-		m_AboutDialog = new AboutDialogCLS(m_View);
+		//m_AboutDialog = new AboutDialogCLS(m_View);
+		m_AboutDialog = new AboutDialogGPL(m_View);
 		
 		m_VerDialog = new VersionDialog(m_View);
 		
