@@ -3,3 +3,4 @@
 /dist/
 /.nb-gradle/
 /proguard.conf
+/.gradle/

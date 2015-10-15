@@ -44,6 +44,15 @@
                 <Property name="actionCommand" type="java.lang.String" value="file-&gt;openlol"/>
               </Properties>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="m_OpenApp">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Meta+L"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Open LoL App Package"/>
+                <Property name="actionCommand" type="java.lang.String" value="file-&gt;openapp"/>
+              </Properties>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="m_Exit">
               <Properties>
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">

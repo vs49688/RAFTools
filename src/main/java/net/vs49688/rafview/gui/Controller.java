@@ -118,6 +118,10 @@ public class Controller {
 				File f = m_View.showOpenDialog(View.FILETYPE_DIR);
 				if(f != null)
 					m_CLI.parseString(String.format("opendir \"%s\"", f.toString()));
+			} else if(cmd.equals("file->openapp")) {
+				File f = m_View.showOpenDialog(View.FILETYPE_APP);
+				if(f != null)
+					m_CLI.parseString(String.format("openapp \"%s\"", f.toString()));
 			} else if(cmd.equals("console->submit")) {				
 				m_CLI.parseString(m_Console.getCommandText());
 			} else if(cmd.equals("help->about")) {

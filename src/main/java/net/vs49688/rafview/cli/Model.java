@@ -45,7 +45,7 @@ public class Model {
 		m_VFS.addFile(file, dat, version);
 		
 	}
-	
+
 	public void openLolDirectory(Path path) throws IOException {
 		m_VFS.clear();
 		addAll(m_VFS, path);

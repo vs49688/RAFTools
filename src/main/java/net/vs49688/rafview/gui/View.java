@@ -39,7 +39,8 @@ public class View extends JFrame {
 	public static final int FILETYPE_BNK	= (1 << 5);
 	public static final int FILETYPE_WEM	= (1 << 6);
 	public static final int FILETYPE_INI		= (1 << 7);
-	public static final int FILETYPE_ALL		= (1 << 8);
+	public static final int FILETYPE_APP		= (1 << 8);
+	public static final int FILETYPE_ALL		= (1 << 9);
 
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
@@ -67,6 +68,7 @@ public class View extends JFrame {
 		m_OpenArchive.addActionListener(listener);
 		m_AddArchive.addActionListener(listener);
 		m_OpenDir.addActionListener(listener);
+		m_OpenApp.addActionListener(listener);
 		m_Exit.addActionListener(listener);
 		m_About.addActionListener(listener);
 		
@@ -167,6 +169,10 @@ public class View extends JFrame {
     }
 
 	private static void addFileFilters(JFileChooser fc, int typeFlags) {
+		if((typeFlags & FILETYPE_APP) != 0) {
+			typeFlags |= FILETYPE_DIR;
+		}
+		
 		if((typeFlags & FILETYPE_DIR) == 0) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -202,6 +208,12 @@ public class View extends JFrame {
 			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);
 		} else {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			
+			if((typeFlags & FILETYPE_APP) != 0) {
+				fc.addChoosableFileFilter(new FileNameExtensionFilter("OS X App Package (.app)", "app"));
+			}
+			
+			fc.setAcceptAllFileFilterUsed(false);
 		}	
 	}
 	/**
@@ -227,6 +239,7 @@ public class View extends JFrame {
         m_OpenArchive = new javax.swing.JMenuItem();
         m_AddArchive = new javax.swing.JMenuItem();
         m_OpenDir = new javax.swing.JMenuItem();
+        m_OpenApp = new javax.swing.JMenuItem();
         m_Exit = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         m_About = new javax.swing.JMenuItem();
@@ -281,7 +294,7 @@ public class View extends JFrame {
                 .addGroup(m_InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pathLabel)
                     .addComponent(m_PathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(m_StatusLabel)
                 .addContainerGap())
         );
@@ -304,6 +317,11 @@ public class View extends JFrame {
         m_OpenDir.setText("Open LoL Directory");
         m_OpenDir.setActionCommand("file->openlol");
         fileMenu.add(m_OpenDir);
+
+        m_OpenApp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.META_MASK));
+        m_OpenApp.setText("Open LoL App Package");
+        m_OpenApp.setActionCommand("file->openapp");
+        fileMenu.add(m_OpenApp);
 
         m_Exit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         m_Exit.setText("Exit");
@@ -342,7 +360,7 @@ public class View extends JFrame {
 		});
 	}
 	
-	public void setStatus(String status) {
+	public final void setStatus(String status) {
 		if(status == null)
 			status = "";
 		
@@ -411,6 +429,7 @@ public class View extends JFrame {
     private javax.swing.JMenuItem m_AddArchive;
     private javax.swing.JMenuItem m_Exit;
     private javax.swing.JPanel m_InfoPanel;
+    private javax.swing.JMenuItem m_OpenApp;
     private javax.swing.JMenuItem m_OpenArchive;
     private javax.swing.JMenuItem m_OpenDir;
     private javax.swing.JTextField m_PathField;

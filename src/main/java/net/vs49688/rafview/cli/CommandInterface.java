@@ -37,6 +37,7 @@ public class CommandInterface {
 	ICommand m_OpenCommand;
 	ICommand m_AddCommand;
 	ICommand m_OpenDirCommand;
+	ICommand m_OpenAppCommand;
 	ICommand m_ExtractCommand;
 	ICommand m_RamInfoCommand;
 	ICommand m_ForceGC;
@@ -58,6 +59,7 @@ public class CommandInterface {
 		m_Interpreter.registerCommand((m_OpenCommand = new Open(out, model)));
 		m_Interpreter.registerCommand((m_AddCommand = new Add(out, model)));
 		m_Interpreter.registerCommand((m_OpenDirCommand = new OpenDir(out, model)));
+		m_Interpreter.registerCommand((m_OpenAppCommand = new OpenApp(out, model)));
 		m_Interpreter.registerCommand((m_ExtractCommand = new Extract(out, model)));
 		m_Interpreter.registerCommand((m_RamInfoCommand = new RamInfo(out)));
 		m_Interpreter.registerCommand((m_ForceGC = new ForceGC()));
@@ -72,6 +74,7 @@ public class CommandInterface {
 		m_HelpCommand.addHandler(m_OpenCommand);
 		m_HelpCommand.addHandler(m_AddCommand);
 		m_HelpCommand.addHandler(m_OpenDirCommand);
+		m_HelpCommand.addHandler(m_OpenAppCommand);
 		m_HelpCommand.addHandler(m_ExtractCommand);
 		m_HelpCommand.addHandler(m_RamInfoCommand);
 		m_HelpCommand.addHandler(m_ForceGC);
