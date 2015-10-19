@@ -169,10 +169,6 @@ public class View extends JFrame {
     }
 
 	private static void addFileFilters(JFileChooser fc, int typeFlags) {
-		if((typeFlags & FILETYPE_APP) != 0) {
-			typeFlags |= FILETYPE_DIR;
-		}
-		
 		if((typeFlags & FILETYPE_DIR) == 0) {
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -205,15 +201,15 @@ public class View extends JFrame {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("Configuration Files (.ini)", "ini"));
 			}
 			
-			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);
-		} else {
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			
 			if((typeFlags & FILETYPE_APP) != 0) {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("OS X App Package (.app)", "app"));
 			}
 			
-			fc.setAcceptAllFileFilterUsed(false);
+			fc.setAcceptAllFileFilterUsed((typeFlags & FILETYPE_ALL) != 0);
+		} else {
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+			//fc.setAcceptAllFileFilterUsed(false);
 		}	
 	}
 	/**
