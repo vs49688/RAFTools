@@ -1,6 +1,6 @@
 # RAFTools
 
-![](http://celestia.vs49688.net/jenkins/buildStatus/icon?job=RAFTools)
+![](https://celestia.vs49688.net/jenkins/buildStatus/icon?job=RAFTools)
 
 A viewing/extraction toolkit for League of Legends RAF files.
 
@@ -12,7 +12,7 @@ A viewing/extraction toolkit for League of Legends RAF files.
  * CLI and GUI interfaces
 
 ### Download
-http://celestia.vs49688.net/jenkins/job/RAFTools/
+https://celestia.vs49688.net/jenkins/job/RAFTools/
 
 ### Usage
 Usage is pretty straightforward:
