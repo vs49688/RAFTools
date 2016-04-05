@@ -77,7 +77,8 @@ public class DirNode extends Node implements Iterable<Node> {
 		m_Children.add(node);
 		node.setParent(this);
 		//System.err.printf("_addChild: %s\n", node.getFullPath());
-		node.m_Notify.onAdd(node);
+		// FIXME
+		//node.m_Notify.onAdd(node);
 		return node;
 	}
 	

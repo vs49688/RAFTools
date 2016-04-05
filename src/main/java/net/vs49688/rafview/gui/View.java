@@ -24,6 +24,7 @@ import net.vs49688.rafview.cli.Model;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Path;
 import javax.swing.*;
 import javax.swing.filechooser.*;
 import javax.swing.tree.*;
@@ -392,24 +393,24 @@ public class View extends JFrame {
 		}
 
 		@Override
-		public void onAdd(Node n) {
+		public void onAdd(Path n) {
 			DefaultMutableTreeNode tn = new DefaultMutableTreeNode(n);
-			n.setUserObject(tn);
+//			n.setUserObject(tn);
 			
-			DirNode parent = n.getParent();
+			//DirNode parent = n.getParent();
 			
-			if(parent != null) {
-				DefaultTreeModel m = (DefaultTreeModel)m_VFSTree.getModel();
-				
-				DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
-				m.insertNodeInto(tn, tnp, parent.getIndex(n));
-			} else {
-				m_VFSTree.setModel(new DefaultTreeModel(tn));
-			}
+			//if(parent != null) {
+			//	DefaultTreeModel m = (DefaultTreeModel)m_VFSTree.getModel();
+			//	
+			//	DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
+			//	m.insertNodeInto(tn, tnp, parent.getIndex(n));
+			//} else {
+			//	m_VFSTree.setModel(new DefaultTreeModel(tn));
+			//}
 		}
 		
 		@Override
-		public void onExtract(Node n) {
+		public void onExtract(Path n) {
 			
 		}
 		

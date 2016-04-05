@@ -224,16 +224,16 @@ public class Controller {
 		}
 
 		@Override
-		public void onAdd(Node n) {
+		public void onAdd(Path n) {
 			if(n instanceof FileNode) {
-				m_View.setStatus(String.format("Adding %s...", n.getFullPath().toString()));
+				m_View.setStatus(String.format("Adding %s...", n));
 			}
 		}
 		
 		@Override
-		public void onExtract(Node n) {
+		public void onExtract(Path n) {
 			if(n instanceof FileNode) {
-				m_View.setStatus(String.format("Extracting %s...", n.getFullPath().toString()));
+				m_View.setStatus(String.format("Extracting %s...", n));
 			}
 		}
 		

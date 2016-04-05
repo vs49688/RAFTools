@@ -20,6 +20,8 @@
  */
 package net.vs49688.rafview.vfs;
 
+import java.nio.file.Path;
+
 public interface IOperationsNotify {
 	public void onClear();
 	
@@ -35,12 +37,12 @@ public interface IOperationsNotify {
 	 * is called for node n, then it has been called for n's parent.
 	 * @param n The newly-added node.
 	 */
-	public void onAdd(Node n);
+	public void onAdd(Path n);
 	//public void onDelete(Node n);
 	
 	//public void onOverwrite(Node n1, Node n2);
 	
-	public void onExtract(Node n);
+	public void onExtract(Path n);
 	
 	public void onComplete();
 }

@@ -12,22 +12,21 @@ task(git) {
 
 compileJava.dependsOn git
 
-ext {
-	if (!hasProperty('mainClass')) {
-		mainClass = 'net.vs49688.rafview.RAFView'
-	}
-}
+//ext {
+//	if (!hasProperty('mainClass')) {
+//		mainClass = 'net.vs49688.rafview.RAFView'
+//	}
+//}
 
 repositories {
-    flatDir {
-        dirs 'libs'
-    }
+	mavenCentral()
 }
 
 dependencies {
-	compile ':ini4j:0.5.4'
-	//compile ':ini4j:0.5.4:javadoc'
-	//compile ':ini4j:0.5.4:sources'
+	compile 'com.google.jimfs:jimfs:1.1'
+	compile 'com.google.jimfs:jimfs:1.1:sources'
+	compile 'com.google.jimfs:jimfs:1.1:javadoc'
+	compile 'org.ini4j:ini4j:0.5.4'
 }
 
 jar {
