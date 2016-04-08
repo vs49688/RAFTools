@@ -37,7 +37,7 @@ public class Model {
 	
 	public Model() {
 		m_VFS = new RAFS();
-		m_CurrentDir = m_VFS.getRoot().getFullPath();
+		m_CurrentDir = m_VFS.getRoot();
 	}
 	
 	public void addFile(Path file, String version) throws IOException {
@@ -183,7 +183,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return String.format("0.4.3-alpha~%s", GitInfo.getShortCommitHash());
+		return String.format("0.5-alpha~%s", GitInfo.getShortCommitHash());
 	}
 	
 	public static String getApplicationName() {
@@ -191,7 +191,7 @@ public class Model {
 	}
 	
 	public static String getContactEmail() {
-		return "zane.vaniperen@uqconnect.edu.au";
+		return "zane@zanevaniperen.com";
 	}
 	
 	public static String getCopyrightHolder() {
@@ -199,6 +199,6 @@ public class Model {
 	}
 	
 	public static int getCopyrightYear() {
-		return 2015;
+		return 2016;
 	}
 }

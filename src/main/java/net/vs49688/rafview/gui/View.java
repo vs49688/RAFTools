@@ -85,23 +85,23 @@ public class View extends JFrame {
 		m_Model.getVFS().addNotifyHandler(new _NotifyHandler());
 	}
 	
-	private MutableTreeNode _tepkek(Node node) {
-		
-		DefaultMutableTreeNode tn = new DefaultMutableTreeNode(node);		
-		node.setUserObject(tn);
-
-		if(node instanceof DirNode) {
-			DirNode dn = (DirNode)node;
-			
-			for(final Node n: dn)
-				tn.add(_tepkek(n));
-
-		} else if(node instanceof FileNode) {
-			FileNode fn = (FileNode)node;
-		}
-		
-		return tn;
-	}
+//	private MutableTreeNode _tepkek(Node node) {
+//		
+//		DefaultMutableTreeNode tn = new DefaultMutableTreeNode(node);		
+//		node.setUserObject(tn);
+//
+//		if(node instanceof DirNode) {
+//			DirNode dn = (DirNode)node;
+//			
+//			for(final Node n: dn)
+//				tn.add(_tepkek(n));
+//
+//		} else if(node instanceof FileNode) {
+//			FileNode fn = (FileNode)node;
+//		}
+//		
+//		return tn;
+//	}
 
 	public void addTab(Component tab, String name) {
 		m_TabPane.addTab(name, tab);
@@ -379,13 +379,13 @@ public class View extends JFrame {
 		@Override
 		public void onClear() {
 
-			DefaultMutableTreeNode root = (DefaultMutableTreeNode)m_Model.getVFS().getRoot().getUserObject();
+			//DefaultMutableTreeNode root = (DefaultMutableTreeNode)m_Model.getVFS().getRoot().getUserObject();
 			
-			if(root.getChildCount() > 0) {
-				DefaultTreeModel model = (DefaultTreeModel)m_VFSTree.getModel();
-				for(int i = 0; i < root.getChildCount(); ++i)
-					model.removeNodeFromParent((DefaultMutableTreeNode)root.getLastChild());
-			}
+			//if(root.getChildCount() > 0) {
+			//	DefaultTreeModel model = (DefaultTreeModel)m_VFSTree.getModel();
+			//	for(int i = 0; i < root.getChildCount(); ++i)
+			//		model.removeNodeFromParent((DefaultMutableTreeNode)root.getLastChild());
+			//}
 		}
 
 		@Override
@@ -394,19 +394,19 @@ public class View extends JFrame {
 
 		@Override
 		public void onAdd(Path n) {
-			DefaultMutableTreeNode tn = new DefaultMutableTreeNode(n);
+//			DefaultMutableTreeNode tn = new DefaultMutableTreeNode(n);
 //			n.setUserObject(tn);
-			
-			//DirNode parent = n.getParent();
-			
-			//if(parent != null) {
-			//	DefaultTreeModel m = (DefaultTreeModel)m_VFSTree.getModel();
-			//	
-			//	DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
-			//	m.insertNodeInto(tn, tnp, parent.getIndex(n));
-			//} else {
-			//	m_VFSTree.setModel(new DefaultTreeModel(tn));
-			//}
+//			
+//			Path parent = n.getParent();
+//			
+//			if(parent != null) {
+//				DefaultTreeModel m = (DefaultTreeModel)m_VFSTree.getModel();
+//				
+//				DefaultMutableTreeNode tnp = (DefaultMutableTreeNode)parent.getUserObject();
+//				m.insertNodeInto(tn, tnp, parent.getIndex(n));
+//			} else {
+//				m_VFSTree.setModel(new DefaultTreeModel(tn));
+//			}
 		}
 		
 		@Override

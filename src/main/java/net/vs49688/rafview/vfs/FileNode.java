@@ -36,7 +36,7 @@ public class FileNode extends Node {
 		
 		@Override
 		public int compare(Version v1, Version v2) {
-			return m_Sorter.compare(v1.m_Version, v2.m_Version);
+			return m_Sorter.compare(v1.version, v2.version);
 		}
 	}
 	
@@ -79,42 +79,9 @@ public class FileNode extends Node {
 	@Override
 	public synchronized void _delete() {
 		m_Versions.stream().forEach((v) -> {
-			v.getSource().close();
+			v.dataSource.close();
 		});
 	}
 
-    public static class Version {
-		private Version(String v, DataSource ds) {
-			m_Version = v;
-			m_DataSource = ds;
-		}
-		
-		public DataSource getSource() {
-			return m_DataSource;
-		}
-		
-		@Override
-		public String toString() {
-			return m_Version;
-		}
-		
-		@Override
-		public boolean equals(Object o) {
-			if(!(o instanceof Version))
-				return false;
-			
-			Version v = (Version)o;
-			return m_Version.equals(v.m_Version);
-		}
 
-		@Override
-		public int hashCode() {
-			int hash = 5;
-			hash = 97 * hash + Objects.hashCode(m_Version);
-			return hash;
-		}
-		
-		private final String m_Version;
-        private final DataSource m_DataSource;
-    }
 }

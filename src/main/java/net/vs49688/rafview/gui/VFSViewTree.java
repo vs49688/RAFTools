@@ -34,7 +34,7 @@ public class VFSViewTree extends JTree {
 		public void nodeSelected(Node node) { }
 
 		@Override
-		public void nodeExport(Node node, FileNode.Version version) { }
+		public void nodeExport(Node node, Version version) { }
 	};
 	
 	private OpHandler m_OpHandler;
@@ -64,7 +64,7 @@ public class VFSViewTree extends JTree {
 			
 			menu.add(item);
 			
-			for(final FileNode.Version v : fn.getVersions()) {
+			for(final Version v : fn.getVersions()) {
 				item = new JMenuItem(v.toString());
 				item.addActionListener((ActionEvent ae) -> {
 					m_OpHandler.nodeExport(n, v);
@@ -127,6 +127,6 @@ public class VFSViewTree extends JTree {
 	
 	public interface OpHandler {
 		public void nodeSelected(Node node);
-		public void nodeExport(Node node, FileNode.Version version);
+		public void nodeExport(Node node, Version version);
 	}
 }

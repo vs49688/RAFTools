@@ -170,17 +170,17 @@ public class Controller {
 				
 				if(node.name().toLowerCase().endsWith(".inibin") ||
 					node.name().toLowerCase().endsWith(".troybin")) {
-					m_InibinLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
+					m_InibinLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
 				} else if(node.name().toLowerCase().endsWith(".dds")) {
-					m_DDSLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
+					m_DDSLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
 				} else if(node.name().toLowerCase().endsWith(".bnk")) {
-					m_WwiseLoader.delayLoad(fn.name(), fn.getLatestVersion().getSource());
+					m_WwiseLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
 				}
 			}
 		}
 
 		@Override
-		public void nodeExport(Node node, FileNode.Version version) {
+		public void nodeExport(Node node, Version version) {
 			File f;
 			if(node instanceof DirNode)
 				f = m_View.showSaveDialog("", View.FILETYPE_DIR);
