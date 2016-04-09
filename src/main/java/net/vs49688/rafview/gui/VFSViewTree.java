@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -21,50 +21,63 @@
 package net.vs49688.rafview.gui;
 
 import java.awt.event.*;
+import java.io.IOException;
+import java.nio.file.*;
+import static java.nio.file.StandardWatchEventKinds.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import net.vs49688.rafview.vfs.*;
 
 public class VFSViewTree extends JTree {
-	
+
 	private static final OpHandler s_DummyOpHandler = new OpHandler() {
 
 		@Override
-		public void nodeSelected(Node node) { }
+		public void nodeSelected(Path node) {
+		}
 
 		@Override
-		public void nodeExport(Node node, Version version) { }
+		public void nodeExport(Path node, Version version) {
+		}
 	};
-	
-	private OpHandler m_OpHandler;
-	//private final JPopupMenu m_ContextMenu;
 
+	private OpHandler m_OpHandler;
+	private RAFS m_FileSystem;
+	private WatchService m_FileWatcher;
+	private final HashMap<Path, WatchKey> m_WatchedDirectories;
+	
 	public VFSViewTree() {
-		super();
+		super((DefaultTreeModel)null);
 		this.addMouseListener(new _Mouse());
 		this.addTreeSelectionListener(new _Selection());
+		this.addTreeExpansionListener(new _Expansion());
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
 		m_OpHandler = s_DummyOpHandler;
+		m_FileSystem = null;
+		m_WatchedDirectories = new HashMap<>();
 	}
-	
-	private JPopupMenu createPopupMenu(Node n) {
+
+	private JPopupMenu createPopupMenu(Path n) {
 		JPopupMenu m = new JPopupMenu();
-		
-		if(n instanceof FileNode) {
-			FileNode fn = (FileNode)n;
-			
+
+		if(!Files.isDirectory(n)) {
 			JMenu menu = new JMenu("Extract");
 
 			JMenuItem item = new JMenuItem("Latest");
 			item.addActionListener((ActionEvent ae) -> {
-				m_OpHandler.nodeExport(n, fn.getLatestVersion());
+				try {
+					m_OpHandler.nodeExport(n, m_FileSystem.getVersionDataForFile(n, null));
+				} catch(IOException e) {
+					// will never happen
+				}
 			});
-			
+
 			menu.add(item);
-			
-			for(final Version v : fn.getVersions()) {
+
+			for(final Version v : m_FileSystem.getFileVersions(n)) {
 				item = new JMenuItem(v.toString());
 				item.addActionListener((ActionEvent ae) -> {
 					m_OpHandler.nodeExport(n, v);
@@ -72,30 +85,101 @@ public class VFSViewTree extends JTree {
 				menu.add(item);
 			}
 			m.add(menu);
-		} else if(n instanceof DirNode) {
-			DirNode fn = (DirNode)n;
-			
+		} else {
 			JMenuItem item = new JMenuItem("Extract");
 			item.addActionListener((ActionEvent ae) -> {
 				m_OpHandler.nodeExport(n, null);
 			});
 			m.add(item);
 		}
-		
+
 		return m;
 	}
-	
+
 	public void setOperationsHandler(OpHandler handler) {
 		m_OpHandler = handler == null ? s_DummyOpHandler : handler;
 	}
 	
-	private Node getSelectedVFSNode() {
-		if(this.getSelectionCount() != 1)
-			return null;
+	public void setVFS(RAFS vfs) throws IOException {
+		if(vfs == m_FileSystem) {
+			return;
+		}
+
+		for(WatchKey key : m_WatchedDirectories.values()) {
+			key.cancel();
+		}
 		
-		return (Node)((DefaultMutableTreeNode)this.getLastSelectedPathComponent()).getUserObject();
+		m_WatchedDirectories.clear();
+		
+		if(m_FileWatcher != null) {
+			m_FileWatcher.close();
+		}
+
+		m_FileSystem = vfs;
+		m_FileWatcher = m_FileSystem.getFileSystem().newWatchService();
+		SwingUtilities.invokeLater(new FSChangeProc());
+		
+		DefaultTreeModel model = new DefaultTreeModel(new FSEntryNode(m_FileSystem.getRoot()));
+		this.setModel(model);
+	}
+
+	
+	private class FSChangeProc implements Runnable {
+
+		@Override
+		public void run() {
+			WatchKey key;
+			try {
+				key = m_FileWatcher.poll();
+			} catch(ClosedWatchServiceException e) {
+				return;
+			}
+			
+			if(key != null) for(WatchEvent<?> event : key.pollEvents()) {
+				WatchEvent.Kind<?> kind = event.kind();
+				
+				Path parent = (Path)key.watchable();
+
+				if(kind == OVERFLOW) {
+					continue;
+				}
+
+				WatchEvent<Path> ev = (WatchEvent<Path>) event;
+				Path fileName = ev.context();
+				Path fullPath = parent.resolve(fileName);
+
+				// TODO: Display changes to any open directories
+//				try {
+//					if(kind == ENTRY_CREATE) {
+//						System.err.printf("%s Created\n", fullPath);
+//						fullPath.register(m_FileWatcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+//					} else if(kind == ENTRY_DELETE) {
+//						System.err.printf("%s Deleted\n", fullPath);
+//					} else if(kind == ENTRY_MODIFY) {
+//						System.err.printf("%s Modified\n", fullPath);
+//					}
+//				} catch(IOException e) {
+//					e.printStackTrace(System.err);
+//				}
+
+				if(!key.reset()) {
+					break;
+				}
+			}
+			
+			SwingUtilities.invokeLater(this);
+		}
 	}
 	
+
+	private Path getSelectedVFSNode() {
+		if(this.getSelectionCount() != 1) {
+			return null;
+		}
+
+		return ((FSEntryNode)this.getLastSelectedPathComponent()).path;
+	}
+
 	private class _Mouse extends MouseAdapter {
 
 		@Override
@@ -103,30 +187,101 @@ public class VFSViewTree extends JTree {
 			int row = VFSViewTree.this.getClosestRowForLocation(e.getX(), e.getY());
 			VFSViewTree.this.setSelectionRow(row);
 
-			Node vfsNode = getSelectedVFSNode();
-			
+			Path path = getSelectedVFSNode();
+
 			if(SwingUtilities.isRightMouseButton(e)) {
-				JPopupMenu m_ContextMenu = createPopupMenu(vfsNode);
+				JPopupMenu m_ContextMenu = createPopupMenu(path);
 				VFSViewTree.this.add(m_ContextMenu);
 				m_ContextMenu.show(e.getComponent(), e.getX(), e.getY());
-				
+
+			}
+		}
+	}
+
+	private class _Selection implements TreeSelectionListener {
+
+		@Override
+		public void valueChanged(TreeSelectionEvent tse) {
+			Path p = getSelectedVFSNode();
+			if(p != null) {
+				m_OpHandler.nodeSelected(p);
+			}
+		}
+	}
+
+	public interface OpHandler {
+
+		public void nodeSelected(Path node);
+
+		public void nodeExport(Path node, Version version);
+	}
+
+	private class _Expansion implements TreeExpansionListener {
+
+		@Override
+		public void treeExpanded(TreeExpansionEvent event) {
+			TreePath path = event.getPath();
+			JTree tree = (JTree)event.getSource();
+			
+			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
+			try {
+				m_WatchedDirectories.put(node.path, node.path.register(m_FileWatcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE));
+				node.repopulate();
+				((DefaultTreeModel)tree.getModel()).nodeStructureChanged(node);
+			} catch(IOException e) {
+				e.printStackTrace(System.err);
+			}
+		}
+
+		@Override
+		public void treeCollapsed(TreeExpansionEvent event) {
+			TreePath path = event.getPath();
+			
+			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
+			WatchKey key = m_WatchedDirectories.getOrDefault(node.path, null);
+			
+			if(key != null) {
+				key.cancel();
+				m_WatchedDirectories.remove(node.path);
 			}
 		}
 	}
 	
-	private class _Selection implements TreeSelectionListener {	
-
-		@Override
-		public void valueChanged(TreeSelectionEvent tse) {
-			Node n = getSelectedVFSNode();
-			if(n != null)
-				m_OpHandler.nodeSelected(n);
+	private static class FSEntryNode extends DefaultMutableTreeNode {
+		public final Path path;
+		public final boolean isDirectory;
+		private final String m_FileName;
+		
+		public FSEntryNode(Path path) {
+			this.path = path;
+			isDirectory = Files.isDirectory(path);
 			
+			Path fn = path.getFileName();
+			if(fn == null) {
+				m_FileName = "/";
+			} else {
+				m_FileName = fn.toString();
+			}
 		}
-	}
-	
-	public interface OpHandler {
-		public void nodeSelected(Node node);
-		public void nodeExport(Node node, Version version);
+		
+		public void repopulate() throws IOException {
+			this.removeAllChildren();
+			
+			try(DirectoryStream<Path> _children = Files.newDirectoryStream(path)) {
+				for(Path child : _children) {
+					this.add(new FSEntryNode(child));
+				}
+			}
+		}
+		
+		@Override
+		public boolean isLeaf() {
+			return !isDirectory;
+		}
+		
+		@Override
+		public String toString() {
+			return m_FileName;
+		}
 	}
 }

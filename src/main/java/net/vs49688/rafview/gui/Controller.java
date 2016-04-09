@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -53,7 +53,7 @@ public class Controller {
 	private final DelayLoader m_WwiseLoader;
 	private final DelayWriter m_DelayWriter;
 	
-	public Controller() {
+	public Controller() throws IOException {
 		ActionListener al = new MenuListener();
 		
 		m_InibinLoader = new InibinDelayedLoader();
@@ -129,11 +129,11 @@ public class Controller {
 			} else if(cmd.equals("inibin->export")) {
 
 			} else if(cmd.equals("inibin->loadexternal")) {
-				m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN));
+				m_InibinLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INIBIN).toPath());
 			} else if(cmd.equals("inibin->loadmappings")) {
-				m_InibinMapLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INI));
+				m_InibinMapLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_INI).toPath());
 			} else if(cmd.equals("dds->loadexternal")) {
-				m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS));
+				m_DDSLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_DDS).toPath());
 			} else if(cmd.equals("dds->export")) {
 				File f = m_View.showSaveDialog(String.format("%s.png", m_DDSViewer.getDDSName()), View.FILETYPE_PNG);
 
@@ -141,7 +141,7 @@ public class Controller {
 					m_DelayWriter.delayWriteImage(m_DDSViewer.getCurrentImage(), "PNG", f);
 				}
 			} else if(cmd.equals("wwise->loadexternal")) {
-				m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK));
+				m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK).toPath());
 			} 
 		}
 	}
@@ -161,43 +161,47 @@ public class Controller {
 	private class _TreeOpHandler implements VFSViewTree.OpHandler {
 
 		@Override
-		public void nodeSelected(Node node) {
-			Path fullPath = node.getFullPath();
-			m_View.setPathText(fullPath.toString());
+		public void nodeSelected(Path node) {
+			m_View.setPathText(node.toAbsolutePath().toString());
 			
-			if(node instanceof FileNode) {
-				FileNode fn = (FileNode)node;
+			if(!Files.isDirectory(node)) {
+				String fileName = node.getFileName().toString().toLowerCase();
+				DataSource ds = null;
+				try {
+					ds = m_Model.getVFS().getVersionDataForFile(node, null).dataSource;
+				} catch(IOException e) {
+					// Will never happen
+					return;
+				}
 				
-				if(node.name().toLowerCase().endsWith(".inibin") ||
-					node.name().toLowerCase().endsWith(".troybin")) {
-					m_InibinLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
-				} else if(node.name().toLowerCase().endsWith(".dds")) {
-					m_DDSLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
-				} else if(node.name().toLowerCase().endsWith(".bnk")) {
-					m_WwiseLoader.delayLoad(fn.name(), fn.getLatestVersion().dataSource);
+				if(fileName.endsWith(".inibin") ||
+					fileName.endsWith(".troybin")) {
+					m_InibinLoader.delayLoad(node, ds);
+				} else if(fileName.endsWith(".dds")) {
+					m_DDSLoader.delayLoad(node, ds);
+				} else if(fileName.endsWith(".bnk")) {
+					m_WwiseLoader.delayLoad(node, ds);
 				}
 			}
 		}
 
 		@Override
-		public void nodeExport(Node node, Version version) {
+		public void nodeExport(Path node, Version version) {
 			File f;
-			if(node instanceof DirNode)
+			if(Files.isDirectory(node))
 				f = m_View.showSaveDialog("", View.FILETYPE_DIR);
 			else
-				f = m_View.showSaveDialog(node.name(), View.FILETYPE_ALL);
+				f = m_View.showSaveDialog(node.getFileName().toString(), View.FILETYPE_ALL);
 			
 			if(f == null)
 				return;
 			
-			String fn;
+			if(version == null) {
+				m_CLI.parseString(String.format("extract \"%s\" \"%s\"", node.toAbsolutePath().toString(), f.toString()));
+			} else {
+				m_CLI.parseString(String.format("extract \"%s:%s\" \"%s\"", node.toAbsolutePath().toString(), version, f.toString()));
+			}
 			
-			if(version == null)
-				fn = node.getFullPath().toString();
-			else
-				fn = String.format("%s:%s", node.getFullPath(), version);
-			
-			m_CLI.parseString(String.format("extract \"%s\" \"%s\"", fn, f.toString()));
 		}
 		
 	}
@@ -219,20 +223,15 @@ public class Controller {
 		}
 
 		@Override
-		public void onModify(Node n) {
-			
-		}
-
-		@Override
 		public void onAdd(Path n) {
-			if(n instanceof FileNode) {
+			if(!Files.isDirectory(n)) {
 				m_View.setStatus(String.format("Adding %s...", n));
 			}
 		}
 		
 		@Override
 		public void onExtract(Path n) {
-			if(n instanceof FileNode) {
+			if(!Files.isDirectory(n)) {
 				m_View.setStatus(String.format("Extracting %s...", n));
 			}
 		}
@@ -279,11 +278,11 @@ public class Controller {
 	
 	private class WwiseDelayedLoader extends DelayLoader {
 		@Override
-		protected void load(String name, byte[] data) throws Exception {
+		protected void load(Path path, byte[] data) throws Exception {
 			Wwise wwise = Wwise.load(data);
 				
 			SwingUtilities.invokeLater(() -> {
-				m_WwiseViewer.setSoundbank(name, wwise);
+				m_WwiseViewer.setSoundbank(path.getFileName().toString(), wwise);
 			});
 		}
 
@@ -298,9 +297,9 @@ public class Controller {
 	
 	private class DDSDelayedLoader extends DelayLoader {
 		@Override
-		protected void load(String name, byte[] data) throws Exception {
+		protected void load(Path path, byte[] data) throws Exception {
 			SwingUtilities.invokeLater(() -> {
-					m_DDSViewer.setDDS(name, data);
+					m_DDSViewer.setDDS(path.getFileName().toString(), data);
 			});
 		}
 
@@ -316,7 +315,7 @@ public class Controller {
 	private class InibinDelayedLoader extends DelayLoader {
 
 		@Override
-		protected void load(String name, byte[] data) throws Exception {
+		protected void load(Path path, byte[] data) throws Exception {
 			Map<Integer, Value> inibin = InibinReader.readInibin(data);
 
 			SwingUtilities.invokeLater(() -> {
@@ -336,7 +335,7 @@ public class Controller {
 	private class InibinMapDelayedLoader extends DelayLoader {
 
 		@Override
-		protected void load(String name, byte[] data) throws Exception {
+		protected void load(Path path, byte[] data) throws Exception {
 			Map<String, Map<Integer, String>> outMap = new HashMap<>();
 			
 			Ini ini = new Ini();

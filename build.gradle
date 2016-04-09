@@ -12,11 +12,11 @@ task(git) {
 
 compileJava.dependsOn git
 
-//ext {
-//	if (!hasProperty('mainClass')) {
-//		mainClass = 'net.vs49688.rafview.RAFView'
-//	}
-//}
+ext {
+	if (!hasProperty('mainClass')) {
+		mainClass = 'net.vs49688.rafview.RAFView'
+	}
+}
 
 repositories {
 	mavenCentral()

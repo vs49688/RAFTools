@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -31,7 +31,6 @@ import java.nio.file.Paths;
 import com.google.common.jimfs.*;
 import com.google.common.jimfs.PathType;
 import net.vs49688.rafview.IPv4Sorter;
-import net.vs49688.rafview.cli.Model;
 
 public class RAFS {
 
@@ -502,13 +501,6 @@ public class RAFS {
 		public void onClear() {
 			m_Notify.stream().forEach((ion) -> {
 				ion.onClear();
-			});
-		}
-
-		@Override
-		public void onModify(Node n) {
-			m_Notify.stream().forEach((ion) -> {
-				ion.onModify(n);
 			});
 		}
 

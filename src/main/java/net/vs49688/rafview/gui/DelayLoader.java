@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -26,26 +26,26 @@ import net.vs49688.rafview.sources.*;
 
 public abstract class DelayLoader {
 	
-	protected abstract void load(String name, byte[] data) throws Exception;
+	protected abstract void load(Path path, byte[] data) throws Exception;
 	protected abstract void onException(Exception e);
 	
-	public void delayLoad(String name, DataSource ds) {
+	public void delayLoad(Path path, DataSource ds) {
 		new Thread(() -> {
 			try {
-				load(name, ds.read());
+				load(path, ds.read());
 			} catch(Exception e) {
 				onException(e);
 			}
 		}).start();
 	}
 	
-	public void delayLoad(File f) {
-		if(f == null)
+	public void delayLoad(Path path) {
+		if(path == null)
 			return;
 		
 		new Thread(() -> {
 			try {
-				load(f.getName(), Files.readAllBytes(f.toPath()));
+				load(path.getFileName(), Files.readAllBytes(path));
 			} catch(Exception e) {
 				onException(e);
 			}
