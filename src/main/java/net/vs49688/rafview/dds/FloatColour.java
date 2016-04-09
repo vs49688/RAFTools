@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -23,7 +23,7 @@ package net.vs49688.rafview.dds;
 /**
  * Seriously, the worst invention since un-sliced bread.
  * This code will kill your family, murder your pets, and steal the soul
- * if your unborn child.
+ * of your unborn child.
  */
 public class FloatColour {
 	private float a, r, g, b;

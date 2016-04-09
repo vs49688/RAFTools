@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -41,64 +41,24 @@ public class CD implements ICommand {
 		if(args.length != 2)
 			throw new CommandException(cmdLine, "cd: Invalid arguments");
 
-		/* HACKHACKHACK: On Windows, paths starting with / are changed to start with \
-		 * which are drive-relative, not absolute. The correct way to fix this is to
-		 * create a proper java.nio.file.Path implementation for RAFS, but I really
-		 * can't be bothered doing that. */
-		boolean relative = (!args[1].startsWith("/") && !args[1].startsWith("\\"));
-		
-		try {
-			Path path = Paths.get(args[1]).normalize();
-			if(relative) {
-				changeRelative(m_Model.getCurrentDirectory(), path);
-			} else {
-				changeRelative(m_Model.getVFS().getRoot().getFullPath(), path);
-			}
-		} catch(InvalidPathException e) {
+		Path path = m_Model.getVFS().getFileSystem().getPath(args[1]);
+
+		if(!path.isAbsolute()) {
+			path = m_Model.getCurrentDirectory().resolve(path).normalize();
+		}
+		if(!Files.exists(path)) {
 			m_Console.printf("cd: %s: No such file or directory\n", args[1]);
-		}
-	}
-
-	private void changeAbsolute(Path path) {
-		RAFS vfs = m_Model.getVFS();
-		
-		Node newNode = vfs.getNodeFromPath(path);
-		
-		if(newNode == null) {
-			m_Console.printf("cd: %s: No such file or directory\n", path.toString());
 			return;
 		}
 		
-		if(newNode instanceof FileNode) {
+		if(!Files.isDirectory(path)) {
 			m_Console.printf("cd: %s: Not a directory\n", path.toString());
 			return;
 		}
-		
-		m_Model.setCurrentDirectory(newNode.getFullPath());
-	}
-	
-	private void changeRelative(Path root, Path path) {
-		RAFS vfs = m_Model.getVFS();
-		
-		DirNode currentNode = (DirNode)vfs.getNodeFromPath(root);
-		
-		
-		Node newNode = vfs.getNodeFromPath(currentNode, path);
-		
-		if(newNode == null) {
-			m_Console.printf("cd: %s: No such file or directory\n", path.toString());
-			return;
-		}
-		
-		if(newNode instanceof FileNode) {
-			m_Console.printf("cd: %s: Not a directory\n", path.toString());
-			return;
-		}
-		
-		m_Model.setCurrentDirectory(newNode.getFullPath());
+			
+		m_Model.setCurrentDirectory(path);		
 	}
 
-	
 	@Override
 	public String getCommand() {
 		return "cd";

@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -20,9 +20,8 @@
  */
 package net.vs49688.rafview.cli.commands;
 
-import java.nio.file.Paths;
 import java.io.*;
-import java.nio.file.Path;
+import java.nio.file.*;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 
@@ -41,8 +40,7 @@ public class Extract implements ICommand {
 		if(args.length < 3)
 			throw new CommandException(cmdLine, getUsageString());
 		
-		String outDir = args[args.length-1];
-		
+		Path outPath = Paths.get(args[args.length-1]);
 		for(int i = 1; i < args.length-1; ++i) {
 			String version;
 			String file[] = args[i].trim().split(":", 2);
@@ -52,11 +50,12 @@ public class Extract implements ICommand {
 				version = file[1];
 			}
 			
-			boolean relative = (!file[0].startsWith("/") && !file[0].startsWith("\\"));
-			Path rawPath = Paths.get(file[0]);
-			Path vfsPath = relative ? m_Model.getCurrentDirectory().resolve(rawPath) : rawPath;
+			Path vfsPath = m_Model.getVFS().getFileSystem().getPath(file[0]);
+			if(!vfsPath.isAbsolute()) {
+				vfsPath = m_Model.getCurrentDirectory().resolve(vfsPath).normalize();
+			}
 			
-			m_Model.getVFS().extract(vfsPath, Paths.get(outDir), version);
+			m_Model.getVFS().extract(vfsPath, outPath, version);			
 		}
 	}
 

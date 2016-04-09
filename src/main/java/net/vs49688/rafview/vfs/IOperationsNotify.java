@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only
@@ -20,27 +20,17 @@
  */
 package net.vs49688.rafview.vfs;
 
+import java.nio.file.Path;
+
 public interface IOperationsNotify {
 	public void onClear();
-	
-	/**
-	 * Called when a node has been modified.
-	 * @param n The modified node.
-	 */
-	public void onModify(Node n);
-	
-	/**
-	 * Called when a new node has been added to the tree.
-	 * Because of the nature of a VFS, it is guaranteed that if this function
-	 * is called for node n, then it has been called for n's parent.
-	 * @param n The newly-added node.
-	 */
-	public void onAdd(Node n);
+
+	public void onAdd(Path n);
 	//public void onDelete(Node n);
 	
 	//public void onOverwrite(Node n1, Node n2);
 	
-	public void onExtract(Node n);
+	public void onExtract(Path n);
 	
 	public void onComplete();
 }

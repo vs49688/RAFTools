@@ -1,6 +1,6 @@
 /*
  * RAFTools - Copyright (C) 2015 Zane van Iperen.
- *    Contact: zane.vaniperen@uqconnect.edu.au
+ *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, and only

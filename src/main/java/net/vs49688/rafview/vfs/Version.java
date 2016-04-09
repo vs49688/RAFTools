@@ -18,21 +18,49 @@
  * Any and all GPL restrictions may be circumvented with permission from the
  * the original author.
  */
-package net.vs49688.rafview.inibin;
+package net.vs49688.rafview.vfs;
 
-public class Vector3f {
-	public float x;
-	public float y;
-	public float z;
-	
-	public Vector3f(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+
+import java.util.*;
+import net.vs49688.rafview.sources.*;
+
+public class Version {
+
+	public Version(String v, DataSource ds) {
+		version = v;
+		dataSource = ds;
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("[%f, %f, %f]", x, y, z);
+		return version;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof Version)) {
+			return false;
+		}
+
+		Version v = (Version) o;
+		return version.equals(v.version);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 5;
+		hash = 97 * hash + Objects.hashCode(version);
+		return hash;
+	}
+
+	public boolean versionCompare(String version) {
+		if(version == null) {
+			return false;
+		}
+		
+		return version.equalsIgnoreCase(version);
+	}
+	
+	public final String version;
+	public final DataSource dataSource;
 }
