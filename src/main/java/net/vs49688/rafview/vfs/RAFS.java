@@ -418,7 +418,7 @@ public class RAFS {
 			throw new IOException("No such file or directory");
 		}
 		
-		Files.walkFileTree(vfsPath, new ExtractWalker(outPath, vfsPath, version, this));
+		Files.walkFileTree(vfsPath, new ExtractWalker(outPath, version, this));
 
 		m_NotifyDispatch.onComplete();
 	}

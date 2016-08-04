@@ -29,28 +29,23 @@ public class ExtractWalker implements FileVisitor<Path> {
 
 	private final String m_Version;
 	private final Path m_NativePath;
-	private final Path m_CurrentDirectory;
 	private final RAFS m_VFS;
-	
-	public ExtractWalker(Path nativePath, Path currentDirectory, String version, RAFS vfs) {
+
+	public ExtractWalker(Path nativePath, String version, RAFS vfs) {
 		m_Version = version;
 		m_NativePath = nativePath;
-		m_CurrentDirectory = currentDirectory.getParent();
 		m_VFS = vfs;
 	}
-	
+
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-		Files.createDirectories(Paths.get(dir.toString()));
+		Files.createDirectories(getExtractionPath(m_NativePath, dir));
 		return CONTINUE;
 	}
 
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-		Path outputPath = m_NativePath.resolve(m_CurrentDirectory.relativize(file).toString());
-		
-		Path parent = outputPath.getParent();
-		Files.createDirectories(parent);
+		Path outputPath = getExtractionPath(m_NativePath, file);
 		Files.write(outputPath, m_VFS.getVersionDataForFile(file, m_Version).dataSource.read());
 		return CONTINUE;
 	}
@@ -66,5 +61,8 @@ public class ExtractWalker implements FileVisitor<Path> {
 	public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 		return CONTINUE;
 	}
-	
+
+	private static Path getExtractionPath(Path extractionRoot, Path rafPath) {
+		return extractionRoot.resolve(rafPath.getRoot().relativize(rafPath).toString());
+	}
 }
