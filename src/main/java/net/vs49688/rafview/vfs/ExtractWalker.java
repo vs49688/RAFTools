@@ -31,14 +31,21 @@ public class ExtractWalker implements FileVisitor<Path> {
 	private final Path m_NativePath;
 	private final RAFS m_VFS;
 
+	private Path m_StartDir;
+
 	public ExtractWalker(Path nativePath, String version, RAFS vfs) {
 		m_Version = version;
 		m_NativePath = nativePath;
 		m_VFS = vfs;
+		m_StartDir = null;
 	}
 
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+		if(m_StartDir == null) {
+			m_StartDir = dir.getParent();
+		}
+
 		Files.createDirectories(getExtractionPath(m_NativePath, dir));
 		return CONTINUE;
 	}
@@ -62,7 +69,15 @@ public class ExtractWalker implements FileVisitor<Path> {
 		return CONTINUE;
 	}
 
-	private static Path getExtractionPath(Path extractionRoot, Path rafPath) {
-		return extractionRoot.resolve(rafPath.getRoot().relativize(rafPath).toString());
+	private Path getExtractionPath(Path extractionRoot, Path rafPath) {
+		Path p;
+
+		if(m_StartDir == null) {
+			p = rafPath.getRoot().relativize(rafPath);
+		} else {
+			p = m_StartDir.relativize(rafPath);
+		}
+
+		return extractionRoot.resolve(p.toString());
 	}
 }
