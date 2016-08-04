@@ -30,13 +30,15 @@ public class ExtractWalker implements FileVisitor<Path> {
 	private final String m_Version;
 	private final Path m_NativePath;
 	private final RAFS m_VFS;
+	private final IOperationsNotify m_Notify;
 
 	private Path m_StartDir;
 
-	public ExtractWalker(Path nativePath, String version, RAFS vfs) {
+	public ExtractWalker(Path nativePath, String version, RAFS vfs, IOperationsNotify notify) {
 		m_Version = version;
 		m_NativePath = nativePath;
 		m_VFS = vfs;
+		m_Notify = notify;
 		m_StartDir = null;
 	}
 
@@ -53,6 +55,7 @@ public class ExtractWalker implements FileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		Path outputPath = getExtractionPath(m_NativePath, file);
+		m_Notify.onExtract(file);
 		Files.write(outputPath, m_VFS.getVersionDataForFile(file, m_Version).dataSource.read());
 		return CONTINUE;
 	}
