@@ -47,7 +47,7 @@ public class RAFS {
 	private final IOperationsNotify m_NotifyDispatch;
 	private final List<IOperationsNotify> m_Notify;
 
-	public final FileSystem m_FileSystem;
+	private final FileSystem m_FileSystem;
 
 	/**
 	 *  The mapping of paths to their versions.
@@ -307,7 +307,7 @@ public class RAFS {
 		}
 	}
 
-	private void addVersionForFile(Path path, String version, DataSource ds) {
+	void addVersionForFile(Path path, String version, DataSource ds) {
 		if(version == null || version.isEmpty() || ds == null)
 			throw new IllegalArgumentException();
 		

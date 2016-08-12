@@ -54,6 +54,11 @@ public class ExtractWalker implements FileVisitor<Path> {
 
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+		/* Will happen if we're extracting a single file. */
+		if(m_StartDir == null) {
+			m_StartDir = file.getParent();
+		}
+
 		Path outputPath = getExtractionPath(m_NativePath, file);
 		m_Notify.onExtract(file);
 		Files.write(outputPath, m_VFS.getVersionDataForFile(file, m_Version).dataSource.read());
