@@ -41,7 +41,7 @@ public class VFSExtractionTest {
 		populateFileSystem(vfs);
 		vfs.extract(vfs.getFileSystem().getPath("/"), tempFolder.getRoot().toPath(), null);
 	}
-	
+
 	@Test
 	public void extractFolder() throws Exception {
 		RAFS vfs = new RAFS();
@@ -54,5 +54,12 @@ public class VFSExtractionTest {
 		RAFS vfs = new RAFS();
 		populateFileSystem(vfs);
 		vfs.extract(vfs.getFileSystem().getPath("/DATA/Characters/ashe.txt"), tempFolder.getRoot().toPath(), null);
+	}
+
+	@Test
+	public void extractFileToFile() throws Exception {
+		RAFS vfs = new RAFS();
+		populateFileSystem(vfs);
+		vfs.extract(vfs.getFileSystem().getPath("/DATA/Characters/ashe.txt"), tempFolder.getRoot().toPath().resolve("ashe.txt"), null);
 	}
 }
