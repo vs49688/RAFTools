@@ -9,5 +9,5 @@ deploy:
     secure: YBc2iUEZSFo9mQtoKhg2LQlofXIBED1Yw9/snL2NrOEqAYYvgB9D+GGQonFZ+6rQgUtA4bLrNYwyuYc8FrThLwYFk+QIE57CeUwMD+ifEX3mhHJcf8aUImp1gMUrWQhwn8CJ72zp+wcKM2PWQ/tB2pL2aLsyngdKYefEqrE05H11HAFERtIET0TxJzyPNyF02+TUWJk45bHB0xk8qt9h3Vj714PkaFLrlyNRUPWObbfWmIKidcYmQLBxIWtDScjmGBv5jpwr/A/XK4/Xyq8KZoI7imfjXqeXyGmNk0dfiRQw5dIGr0j0ycYgasjcrYR+7lA1KH6buefJJdQnpWgGI1OWHQMo+6vlOHFeQ6+UJnbBkkydDtS71GLKDhS9GcJW+/baDYjjBNOY6oE9Md9+Ayu0NV8ZZjIGmI4+PiGe4QfncYfRNBvGs02GMBsPlSsNy+NVKFA9Krb8QKS2/5eMEamEyHLaJbn0ein+FBcYyr1SlVI0BJc3KyLT+2/oEjK/oUX9Wn1YJXTPCmJR728gDiLyugIULWz3r7k8PxcHWdCBlZd/9SNqCIHGaeYLVcoQj419NmlgP9PzytqKzvXma/Txkw34y++JtNlgxo1XdtiXE6clWWVOT8BUnNP7aX9tQYyHEvotgmKqAwe3WN5FLW7quecNszvVq9DuOtNtV/g=
   file: build/libs/RAFTools.jar
   on:
-    repo: vs49688/RAFTools
+    tags: true
   skip_cleanup: true

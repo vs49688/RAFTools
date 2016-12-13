@@ -30,6 +30,8 @@ public class AboutDialogGPL extends javax.swing.JDialog {
 		initComponents();
 		
 		this.getRootPane().setDefaultButton(m_KBtn);
+		this.pack();
+		this.setLocationRelativeTo(parent);
 	}
 
 	/**
