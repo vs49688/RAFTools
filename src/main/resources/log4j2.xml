@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+	<Appenders>
+		<Console name="STDOUT" target="SYSTEM_OUT">
+			<!--<PatternLayout pattern="[%5p] (%22F:%-3L) - %m%n"/>-->
+			<PatternLayout pattern="[%d{dd/MM/yyyy HH:mm:ss:SSS} | %5p] %m%n"/>
+			<Filters>
+				<!-- First deny error and fatal messages -->
+				<ThresholdFilter level="ERROR" onMatch="DENY"   onMismatch="NEUTRAL"/>
+				<ThresholdFilter level="FATAL" onMatch="DENY"   onMismatch="NEUTRAL"/>
+			</Filters>
+		</Console>
+		<Console name="STDERR" target="SYSTEM_ERR">
+			<Filters>
+				<ThresholdFilter level="FATAL" onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+				<ThresholdFilter level="ERROR" onMatch="ACCEPT"   onMismatch="DENY"/>
+			</Filters>
+			<PatternLayout pattern="[%d{dd/MM/yyyy HH:mm:ss:SSS} | %5p] %m%n"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.apache" level="DEBUG"/>
+		<Root level="TRACE">
+			<AppenderRef ref="STDOUT"/>
+			<AppenderRef ref="STDERR"/>
+		</Root>
+	</Loggers>
+</Configuration>
