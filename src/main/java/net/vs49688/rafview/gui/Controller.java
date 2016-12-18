@@ -20,12 +20,20 @@
  */
 package net.vs49688.rafview.gui;
 
-import net.vs49688.rafview.cli.Model;
-import java.awt.event.*;
-import java.io.*;
-import java.nio.file.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
-import java.util.*;
 import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
 import net.vs49688.rafview.inibin.*;
@@ -89,6 +97,24 @@ public class Controller {
 		
 		m_View.invokeLater();
 		
+		/* Load the internal inibin mappings. */
+		PrintStream s = m_Console.getStream();
+		try {
+
+			s.printf("Loading internal inibin mappings...");
+			URL url = this.getClass().getResource("/inibin-mappings.ini");
+			if(url != null) {
+				m_InibinMapLoader.delayLoad(Paths.get(url.toURI()));
+				s.printf("\n");
+			} else {
+				s.printf("Failed. File not found.\n");
+			}
+
+		} catch(URISyntaxException e) {
+			s.printf("Failed. Caught exception:\n");
+			e.printStackTrace(s);
+		}
+
 		SwingUtilities.invokeLater(() -> { m_CLI.start(); });
 	}
 
