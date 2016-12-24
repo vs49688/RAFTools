@@ -25,7 +25,8 @@ import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 
 import org.apache.catalina.LifecycleException;
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class WebDAV implements AutoCloseable {
 
@@ -86,13 +87,13 @@ public class WebDAV implements AutoCloseable {
 		m_Tomcat.start();
 	}
 
-	public static void main(String[] args) throws Exception {
-
-		Model model = new Model();
-		model.openLolDirectory(java.nio.file.Paths.get("E:/Games/League of Legends"));
-		try(WebDAV webdav = new WebDAV(model)) {
-			webdav.start();
-			webdav.m_Tomcat.getServer().await();
-		}
-	}
+//	public static void main(String[] args) throws Exception {
+//
+//		Model model = new Model();
+//		model.openLolDirectory(java.nio.file.Paths.get("E:/Games/League of Legends"));
+//		try(WebDAV webdav = new WebDAV(model)) {
+//			webdav.start();
+//			webdav.m_Tomcat.getServer().await();
+//		}
+//	}
 }

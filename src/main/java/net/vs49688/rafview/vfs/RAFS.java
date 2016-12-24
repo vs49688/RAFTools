@@ -63,7 +63,7 @@ public class RAFS {
 	public static void main(String[] args) throws Exception {
 		Model model = new Model();
 		model.openLolDirectory(Paths.get("E:\\Games\\League of Legends"));
-		
+
 		model.getVFS().writeToArchive(Paths.get("E:\\test.raf"));
 	}
 
@@ -182,15 +182,14 @@ public class RAFS {
 				buffer = fChannel.map(FileChannel.MapMode.READ_WRITE, 0, fChannel.size());
 				buffer.order(ByteOrder.LITTLE_ENDIAN);
 			}
-			
+
 			buffer.putInt(RAFIDX_MAGIC);
 			buffer.putInt(1);
 			buffer.putInt(0);
-			
-			
+
 			// List offset, TODO
 			buffer.putInt(0);
-			
+
 			buffer.putInt(buffer.position() + 4);
 			writeStringTable(files, buffer);
 		}
@@ -295,6 +294,19 @@ public class RAFS {
 			/* Read the file list */
 			buffer.position(lOffset);
 			readFileList(buffer, indexMap, st, versionName, dat);
+		}
+	}
+
+	public boolean isInRAF(Path path) {
+		if(path.getFileSystem().equals(m_FileSystem)) {
+			return false;
+		}
+
+		try {
+			PosixFileAttributeView a = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+			return a.getOwner() == m_RAFOwnerPrincipal;
+		} catch(IOException e) {
+			return false;
 		}
 	}
 
@@ -415,7 +427,7 @@ public class RAFS {
 	}
 
 	public Set<Version> getFileVersions(Path path) {
-		return Collections.unmodifiableSet(m_VersionData.getOrDefault(path, null));
+		return Collections.unmodifiableSet(m_VersionData.getOrDefault(path, new TreeSet<>()));
 	}
 
 	public void clear() {

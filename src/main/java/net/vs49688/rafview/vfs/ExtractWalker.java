@@ -68,7 +68,16 @@ public class ExtractWalker implements FileVisitor<Path> {
 		}
 
 		m_Notify.onExtract(file);
-		Files.write(outputPath, m_VFS.getVersionDataForFile(file, m_Version).dataSource.read());
+
+		byte[] data;
+
+		if(m_VFS.isInRAF(file)) {
+			data = m_VFS.getVersionDataForFile(file, m_Version).dataSource.read();
+		} else {
+			data = Files.readAllBytes(file);
+		}
+
+		Files.write(outputPath, data);
 		return CONTINUE;
 	}
 

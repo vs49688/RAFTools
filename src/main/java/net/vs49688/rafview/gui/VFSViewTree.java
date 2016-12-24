@@ -47,7 +47,7 @@ public class VFSViewTree extends JTree {
 	private RAFS m_FileSystem;
 	private WatchService m_FileWatcher;
 	private final HashMap<Path, WatchKey> m_WatchedDirectories;
-	
+
 	public VFSViewTree() {
 		super((DefaultTreeModel)null);
 		this.addMouseListener(new _Mouse());
@@ -64,6 +64,7 @@ public class VFSViewTree extends JTree {
 		JPopupMenu m = new JPopupMenu();
 
 		if(!Files.isDirectory(n)) {
+
 			JMenu menu = new JMenu("Extract");
 
 			JMenuItem item = new JMenuItem("Latest");
@@ -99,7 +100,7 @@ public class VFSViewTree extends JTree {
 	public void setOperationsHandler(OpHandler handler) {
 		m_OpHandler = handler == null ? s_DummyOpHandler : handler;
 	}
-	
+
 	public void setVFS(RAFS vfs) throws IOException {
 		if(vfs == m_FileSystem) {
 			return;
@@ -108,9 +109,9 @@ public class VFSViewTree extends JTree {
 		for(WatchKey key : m_WatchedDirectories.values()) {
 			key.cancel();
 		}
-		
+
 		m_WatchedDirectories.clear();
-		
+
 		if(m_FileWatcher != null) {
 			m_FileWatcher.close();
 		}
@@ -118,12 +119,11 @@ public class VFSViewTree extends JTree {
 		m_FileSystem = vfs;
 		m_FileWatcher = m_FileSystem.getFileSystem().newWatchService();
 		SwingUtilities.invokeLater(new FSChangeProc());
-		
+
 		DefaultTreeModel model = new DefaultTreeModel(new FSEntryNode(m_FileSystem.getRoot()));
 		this.setModel(model);
 	}
 
-	
 	private class FSChangeProc implements Runnable {
 
 		@Override
@@ -134,21 +134,22 @@ public class VFSViewTree extends JTree {
 			} catch(ClosedWatchServiceException e) {
 				return;
 			}
-			
-			if(key != null) for(WatchEvent<?> event : key.pollEvents()) {
-				WatchEvent.Kind<?> kind = event.kind();
-				
-				Path parent = (Path)key.watchable();
 
-				if(kind == OVERFLOW) {
-					continue;
-				}
+			if(key != null) {
+				for(WatchEvent<?> event : key.pollEvents()) {
+					WatchEvent.Kind<?> kind = event.kind();
 
-				WatchEvent<Path> ev = (WatchEvent<Path>) event;
-				Path fileName = ev.context();
-				Path fullPath = parent.resolve(fileName);
+					Path parent = (Path)key.watchable();
 
-				// TODO: Display changes to any open directories
+					if(kind == OVERFLOW) {
+						continue;
+					}
+
+					WatchEvent<Path> ev = (WatchEvent<Path>)event;
+					Path fileName = ev.context();
+					Path fullPath = parent.resolve(fileName);
+
+					// TODO: Display changes to any open directories
 //				try {
 //					if(kind == ENTRY_CREATE) {
 //						System.err.printf("%s Created\n", fullPath);
@@ -161,16 +162,15 @@ public class VFSViewTree extends JTree {
 //				} catch(IOException e) {
 //					e.printStackTrace(System.err);
 //				}
-
-				if(!key.reset()) {
-					break;
+					if(!key.reset()) {
+						break;
+					}
 				}
 			}
-			
+
 			SwingUtilities.invokeLater(this);
 		}
 	}
-	
 
 	private Path getSelectedVFSNode() {
 		if(this.getSelectionCount() != 1) {
@@ -222,7 +222,7 @@ public class VFSViewTree extends JTree {
 		public void treeExpanded(TreeExpansionEvent event) {
 			TreePath path = event.getPath();
 			JTree tree = (JTree)event.getSource();
-			
+
 			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
 			try {
 				m_WatchedDirectories.put(node.path, node.path.register(m_FileWatcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE));
@@ -236,26 +236,27 @@ public class VFSViewTree extends JTree {
 		@Override
 		public void treeCollapsed(TreeExpansionEvent event) {
 			TreePath path = event.getPath();
-			
+
 			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
 			WatchKey key = m_WatchedDirectories.getOrDefault(node.path, null);
-			
+
 			if(key != null) {
 				key.cancel();
 				m_WatchedDirectories.remove(node.path);
 			}
 		}
 	}
-	
+
 	private static class FSEntryNode extends DefaultMutableTreeNode {
+
 		public final Path path;
 		public final boolean isDirectory;
 		private final String m_FileName;
-		
+
 		public FSEntryNode(Path path) {
 			this.path = path;
 			isDirectory = Files.isDirectory(path);
-			
+
 			Path fn = path.getFileName();
 			if(fn == null) {
 				m_FileName = "/";
@@ -263,22 +264,22 @@ public class VFSViewTree extends JTree {
 				m_FileName = fn.toString();
 			}
 		}
-		
+
 		public void repopulate() throws IOException {
 			this.removeAllChildren();
-			
+
 			try(DirectoryStream<Path> _children = Files.newDirectoryStream(path)) {
 				for(Path child : _children) {
 					this.add(new FSEntryNode(child));
 				}
 			}
 		}
-		
+
 		@Override
 		public boolean isLeaf() {
 			return !isDirectory;
 		}
-		
+
 		@Override
 		public String toString() {
 			return m_FileName;
