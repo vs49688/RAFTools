@@ -1,7 +1,28 @@
+/*
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
+ *    Contact: zane@zanevaniperen.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2, and only
+ * version 2 as published by the Free Software Foundation. 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Any and all GPL restrictions may be circumvented with permission from the
+ * the original author.
+ */
 package net.vs49688.rafview.cli.webdav;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,8 +30,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
-import net.vs49688.rafview.vfs.RAFS;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -21,42 +40,49 @@ import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.WebResourceSet;
 import org.apache.catalina.util.LifecycleBase;
 import org.apache.catalina.webresources.EmptyResource;
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
+public class NIOResourceRoot extends LifecycleBase implements WebResourceRoot {
 
-	private static final Logger logger = LogManager.getFormatterLogger(VFSResourceRoot.class);
+	protected static final Logger logger = LogManager.getFormatterLogger(NIOResourceRoot.class);
 
-	private Context m_Context;
-	private String m_WebAppPath;
-	private RAFS m_VFS;
+	protected Context context;
+	protected String webAppPath;
+	protected Path rootPath;
 
-	public VFSResourceRoot(String webAppPath, RAFS vfs) {
-		m_Context = null;
-		m_WebAppPath = webAppPath;
-		m_VFS = vfs;
+	public NIOResourceRoot(String webAppPath, Path rootPath) {
+		context = null;
+		this.webAppPath = webAppPath;
+		this.rootPath = rootPath;
 	}
 
 	@Override
 	public WebResource getResource(String path) {
-		logger.debug("Request for resource: %s", path);
-		if(path.startsWith("/META-INF") || path.startsWith("/WEB-INF")) {
-			logger.debug("  Forbidden path, returning empty");
-			return new EmptyResource(this, path);
-		}
-
-		return new NIOResource(this, m_WebAppPath, m_VFS.getFileSystem().getPath(path));
+		return createResource(rootPath.resolve(path));
 	}
 
 	@Override
 	public WebResource[] getResources(String path) {
-		return new WebResource[0];
+		Path _path = rootPath.resolve(rootPath);
+		
+		if(!Files.exists(_path)) {
+			return new WebResource[0];
+		}
+		
+		if(!Files.isDirectory(_path)) {
+			return new WebResource[] {
+				createResource(_path)
+			};
+		}
+		
+		return listResources(path);
 	}
 
 	@Override
 	public WebResource getClassLoaderResource(String path) {
-		return new EmptyResource(this, path);
+		return new EmptyResource(this, webAppPath);
 	}
 
 	@Override
@@ -66,13 +92,19 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public String[] list(String path) {
-		Path p = m_VFS.getFileSystem().getPath(path);
+		// NB: Only return the name, no trailing / if a directory.
+
+		Path p = rootPath.resolve(path);
 		
+		if(!Files.isDirectory(p)) {
+			return new String[0];
+		}
+
 		Path[] children = listDirectory(p);
 		String[] s = new String[children.length];
-		
+
 		for(int i = 0; i < children.length; ++i) {
-			s[i] = children[i].getName(children[i].getNameCount() - 1).toString();
+			s[i] = children[i].getFileName().toString();
 		}
 
 		return s;
@@ -94,25 +126,22 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 				dirs.add(p);
 			});
 		} catch(IOException e) {
-			logger.debug("", e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.list failed for %s", path.toString()), e);
+			}
 			return new Path[0];
 		}
-		
+
 		return dirs.toArray(new Path[dirs.size()]);
 	}
-	
+
 	@Override
 	public WebResource[] listResources(String path) {
-		if(path.startsWith("/META-INF") || path.startsWith("/WEB-INF")) {
-			logger.debug("  Forbidden path, returning empty");
-			return new WebResource[0];
-		}
-
-		Path[] children = listDirectory(m_VFS.getFileSystem().getPath(path));
+		Path[] children = listDirectory(rootPath.resolve(path));
 		WebResource[] res = new WebResource[children.length];
 
 		for(int i = 0; i < children.length; ++i) {
-			res[i] = new NIOResource(this, m_WebAppPath, children[i]);
+			res[i] = createResource(children[i]);
 		}
 
 		return res;
@@ -120,12 +149,64 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public boolean mkdir(String path) {
-		return false;
+		Path rawPath = rootPath.resolve(path);
+
+		Path parent = rawPath.getParent();
+		if(parent == null) {
+			/* Is root */
+			return false;
+		}
+
+		/* Subfolder of a file? No. */
+		if(!Files.isDirectory(parent)) {
+			return false;
+		}
+
+		/* If we already exist */
+		if(Files.exists(rawPath)) {
+			/* And we're not a directory, then no. */
+			if(!Files.isDirectory(rawPath)) {
+				return false;
+			}
+		} else {
+			try {
+				Files.createDirectory(rawPath);
+			} catch(IOException e) {
+				if(logger.isErrorEnabled()) {
+					logger.error(String.format("Files.createDirectory failed for %s", path.toString()), e);
+				}
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override
 	public boolean write(String path, InputStream is, boolean overwrite) {
-		return false;
+		Path p = rootPath.resolve(path);
+		if(!overwrite && Files.exists(p)) {
+			return false;
+		}
+
+		if(Files.isDirectory(p)) {
+			return false;
+		}
+
+		try(OutputStream os = Files.newOutputStream(p)) {
+			byte[] buffer = new byte[1024];
+
+			for(int amt = -1; (amt = is.read(buffer)) >= 0;) {
+				os.write(buffer, 0, amt);
+			}
+		} catch(IOException e) {
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("OutputStream#write failed for %s", path.toString()), e);
+			}
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
@@ -171,12 +252,12 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public Context getContext() {
-		return m_Context;
+		return context;
 	}
 
 	@Override
 	public void setContext(Context context) {
-		m_Context = context;
+		this.context = context;
 	}
 
 	@Override
@@ -241,7 +322,7 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public void backgroundProcess() {
-
+		
 	}
 
 	@Override
@@ -251,7 +332,7 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public void deregisterTrackedResource(TrackedWebResource trackedResource) {
-
+		
 	}
 
 	@Override
@@ -261,12 +342,7 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	public void gc() {
-
-	}
-
-	@Override
-	public void addLifecycleListener(LifecycleListener listener) {
-
+		System.gc();
 	}
 
 	@Override
@@ -275,13 +351,8 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 	}
 
 	@Override
-	public void removeLifecycleListener(LifecycleListener listener) {
-
-	}
-
-	@Override
 	protected void initInternal() throws LifecycleException {
-
+		TomcatURLStreamHandlerFactory.register();
 	}
 
 	@Override
@@ -296,6 +367,10 @@ public class VFSResourceRoot extends LifecycleBase implements WebResourceRoot {
 
 	@Override
 	protected void destroyInternal() throws LifecycleException {
+		
+	}
 
+	protected NIOResource createResource(Path path) {
+		return new NIOResource(this, path);
 	}
 }

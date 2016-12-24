@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ public class Add implements ICommand {
 		if(args.length != 3)
 			throw new CommandException(cmdLine, "add: Invalid arguments");
 
-		m_Model.addFile(Paths.get(args[1]), args[2]);
+		m_Model.getVFS().addFile(Paths.get(args[1]), args[2]);
 		
 		m_Console.printf("Added %s...\n", args[1]);
 	}

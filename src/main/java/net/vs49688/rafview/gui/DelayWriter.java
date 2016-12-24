@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify

@@ -1,7 +1,28 @@
+/*
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
+ *    Contact: zane@zanevaniperen.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2, and only
+ * version 2 as published by the Free Software Foundation. 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Any and all GPL restrictions may be circumvented with permission from the
+ * the original author.
+ */
 package net.vs49688.rafview.cli.webdav;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,53 +33,62 @@ import java.util.jar.Manifest;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.webresources.AbstractResource;
 import org.apache.catalina.webresources.FileResource;
+import org.apache.catalina.webresources.StandardRoot;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 public class NIOResource extends AbstractResource {
 
-	private static final Log m_Log = LogFactory.getLog(FileResource.class);
-	private Path m_Path;
+	protected static final Log logger = LogFactory.getLog(FileResource.class);
+	protected Path path;
 
-	public NIOResource(WebResourceRoot root, String webAppPath, Path path) {
-		super(root, webAppPath);
-		m_Path = path;
+	private static String getWebappRoot(Path p) {
+		String r = p.toString();
+		if(Files.isDirectory(p) && p.getNameCount() != 0) {
+			r += "/";
+		}
+		
+		return r;
+	}
+	
+	public NIOResource(WebResourceRoot root, Path path) {
+		super(root, getWebappRoot(path));
+		this.path = path;
 	}
 
 	@Override
 	protected InputStream doGetInputStream() {
 		try {
-			return Files.newInputStream(m_Path);
+			return Files.newInputStream(path);
 		} catch(IOException e) {
-			logIOException(e);
-			throw new RuntimeException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.newInputStream failed for %s", path.toString()), e);
+			}
+			
+			return null;
 		}
 	}
 
 	@Override
 	protected Log getLog() {
-		return m_Log;
+		return logger;
 	}
 
 	@Override
 	public long getLastModified() {
 		try {
-			return Files.getLastModifiedTime(m_Path).to(TimeUnit.SECONDS);
+			return Files.getLastModifiedTime(path).to(TimeUnit.SECONDS);
 		} catch(IOException e) {
-			logIOException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.getLastModifiedTime failed for %s", path.toString()), e);
+			}
 			return 0;
-		}
-	}
-
-	private void logIOException(IOException e) {
-		if(m_Log.isDebugEnabled()) {
-			m_Log.debug("", e);
 		}
 	}
 
 	@Override
 	public boolean exists() {
-		return Files.exists(m_Path);
+		return Files.exists(path);
 	}
 
 	@Override
@@ -68,7 +98,7 @@ public class NIOResource extends AbstractResource {
 
 	@Override
 	public boolean isDirectory() {
-		return Files.isDirectory(m_Path);
+		return Files.isDirectory(path);
 	}
 
 	@Override
@@ -79,45 +109,55 @@ public class NIOResource extends AbstractResource {
 	@Override
 	public boolean delete() {
 		try {
-			Files.delete(m_Path);
+			Files.delete(path);
 			return true;
 		} catch(IOException e) {
-			logIOException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.delete failed for %s", path.toString()), e);
+			}
 			return false;
 		}
 	}
 
 	@Override
 	public String getName() {
-		return m_Path.getName(m_Path.getNameCount() - 1).toString();
+		Path name = path.getFileName();
+		return name == null ? "" : name.toString();
 	}
 
 	@Override
 	public long getContentLength() {
 		try {
-			return Files.size(m_Path);
+			return Files.size(path);
 		} catch(IOException e) {
-			logIOException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.size failed for %s", path.toString()), e);
+			}
 			return 0L;
 		}
 	}
 
 	@Override
 	public String getCanonicalPath() {
-		throw new UnsupportedOperationException("Not supported yet.");
+		/* Always make this return null, the servlet will try
+		 * to use sendfile if it's not, which won't work. */
+		return null;
+		//return m_Path.toAbsolutePath().toString();
 	}
 
 	@Override
 	public boolean canRead() {
-		return Files.isReadable(m_Path);
+		return Files.isReadable(path);
 	}
 
 	@Override
 	public byte[] getContent() {
 		try {
-			return Files.readAllBytes(m_Path);
+			return Files.readAllBytes(path);
 		} catch(IOException e) {
-			logIOException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.readAllBytes failed for %s", path.toString()), e);
+			}
 			throw new RuntimeException(e);
 		}
 	}
@@ -125,17 +165,23 @@ public class NIOResource extends AbstractResource {
 	@Override
 	public long getCreation() {
 		try {
-			BasicFileAttributes attrs = Files.readAttributes(m_Path, BasicFileAttributes.class);
+			BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 			return attrs.creationTime().toMillis();
 		} catch(IOException e) {
-			logIOException(e);
+			if(logger.isErrorEnabled()) {
+				logger.error(String.format("Files.readAttributes failed for %s", path.toString()), e);
+			}
 			return 0;
 		}
 	}
 
 	@Override
 	public URL getURL() {
-		throw new UnsupportedOperationException("Not supported yet.");
+		try {
+			return path.toUri().toURL();
+		} catch(MalformedURLException e) {
+			return null;
+		}
 	}
 
 	@Override

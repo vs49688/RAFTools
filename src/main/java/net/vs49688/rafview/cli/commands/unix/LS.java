@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.vfs.*;
 
+@Deprecated
 public class LS implements ICommand {
 
 	private final Model m_Model;
