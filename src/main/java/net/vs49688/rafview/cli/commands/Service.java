@@ -23,6 +23,7 @@ package net.vs49688.rafview.cli.commands;
 import java.io.*;
 import java.util.Arrays;
 import net.vs49688.rafview.cli.Model;
+import net.vs49688.rafview.cli.webdav.WebDAV;
 import net.vs49688.rafview.interpreter.*;
 import org.apache.catalina.LifecycleException;
 
@@ -65,11 +66,12 @@ public class Service implements ICommand {
 	}
 
 	private void parseWebDAV(String cmdLine, Command command, String[] commandArgs) throws CommandException {
+		WebDAV webdav = m_Model.getWebServer();
 		try {
 			if(command == Command.START) {
-				m_Model.startServer();
+				webdav.start();
 			} else if(command == Command.STOP) {
-				m_Model.stopServer();
+				webdav.close();
 			} else if(command == Command.SET) {
 				/* TODO: Neaten this */
 				if(commandArgs.length != 2) {
@@ -79,7 +81,7 @@ public class Service implements ICommand {
 				/* TODO: Proper error checking */
 				String property = commandArgs[0].toLowerCase();
 				if(property.equals("port")) {
-					m_Model.setWebDAVPort(Integer.parseInt(commandArgs[1]));
+					webdav.setPort(Integer.parseInt(commandArgs[1]));
 				}
 				
 			}

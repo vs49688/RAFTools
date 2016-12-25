@@ -33,6 +33,4 @@ public class WebDAVServlet extends WebdavServlet {
 		//this.debug = 1;
 		this.readOnly = false;
 	}
-
-
 }

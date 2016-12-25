@@ -20,11 +20,17 @@
  */
 package net.vs49688.rafview.cli.webdav;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import net.vs49688.rafview.cli.Model;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
-
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.core.StandardContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,15 +46,30 @@ public class WebDAV implements AutoCloseable {
 	 */
 	private static final Logger logger = LogManager.getFormatterLogger(WebDAV.class);
 	private static final int DEFAULT_PORT = 80;
+	private static final Path BASE_DIR = Paths.get(String.format("%s/raftools-tmp", System.getProperty("java.io.tmpdir")));
 	private final Model m_Model;
-	
+	private final List<StatusListener> m_Listeners;
+
 	private Tomcat m_Tomcat;
-	
+
 	private int m_Port;
 
 	public WebDAV(Model model) {
 		m_Model = model;
 		m_Port = DEFAULT_PORT;
+		m_Listeners = new ArrayList<>();
+	}
+
+	public void addListener(StatusListener l) {
+		if(l == null) {
+			return;
+		}
+
+		m_Listeners.add(l);
+	}
+
+	public void removeListener(StatusListener l) {
+		m_Listeners.remove(l);
 	}
 
 	public void setPort(int port) {
@@ -61,30 +82,48 @@ public class WebDAV implements AutoCloseable {
 
 	@Override
 	public void close() throws LifecycleException {
-		//m_Server.stop();
 		if(m_Tomcat != null) {
+
 			m_Tomcat.stop();
 			m_Tomcat.destroy();
+
+			for(StatusListener l : m_Listeners) {
+				l.onStop(m_Tomcat);
+			}
+
+			try {
+				Files.delete(BASE_DIR);
+			} catch(IOException e) {
+				/* We really don't care if this fails. */
+			}
 		}
-	
+
 		m_Tomcat = null;
 	}
 
 	public void start() throws LifecycleException {
-
 		if(m_Tomcat != null) {
 			return;
 		}
 
 		m_Tomcat = new Tomcat();
 		m_Tomcat.setPort(m_Port);
+		m_Tomcat.setBaseDir(BASE_DIR.toString());
 
 		Context ctx = m_Tomcat.addContext("", "/");
 		ctx.setResources(new RAFSResourceRoot("", m_Model.getVFS()));
 		Tomcat.addServlet(ctx, "webdav", new WebDAVServlet());
 		ctx.addServletMapping("/*", "webdav");
 
+		for(StatusListener l : m_Listeners) {
+			l.onStart(m_Tomcat);
+		}
+
 		m_Tomcat.start();
+	}
+
+	public Tomcat getTomcat() {
+		return m_Tomcat;
 	}
 
 //	public static void main(String[] args) throws Exception {

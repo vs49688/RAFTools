@@ -58,20 +58,12 @@ public class Model {
 		m_CurrentDir = path;
 	}
 	
+	public WebDAV getWebServer() {
+		return m_WebDAV;
+	}
+	
 	public RAFS getVFS() {
 		return m_VFS;
-	}
-	
-	public void setWebDAVPort(int port) {
-		m_WebDAV.setPort(port);
-	}
-
-	public void startServer() throws LifecycleException {
-		m_WebDAV.start();
-	}
-	
-	public void stopServer() throws LifecycleException {
-		m_WebDAV.close();
 	}
 	
 	private static void addAll(RAFS vfs, Path baseDir) throws IOException {

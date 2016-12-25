@@ -40,8 +40,8 @@ import net.vs49688.rafview.inibin.*;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.sources.CachedSource;
 import net.vs49688.rafview.sources.DataSource;
-import net.vs49688.rafview.sources.SynchronisedFile;
 import net.vs49688.rafview.wwise.Wwise;
+import org.apache.catalina.LifecycleException;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
@@ -57,6 +57,7 @@ public class Controller {
 	private final DDSViewer m_DDSViewer;
 	private final VersionDialog m_VerDialog;
 	private final WwiseViewer m_WwiseViewer;
+	private final WebDAVManager m_WebDAVManagaer;
 
 	private final DelayLoader m_InibinLoader;
 	private final DelayLoader m_InibinMapLoader;
@@ -81,11 +82,13 @@ public class Controller {
 		m_InibinViewer = new InibinViewer(al);
 		m_DDSViewer = new DDSViewer(al);
 		m_WwiseViewer = new WwiseViewer(al, new _WwiseNotifyHandler());
+		m_WebDAVManagaer = new WebDAVManager(al, m_Model);
 
 		m_View.addTab(m_Console, "Console");
 		m_View.addTab(m_InibinViewer, "Inibin Viewer");
 		m_View.addTab(m_DDSViewer, "DDS Viewer");
 		m_View.addTab(m_WwiseViewer, "Wwise Viewer");
+		m_View.addTab(m_WebDAVManagaer, "WebDAV Settings");
 
 		//m_AboutDialog = new AboutDialogCLS(m_View);
 		m_AboutDialog = new AboutDialogGPL(m_View);
@@ -175,6 +178,11 @@ public class Controller {
 				}
 			} else if(cmd.equals("wwise->loadexternal")) {
 				m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK).toPath());
+			} else if(cmd.equals("webdav->start")) {
+				m_CLI.parseString(String.format("service webdav set port %d", m_WebDAVManagaer.getPort()));
+				m_CLI.parseString("service webdav start");
+			} else if(cmd.equals("webdav->stop")) {
+				m_CLI.parseString("service webdav stop");
 			}
 		}
 	}
