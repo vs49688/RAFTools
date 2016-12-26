@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,14 +24,13 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.file.*;
-import java.util.zip.*;
 
 /**
  * Provides a way to get a synchronised DataSource from a file.
  */
 public class SynchronisedFile {
 	private final ByteBuffer m_ByteBuffer;
-	private final long m_Size;
+	private final int m_Size;
 	private final Object m_Monitor;
 	
 	/**
@@ -46,7 +45,11 @@ public class SynchronisedFile {
 		
 		try (FileChannel fc = new FileInputStream(path.toFile()).getChannel()) {
 			m_ByteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-			m_Size = fc.size();
+			long size = fc.size();
+			if(size > Integer.MAX_VALUE) {
+				throw new IOException("File too large");
+			}
+			m_Size = (int)size;
 		}
 
 		m_Monitor = new Object();
@@ -72,7 +75,7 @@ public class SynchronisedFile {
 	 * Get the size of the file in bytes.
 	 * @return The size of the file in bytes.
 	 */
-	public final long getSize() {
+	public final int getSize() {
 		return m_Size;
 	}
 	

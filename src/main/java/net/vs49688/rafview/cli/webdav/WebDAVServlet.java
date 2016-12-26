@@ -18,21 +18,19 @@
  * Any and all GPL restrictions may be circumvented with permission from the
  * the original author.
  */
-package net.vs49688.rafview.inibin;
+package net.vs49688.rafview.cli.webdav;
 
-public class Vector3f {
-	public float x;
-	public float y;
-	public float z;
-	
-	public Vector3f(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-	
+import javax.servlet.ServletException;
+import org.apache.catalina.servlets.WebdavServlet;
+
+public class WebDAVServlet extends WebdavServlet {
+
 	@Override
-	public String toString() {
-		return String.format("[%f, %f, %f]", x, y, z);
+	public void init() throws ServletException {
+		super.init();
+		
+		this.listings = true;
+		//this.debug = 1;
+		this.readOnly = false;
 	}
 }

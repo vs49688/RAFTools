@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import javax.swing.SwingUtilities;
 import java.io.*;
 import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.cli.commands.*;
-import net.vs49688.rafview.cli.commands.unix.*;
 
 public class CommandInterface {
 	
@@ -42,10 +41,11 @@ public class CommandInterface {
 	ICommand m_RamInfoCommand;
 	ICommand m_ForceGC;
 	ICommand m_DumpCommand;
+	ICommand m_ServiceCommand;
 	
-	ICommand m_UnixPwd;
-	ICommand m_UnixLs;
-	ICommand m_UnixCd;
+	//ICommand m_UnixPwd;
+	//ICommand m_UnixLs;
+	//ICommand m_UnixCd;
 	
 	Help m_HelpCommand;
 	
@@ -64,10 +64,10 @@ public class CommandInterface {
 		m_Interpreter.registerCommand((m_RamInfoCommand = new RamInfo(out)));
 		m_Interpreter.registerCommand((m_ForceGC = new ForceGC()));
 		m_Interpreter.registerCommand((m_DumpCommand = new Dump(out, model)));
-		
-		m_Interpreter.registerCommand((m_UnixPwd = new PWD(out, model)));
-		m_Interpreter.registerCommand((m_UnixLs = new LS(out, model)));
-		m_Interpreter.registerCommand((m_UnixCd = new CD(out, model)));
+		m_Interpreter.registerCommand((m_ServiceCommand = new Service(out, model)));
+		//m_Interpreter.registerCommand((m_UnixPwd = new PWD(out, model)));
+		//m_Interpreter.registerCommand((m_UnixLs = new LS(out, model)));
+		//m_Interpreter.registerCommand((m_UnixCd = new CD(out, model)));
 		
 		m_HelpCommand = new Help(out);
 		m_HelpCommand.addHandler(m_HelpCommand);
@@ -78,9 +78,10 @@ public class CommandInterface {
 		m_HelpCommand.addHandler(m_ExtractCommand);
 		m_HelpCommand.addHandler(m_RamInfoCommand);
 		m_HelpCommand.addHandler(m_ForceGC);
-		m_HelpCommand.addHandler(m_UnixPwd);
-		m_HelpCommand.addHandler(m_UnixLs);
-		m_HelpCommand.addHandler(m_UnixCd);
+		m_HelpCommand.addHandler(m_ServiceCommand);
+		//m_HelpCommand.addHandler(m_UnixPwd);
+		//m_HelpCommand.addHandler(m_UnixLs);
+		//m_HelpCommand.addHandler(m_UnixCd);
 		
 		m_Interpreter.registerCommand(m_HelpCommand);
 		

@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,25 +25,22 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 import net.vs49688.rafview.IPv4Sorter;
+import net.vs49688.rafview.cli.webdav.WebDAV;
 import net.vs49688.rafview.vfs.*;
+import org.apache.catalina.LifecycleException;
 
 
 public class Model {
 	private static final Pattern s_RAFPattern = Pattern.compile("Archive_(\\d+)\\.raf(\\.dat|)");
 	private final RAFS m_VFS;
-	
+	private WebDAV m_WebDAV;
+
 	private Path m_CurrentDir;
-	
-	
+
 	public Model() {
 		m_VFS = new RAFS();
 		m_CurrentDir = m_VFS.getRoot();
-	}
-	
-	public void addFile(Path file, String version) throws IOException {
-		Path dat = Paths.get(String.format("%s.dat", file.toString()));
-		m_VFS.addFile(file, dat, version);
-		
+		m_WebDAV = new WebDAV(this);
 	}
 
 	public void openLolDirectory(Path path) throws IOException {
@@ -51,12 +48,18 @@ public class Model {
 		addAll(m_VFS, path);
 	}
 
+	@Deprecated
 	public Path getCurrentDirectory() {
 		return m_CurrentDir;
 	}
 	
+	@Deprecated
 	public void setCurrentDirectory(Path path) {
 		m_CurrentDir = path;
+	}
+	
+	public WebDAV getWebServer() {
+		return m_WebDAV;
 	}
 	
 	public RAFS getVFS() {

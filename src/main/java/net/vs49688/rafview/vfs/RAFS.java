@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,11 @@ import java.nio.file.*;
 import java.nio.file.Paths;
 import com.google.common.jimfs.*;
 import com.google.common.jimfs.PathType;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import net.vs49688.rafview.IPv4Sorter;
+import net.vs49688.rafview.cli.Model;
 
 public class RAFS {
 
@@ -49,57 +53,18 @@ public class RAFS {
 
 	private final FileSystem m_FileSystem;
 
+	private final UserPrincipal m_RAFOwnerPrincipal;
+
 	/**
-	 *  The mapping of paths to their versions.
+	 * The mapping of paths to their versions.
 	 */
 	private final Map<Path, TreeSet<Version>> m_VersionData;
-	
+
 	public static void main(String[] args) throws Exception {
-		//RAFS rafs = new RAFS();
+		Model model = new Model();
+		model.openLolDirectory(Paths.get("E:\\Games\\League of Legends"));
 
-//		FileSystemProvider provider = rafs.m_FileSystem.provider();
-//		provider.createDirectory(rafs.m_FileSystem.getPath("/kek"));
-//
-//		Path nested = rafs.m_FileSystem.getPath("/kek/lel/klek");
-//
-//		Files.createDirectories(nested);
-//		//provider.createDirectory(rafs.m_FileSystem.getPath("/KeK"));
-//		rafs.dumpKek(rafs.m_FileSystem.getPath("/"), System.err);
-//		int x = 0;
-		//String dir = "E:\\Games\\League of Legends\\RADS\\projects\\lol_game_client\\filearchives\\0.0.1.27";
-		//rafs.addFile(Paths.get(dir, "Archive_1.raf"), Paths.get(dir, "Archive_1.raf.dat"), "0.0.1.27");
-		
-		//Model model = new Model();
-		//RAFS rafs = model.getVFS();
-		
-		//model.openLolDirectory(Paths.get("E:\\Games\\League of Legends"));
-		//rafs.dumpKek(rafs.m_FileSystem.getPath("/"), System.err);
-		
-		Path pathAbsolute = Paths.get("C:\\lel\\lol\\kek.txt");
-		Path pathRelative = Paths.get("C:\\lel");
-		
-		System.err.printf("%s\n", pathAbsolute.relativize(pathRelative));
-		System.err.printf("%s\n", pathRelative.relativize(pathAbsolute));
-		
-	}
-
-	private void dumpKek(Path root, PrintStream s) throws IOException {
-		s.printf("%s\n", root);
-
-		if(!Files.isDirectory(root)) {
-			return;
-		}
-
-		try(DirectoryStream<Path> children = Files.newDirectoryStream(root)) {
-			for(Path child : children) {
-				dumpKek(child, s);
-			}
-
-		}
-		//for(Path child : Files.newDirectoryStream(root)) {
-		//	dumpKek(root, tabs+1, s);
-		//}
-
+		model.getVFS().writeToArchive(Paths.get("E:\\test.raf"));
 	}
 
 	/**
@@ -110,7 +75,13 @@ public class RAFS {
 		m_Notify = new ArrayList<>();
 
 		m_FileSystem = Jimfs.newFileSystem(m_sConfiguration);
-		
+		try {
+			m_RAFOwnerPrincipal = m_FileSystem.getUserPrincipalLookupService().lookupPrincipalByName("internal");
+		} catch(IOException e) {
+			// Will never happen
+			System.exit(1);
+			throw new RuntimeException();
+		}
 		m_VersionData = new HashMap<>();
 
 		m_DataFiles = new HashMap<>();
@@ -121,7 +92,7 @@ public class RAFS {
 			.setWorkingDirectory("/")
 			.setNameCanonicalNormalization(PathNormalization.CASE_FOLD_ASCII)
 			.setPathEqualityUsesCanonicalForm(true)
-			.setAttributeViews("basic")
+			.setAttributeViews("posix")
 			.setSupportedFeatures(Feature.FILE_CHANNEL)
 			.build();
 
@@ -167,6 +138,87 @@ public class RAFS {
 				_reprocess(child, notify);
 			}
 		}
+	}
+
+	public void addFile(Path raf, String version) throws IOException {
+		Path dat = Paths.get(String.format("%s.dat", raf.toString()));
+		addFile(raf, dat, version);
+	}
+
+	public void writeToArchive(Path raf) throws IOException {
+		//SeekableByteChannel bc = Files.newByteChannel(raf, StandardOpenOption.CREATE);
+
+		List<Path> files = new ArrayList<>();
+
+		Files.walkFileTree(this.getRoot(), new FileVisitor<Path>() {
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				files.add(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				throw exc;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+		});
+
+		try(FileOutputStream os = new FileOutputStream(raf.toFile())) {
+			MappedByteBuffer buffer;
+
+			/* Map the file into memory */
+			try(FileChannel fChannel = os.getChannel()) {
+				buffer = fChannel.map(FileChannel.MapMode.READ_WRITE, 0, fChannel.size());
+				buffer.order(ByteOrder.LITTLE_ENDIAN);
+			}
+
+			buffer.putInt(RAFIDX_MAGIC);
+			buffer.putInt(1);
+			buffer.putInt(0);
+
+			// List offset, TODO
+			buffer.putInt(0);
+
+			buffer.putInt(buffer.position() + 4);
+			writeStringTable(files, buffer);
+		}
+	}
+
+	private void writeStringTable(List<Path> paths, ByteBuffer bb) throws IOException {
+		int dataSize = 4 + (paths.size() * 8);
+
+		List<byte[]> pathBytes = new ArrayList<>(paths.size());
+		for(Path p : paths) {
+			byte[] bytes = p.toString().getBytes("US-ASCII");
+			dataSize += bytes.length;
+			pathBytes.add(bytes);
+		}
+
+		bb.putInt(dataSize);
+		bb.putInt(paths.size());
+
+		int stringOffset = pathBytes.size() * 8;
+		for(byte[] b : pathBytes) {
+			bb.putInt(stringOffset);
+			bb.putInt(b.length);
+			stringOffset += b.length;
+		}
+
+		for(byte[] b : pathBytes) {
+			bb.put(b);
+		}
+
 	}
 
 	/**
@@ -219,7 +271,7 @@ public class RAFS {
 			List<Path> indexMap = new ArrayList<>(st.size());
 
 			for(final String s : st) {
-				
+
 				Path path = this.getRoot().resolve(s);
 
 				Path parent = path.getParent();
@@ -227,12 +279,15 @@ public class RAFS {
 					Files.createDirectories(parent);
 				} catch(FileAlreadyExistsException e) {
 				}
-				
+
 				if(!Files.exists(path)) {
 					Files.createFile(path);
+					PosixFileAttributeView a = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+					a.setOwner(m_RAFOwnerPrincipal);
+
 					m_NotifyDispatch.onAdd(path);
 				}
-				
+
 				indexMap.add(path);
 			}
 
@@ -242,12 +297,29 @@ public class RAFS {
 		}
 	}
 
+	public boolean isInRAF(Path path) {
+		if(path.getFileSystem().equals(m_FileSystem)) {
+			return false;
+		}
+
+		try {
+			PosixFileAttributeView a = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+			return a.getOwner() == m_RAFOwnerPrincipal;
+		} catch(IOException e) {
+			return false;
+		}
+	}
+
 	public Path getRoot() {
 		return m_FileSystem.getPath("/");
 	}
-	
+
 	public FileSystem getFileSystem() {
 		return m_FileSystem;
+	}
+
+	public UserPrincipal getOwnerPrincipal() {
+		return m_RAFOwnerPrincipal;
 	}
 
 	private static int getPathHash(String s) {
@@ -308,62 +380,63 @@ public class RAFS {
 	}
 
 	void addVersionForFile(Path path, String version, DataSource ds) {
-		if(version == null || version.isEmpty() || ds == null)
+		if(version == null || version.isEmpty() || ds == null) {
 			throw new IllegalArgumentException();
-		
+		}
+
 		TreeSet<Version> versions = m_VersionData.getOrDefault(path, null);
-		
+
 		if(versions == null) {
 			m_VersionData.put(path, (versions = new TreeSet<>(new VSort())));
 		}
-		
+
 		Version v = new Version(version, ds);
-		
+
 		if(versions.contains(v)) {
 			throw new IllegalArgumentException(String.format("Duplicate version %s for %s\n", version, path));
 		}
-		
+
 		versions.add(v);
 	}
-	
+
 	public Version getVersionDataForFile(Path path, String version) throws IOException {
 		if(path == null) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		if(Files.isDirectory(path)) {
 			throw new IOException(String.format("%s is a directory", path));
 		}
-		
+
 		TreeSet<Version> vers = m_VersionData.getOrDefault(path, null);
 		if(vers == null) {
 			return null;
 		}
-		
+
 		if(version == null) {
 			return vers.last();
 		}
-		
+
 		for(Version v : vers) {
 			if(v.versionCompare(version)) {
 				return v;
 			}
 		}
-		
+
 		throw new IOException(String.format("No such version %s for file %s\n", version, path));
 	}
-	
+
 	public Set<Version> getFileVersions(Path path) {
-		return Collections.unmodifiableSet(m_VersionData.getOrDefault(path, null));
+		return Collections.unmodifiableSet(m_VersionData.getOrDefault(path, new TreeSet<>()));
 	}
-	
+
 	public void clear() {
 		m_NotifyDispatch.onClear();
-		
+
 		try {
 			Files.walkFileTree(this.getRoot(), new RecursiveDeleteWalker());
 		} catch(IOException e) {
-			
+
 		}
 	}
 
@@ -417,7 +490,7 @@ public class RAFS {
 		if(!Files.exists(vfsPath)) {
 			throw new IOException("No such file or directory");
 		}
-		
+
 		Files.walkFileTree(vfsPath, new ExtractWalker(outPath, version, this, m_NotifyDispatch));
 
 		m_NotifyDispatch.onComplete();
@@ -483,18 +556,19 @@ public class RAFS {
 	}
 
 	private static class VSort implements Comparator<Version> {
+
 		private final IPv4Sorter m_Sorter;
-		
+
 		public VSort() {
 			m_Sorter = new IPv4Sorter();
 		}
-		
+
 		@Override
 		public int compare(Version v1, Version v2) {
 			return m_Sorter.compare(v1.version, v2.version);
 		}
 	}
-		
+
 	private class _NotifyDispatch implements IOperationsNotify {
 
 		@Override

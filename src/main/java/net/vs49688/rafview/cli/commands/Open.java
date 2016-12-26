@@ -1,5 +1,5 @@
 /*
- * RAFTools - Copyright (C) 2015 Zane van Iperen.
+ * RAFTools - Copyright (C) 2016 Zane van Iperen.
  *    Contact: zane@zanevaniperen.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.interpreter.*;
+import net.vs49688.rafview.vfs.RAFS;
 
 public class Open implements ICommand {
 
@@ -39,11 +40,13 @@ public class Open implements ICommand {
 	public void process(String cmdLine, String[] args) throws CommandException, Exception {
 		if(args.length != 3)
 			throw new CommandException(cmdLine, "open: Invalid arguments");
-		m_Model.getVFS().clear();
-		m_Model.addFile(Paths.get(args[1]), args[2]);
+		
+		RAFS vfs = m_Model.getVFS();
+		vfs.clear();
+		vfs.addFile(Paths.get(args[1]), args[2]);
 		
 		m_Console.printf("Opened %s...\n", args[1]);
-		m_Model.getVFS().fireCompletion();
+		vfs.fireCompletion();
 	}
 
 	@Override

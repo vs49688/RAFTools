@@ -18,37 +18,27 @@
  * Any and all GPL restrictions may be circumvented with permission from the
  * the original author.
  */
-package net.vs49688.rafview.vfs;
+package net.vs49688.rafview.sources;
 
 import java.io.IOException;
-import java.nio.file.*;
-import static java.nio.file.FileVisitResult.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 
-public class RecursiveDeleteWalker implements FileVisitor<Path> {
+public class CachedSource implements DataSource {
 
+	private final byte[] m_Data;
+	
+	public CachedSource(byte[] data) {
+		m_Data = Arrays.copyOf(data, data.length);
+	}
+	
 	@Override
-	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-		return CONTINUE;
+	public byte[] read() throws IOException {
+		return Arrays.copyOf(m_Data, m_Data.length);
 	}
 
 	@Override
-	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-		Files.delete(file);
-		return CONTINUE;
+	public void close() {
+		
 	}
-
-	@Override
-	public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-		System.err.printf("RecursiveDeleteWalker::visitFileFailed(%s): %s\n", file, exc.getMessage());
-		exc.printStackTrace(System.err);
-		return CONTINUE;
-	}
-
-	@Override
-	public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-		Files.delete(dir);
-		return CONTINUE;
-	}
-
+	
 }
