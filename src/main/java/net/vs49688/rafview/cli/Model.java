@@ -186,7 +186,7 @@ public class Model {
 	}
 	
 	public static String getVersionString() {
-		return String.format("0.5-beta~%s", GitInfo.getShortCommitHash());
+		return String.format("0.5.1-beta~%s", GitInfo.getShortCommitHash());
 	}
 	
 	public static String getApplicationName() {

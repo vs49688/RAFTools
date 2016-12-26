@@ -33,6 +33,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import javax.swing.SwingUtilities;
 import net.vs49688.rafview.vfs.*;
 import net.vs49688.rafview.cli.*;
@@ -41,7 +45,6 @@ import net.vs49688.rafview.interpreter.*;
 import net.vs49688.rafview.sources.CachedSource;
 import net.vs49688.rafview.sources.DataSource;
 import net.vs49688.rafview.wwise.Wwise;
-import org.apache.catalina.LifecycleException;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
@@ -103,27 +106,45 @@ public class Controller {
 
 		m_View.invokeLater();
 
+		/* Start the CLI now, if any of the below fails, the application
+		 * will still work. */
+		SwingUtilities.invokeLater(() -> {
+			m_CLI.start();
+		});
+		
 		/* Load the internal inibin mappings. */
 		PrintStream s = m_Console.getStream();
 		try {
-
 			s.printf("Loading internal inibin mappings...");
+			
 			URL url = this.getClass().getResource("/inibin-mappings.ini");
+
 			if(url != null) {
-				m_InibinMapLoader.delayLoad(Paths.get(url.toURI()));
+				URI uri = url.toURI();
+				/* Create the JAR filesystem, if it hasn't been already. */
+				initFileSystem(uri);
+				m_InibinMapLoader.delayLoad(Paths.get(uri));
 				s.printf("\n");
 			} else {
 				s.printf("Failed. File not found.\n");
 			}
 
-		} catch(URISyntaxException e) {
+		} catch(URISyntaxException|IOException e) {
 			s.printf("Failed. Caught exception:\n");
 			e.printStackTrace(s);
 		}
 
-		SwingUtilities.invokeLater(() -> {
-			m_CLI.start();
-		});
+		
+	}
+
+	private static FileSystem initFileSystem(URI uri) throws IOException {
+		try {
+			return FileSystems.getFileSystem(uri);
+		} catch(FileSystemNotFoundException e) {
+			Map<String, String> env = new HashMap<>();
+			env.put("create", "true");
+			return FileSystems.newFileSystem(uri, env);
+		}
 	}
 
 	private class MenuListener implements ActionListener {
