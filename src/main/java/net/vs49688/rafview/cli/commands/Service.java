@@ -77,15 +77,17 @@ public class Service implements ICommand {
 				if(commandArgs.length != 2) {
 					throw new CommandException(cmdLine, "Expected 2 arguments");
 				}
-				
+
 				/* TODO: Proper error checking */
 				String property = commandArgs[0].toLowerCase();
 				if(property.equals("port")) {
 					webdav.setPort(Integer.parseInt(commandArgs[1]));
 				}
-				
+
 			}
-		} catch(Exception e) {
+		} catch(NumberFormatException e) {
+			throw new CommandException(cmdLine, String.format("Invalid port value"));
+		} catch(LifecycleException e) {
 			throw new CommandException(cmdLine, e.getMessage());
 		}
 	}

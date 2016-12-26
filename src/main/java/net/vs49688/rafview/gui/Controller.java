@@ -179,8 +179,14 @@ public class Controller {
 			} else if(cmd.equals("wwise->loadexternal")) {
 				m_WwiseLoader.delayLoad(m_View.showOpenDialog(View.FILETYPE_BNK).toPath());
 			} else if(cmd.equals("webdav->start")) {
-				m_CLI.parseString(String.format("service webdav set port %d", m_WebDAVManagaer.getPort()));
-				m_CLI.parseString("service webdav start");
+				int port = m_WebDAVManagaer.getPort();
+				if(port >= 1 && port <= 65536) {
+					m_CLI.parseString(String.format("service webdav set port %d", port));
+					m_CLI.parseString("service webdav start");
+				} else {
+					m_View.showErrorDialog("Error", "Invalid port.");
+				}
+
 			} else if(cmd.equals("webdav->stop")) {
 				m_CLI.parseString("service webdav stop");
 			}

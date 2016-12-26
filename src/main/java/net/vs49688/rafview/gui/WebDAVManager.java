@@ -22,6 +22,10 @@ package net.vs49688.rafview.gui;
 
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import net.vs49688.rafview.cli.Model;
 import net.vs49688.rafview.cli.webdav.StatusListener;
 import org.apache.catalina.LifecycleEvent;
@@ -36,17 +40,41 @@ public class WebDAVManager extends JPanel {
 		m_Model = model;
 		initComponents();
 
+		/* http://stackoverflow.com/a/5663094 */
+		PlainDocument doc = new PlainDocument();
+		doc.setDocumentFilter(new DocumentFilter() {
+			@Override
+			public void insertString(FilterBypass fb, int off, String str, AttributeSet attr)
+					throws BadLocationException {
+				fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
+			}
+
+			@Override
+			public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr)
+					throws BadLocationException {
+				fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
+			}
+		});
+		m_PortField.setDocument(doc);
+
 		m_Model.getWebServer().addListener(new _StatusListener());
 
 		m_StartButton.addActionListener(listener);
 		m_StopButton.addActionListener(listener);
+		
+		m_PortField.setText("80");
 	}
 
 	public int getPort() {
-		return 8080;
+		try {
+			return Integer.parseInt(m_PortField.getText());
+		} catch(NumberFormatException e) {
+			return -1;
+		}
 	}
-	
+
 	private class _StatusListener implements StatusListener {
+
 		@Override
 		public void onStart(Tomcat tomcat) {
 			m_StartButton.setEnabled(false);
@@ -58,7 +86,7 @@ public class WebDAVManager extends JPanel {
 			tomcat.getEngine().addLifecycleListener(new _StatusUpdater(m_EngineStatus));
 			tomcat.getHost().addLifecycleListener(new _StatusUpdater(m_HostStatus));
 			tomcat.getService().addLifecycleListener(new _StatusUpdater(m_ServiceStatuus));
-			
+
 			m_PortField.setText(Integer.toString(tomcat.getConnector().getPort()));
 		}
 
