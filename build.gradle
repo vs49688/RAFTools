@@ -1,4 +1,7 @@
 apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'net.vs49688.rafview.RAFView'
 
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
@@ -38,7 +41,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'net.vs49688.rafview.RAFView'
+        attributes 'Main-Class': mainClassName
     }
 	
 	// Embed all the dependencies into the main jar
