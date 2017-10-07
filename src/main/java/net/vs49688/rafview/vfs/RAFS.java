@@ -298,7 +298,7 @@ public class RAFS {
 	}
 
 	public boolean isInRAF(Path path) {
-		if(path.getFileSystem().equals(m_FileSystem)) {
+		if(!path.getFileSystem().equals(m_FileSystem)) {
 			return false;
 		}
 
