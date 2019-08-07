@@ -1,7 +1,5 @@
 # RAFTools
 
-![](https://travis-ci.org/vs49688/RAFTools.svg?branch=master)
-
 A viewing/extraction toolkit for League of Legends RAF files.
 
 ### Features
@@ -10,9 +8,6 @@ A viewing/extraction toolkit for League of Legends RAF files.
  * DDS Viewing/Exporting (including Mipmaps)
  * Preliminary Wwise Soundbank extraction
  * CLI and GUI interfaces
-
-### Download
-https://celestia.vs49688.net/jenkins/job/RAFTools/
 
 ### Usage
 Usage is pretty straightforward:
