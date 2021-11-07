@@ -43,11 +43,3 @@ RAFTools uses gradle for its build system, so the usual gradle commands will suf
 ### License
 GPLv2 Only - See the **COPYING** file for exact license details.
 
-### Donations
-At request, I am providing donation information, both PayPal and Bitcoin. Please note
-that any donations go to the sole contributor for the project as a way of saying _Thank you_
-and to incentivise work on the project.
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/vs49688)
-
-Bitcoin: 16ozmnVZmmXjBtXDn2q63pKaMQzDRxekow
