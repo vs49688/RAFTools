@@ -21,6 +21,10 @@
 package net.vs49688.rafview.gui;
 
 import net.vs49688.rafview.cli.Model;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -43,10 +47,43 @@ public class View extends JFrame {
 	public static final int FILETYPE_APP = (1 << 8);
 	public static final int FILETYPE_ALL = (1 << 9);
 
+	private static final List<Image> ICONS;
+
 	private final Model m_Model;
 	private final VFSViewTree.OpHandler m_TreeOpHandler;
 
 	private String m_LastOpenDirectory;
+
+	static {
+		ICONS = new ArrayList<>();
+
+		Image img;
+
+		if((img = loadIcon(32)) != null) {
+			ICONS.add(img);
+		}
+
+		if((img = loadIcon(64)) != null) {
+			ICONS.add(img);
+		}
+
+		if((img = loadIcon(128)) != null) {
+			ICONS.add(img);
+		}
+
+		if((img = loadIcon(256)) != null) {
+			ICONS.add(img);
+		}
+	}
+
+	private static Image loadIcon(int size) {
+		URL url = View.class.getResource(String.format("icon%d.png", size));
+		if(url == null) {
+			return null;
+		}
+
+		return new ImageIcon(url).getImage();
+	}
 
 	public View(Model model, ActionListener listener, VFSViewTree.OpHandler treeOpHandler) throws IOException {
 		m_Model = model;
@@ -74,6 +111,7 @@ public class View extends JFrame {
 
 		this.setTitle(String.format("%s %s", Model.getApplicationName(), Model.getVersionString()));
 		this.setSize(700, 500);
+		this.setIconImages(ICONS);
 
 		m_VFSTree.setOperationsHandler(m_TreeOpHandler);
 
