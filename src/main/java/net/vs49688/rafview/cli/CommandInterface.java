@@ -54,8 +54,7 @@ public class CommandInterface {
 		m_ExtFuckupHandler = null;
 		m_Model = model;
 		m_Interpreter = new Interpreter(new _CommandError());
-		
-		//m_Interpreter.registerCommand((m_ShowCommand = new Show(out)));
+
 		m_Interpreter.registerCommand((m_OpenCommand = new Open(out, model)));
 		m_Interpreter.registerCommand((m_AddCommand = new Add(out, model)));
 		m_Interpreter.registerCommand((m_OpenDirCommand = new OpenDir(out, model)));
@@ -86,7 +85,6 @@ public class CommandInterface {
 		m_Interpreter.registerCommand(m_HelpCommand);
 		
 		printGPL();
-		//printCLS();
 	}
 	
 	private void printGPL() {
@@ -96,38 +94,16 @@ public class CommandInterface {
 			Model.getCopyrightYear(), Model.getCopyrightHolder()));
 		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
 
-		/* Back in the day... :) */
-		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
-		//_write("/r/leagueoflegends (And Rito if they pls).\n");
-
 		_write(String.format("%s comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
 		_write("permitted by applicable law. This is free software; see the\n");
 		_write("source for copying conditions.\n");
-		_write("This build is an alpha-quality release and should not be\n");
+		_write("This build is a beta release and should not be\n");
 		_write("considered stable enough for everyday use.\n\n");
 		
 		_write("Type `help' for more information.\n");
 		
 	}
 
-	private void printCLS() {
-		_write(String.format("%s %s - Copyright (C) %d %s\n",
-			Model.getApplicationName(),	Model.getVersionString(),
-			Model.getCopyrightYear(), Model.getCopyrightHolder()));
-		_write(String.format("    Contact: %s\n", Model.getContactEmail()));
-
-		/* Back in the day... :) */
-		//_write(String.format("This version of %s is a preview build for users of\n", Model.getApplicationName()));
-		//_write("/r/leagueoflegends (And Rito if they pls).\n");
-
-		_write(String.format("%s comes with ABSOLUTELY NO WARRANTY, to the extent\n", Model.getApplicationName()));
-		_write("permitted by applicable law. This build is an alpha-quality\n");
-		_write("release and should not be considered stable enough for everyday\n");
-		_write("use.\n");
-		
-		_write("Type `help' for more information.\n");
-	}
-	
 	public void setFuckupHandler(IFuckedUp handler) {
 		m_ExtFuckupHandler = handler;
 	}
