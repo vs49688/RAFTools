@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -58,6 +59,19 @@ public class VFSViewTree extends JTree {
 		m_OpHandler = s_DummyOpHandler;
 		m_FileSystem = null;
 		m_WatchedDirectories = new HashMap<>();
+	}
+
+	@Override
+	public void removeNotify() {
+		super.removeNotify();
+
+		if(m_FileWatcher != null) {
+			try {
+				m_FileWatcher.close();
+			} catch(IOException e) {
+				e.printStackTrace(System.err);
+			}
+		}
 	}
 
 	private JPopupMenu createPopupMenu(Path n) {
