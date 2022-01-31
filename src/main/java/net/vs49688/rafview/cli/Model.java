@@ -202,6 +202,6 @@ public class Model {
 	}
 	
 	public static int getCopyrightYear() {
-		return 2019;
+		return 2022;
 	}
 }
