@@ -6,15 +6,6 @@ mainClassName = 'net.vs49688.rafview.RAFView'
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-task(git) {
-    ext.hash = getCheckedOutGitCommitHash()
-    ext.shortHash = ext.hash.take 7
-        
-    regenGitConfig()
-}
-
-compileJava.dependsOn git
-
 /*ext {
 	if (!hasProperty('mainClass')) {
 		mainClass = 'net.vs49688.rafview.RAFView'
@@ -46,37 +37,4 @@ jar {
 	
 	// Embed all the dependencies into the main jar
 	from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-}
-
-// Pinched from https://gist.github.com/JonasGroeger/7620911
-def getCheckedOutGitCommitHash() {
-    def gitFolder = "${projectDir}/.git/"
-    /*
-     * '.git/HEAD' contains either
-     *      in case of detached head: the currently checked out commit hash
-     *      otherwise: a reference to a file containing the current commit hash
-     */
-    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
-    def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
-    // def isRef = head.length > 1     // ref: refs/heads/master
-
-    if(isCommit) return head[0].trim() // e5a7c79edabb
-
-    def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
-	refHead.text.trim()
-}
-
-def regenGitConfig() {
-	def code = "package net.vs49688.rafview.cli;\n\n" +
-		"// This file is regenered by gradle everytime it's built\n\n" +
-		"public class GitInfo {\n " +
-		"	public static String getShortCommitHash() {\n" +
-		"		return \"${git.shortHash}\";\n" +
-		"	}\n\n" +
-		"	public static String getCommitHash() {\n" +
-		"		return \"${git.hash}\";\n" +
-		"	}\n\n" +
-		"}\n"
-	
-	new File("${projectDir}/src/main/java/net/vs49688/rafview/cli/GitInfo.java").write(code)
 }
