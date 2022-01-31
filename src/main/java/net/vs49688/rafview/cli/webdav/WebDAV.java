@@ -112,7 +112,7 @@ public class WebDAV implements AutoCloseable {
 		Context ctx = m_Tomcat.addContext("", "/");
 		ctx.setResources(new RAFSResourceRoot("", m_Model.getVFS()));
 		Tomcat.addServlet(ctx, "webdav", new WebDAVServlet());
-		ctx.addServletMapping("/*", "webdav");
+		ctx.addServletMappingDecoded("/*", "webdav");
 
 		for(StatusListener l : m_Listeners) {
 			l.onStart(m_Tomcat);

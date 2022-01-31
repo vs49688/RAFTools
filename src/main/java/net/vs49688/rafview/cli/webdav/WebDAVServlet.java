@@ -20,7 +20,7 @@
  */
 package net.vs49688.rafview.cli.webdav;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import org.apache.catalina.servlets.WebdavServlet;
 
 public class WebDAVServlet extends WebdavServlet {
