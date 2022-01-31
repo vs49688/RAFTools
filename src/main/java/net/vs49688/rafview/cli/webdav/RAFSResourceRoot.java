@@ -40,7 +40,10 @@ public class RAFSResourceRoot extends NIOResourceRoot {
 
 	@Override
 	public WebResource getResource(String path) {
-		logger.debug("Request for resource: %s", path);
+		if(logger.isDebugEnabled()) {
+			logger.debug(String.format("Request for resource: %s", path));
+		}
+
 		if(path.startsWith("/META-INF") || path.startsWith("/WEB-INF")) {
 			logger.debug("  Forbidden path, returning empty");
 			return new EmptyResource(this, path);

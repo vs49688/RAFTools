@@ -41,12 +41,12 @@ import org.apache.catalina.WebResourceSet;
 import org.apache.catalina.util.LifecycleBase;
 import org.apache.catalina.webresources.EmptyResource;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 
 public class NIOResourceRoot extends LifecycleBase implements WebResourceRoot {
 
-	protected static final Logger logger = LogManager.getFormatterLogger(NIOResourceRoot.class);
+	protected static final Log logger = LogFactory.getLog(NIOResourceRoot.class);
 
 	protected Context context;
 	protected String webAppPath;

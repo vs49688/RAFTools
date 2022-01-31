@@ -26,12 +26,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
 import net.vs49688.rafview.cli.Model;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.LifecycleException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class WebDAV implements AutoCloseable {
 
@@ -43,7 +42,6 @@ public class WebDAV implements AutoCloseable {
 	 * This just uses the provided org.apache.catalina.startup.Tomcat
 	 * wrapper class and creates/destroys it when needed ^-^
 	 */
-	private static final Logger logger = LogManager.getFormatterLogger(WebDAV.class);
 	private static final int DEFAULT_PORT = 80;
 	private static final Path BASE_DIR = Paths.get(String.format("%s/raftools-tmp", System.getProperty("java.io.tmpdir")));
 	private final Model m_Model;
