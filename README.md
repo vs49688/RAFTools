@@ -14,30 +14,19 @@ Usage is pretty straightforward:
 
 To run normally (as a GUI application):
 ```
-java -jar RAFTools.jar
+java -jar raftools-0.6.0.jar
 ```
 
 To run as a CLI application:
 ```
-java -jar RAFTools.jar -console
+java -jar raftools-0.6.0.jar -console
 ```
 
 ### Building
-RAFTools uses gradle for its build system, so the usual gradle commands will suffice:
 
-##### Compiling
 ```
-/path/to/RAFTools$ gradle build
-```
-
-##### Running
-```
-/path/to/RAFTools$ gradle run
-```
-
-##### Creating a JAR file
-```
-/path/to/RAFTools$ gradle jar
+$ mvn package
+$ java -jar target/raftools-0.6.0.jar
 ```
 
 ### License
