@@ -30,7 +30,6 @@ import net.vs49688.rafview.cli.Model;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.core.StandardContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

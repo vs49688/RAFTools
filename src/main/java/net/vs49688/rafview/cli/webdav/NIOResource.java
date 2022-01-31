@@ -33,7 +33,6 @@ import java.util.jar.Manifest;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.webresources.AbstractResource;
 import org.apache.catalina.webresources.FileResource;
-import org.apache.catalina.webresources.StandardRoot;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 

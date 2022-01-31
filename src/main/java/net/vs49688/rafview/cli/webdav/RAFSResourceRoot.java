@@ -23,7 +23,6 @@ package net.vs49688.rafview.cli.webdav;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
 import net.vs49688.rafview.vfs.RAFS;
