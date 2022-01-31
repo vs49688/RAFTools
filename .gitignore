@@ -4,3 +4,4 @@
 /.nb-gradle/
 /proguard.conf
 /.gradle/
+/target
