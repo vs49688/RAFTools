@@ -117,7 +117,7 @@ public class Controller {
 		try {
 			s.printf("Loading internal inibin mappings...");
 			
-			URL url = this.getClass().getResource("/inibin-mappings.ini");
+			URL url = this.getClass().getResource("inibin-mappings.ini");
 
 			if(url != null) {
 				URI uri = url.toURI();
