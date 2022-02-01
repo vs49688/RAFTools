@@ -22,19 +22,19 @@ Usage is pretty straightforward:
 
 To run normally (as a GUI application):
 ```
-java -jar raftools-0.6.0.jar
+java -jar raftools-0.6.1.jar
 ```
 
 To run as a CLI application:
 ```
-java -jar raftools-0.6.0.jar -console
+java -jar raftools-0.6.1.jar -console
 ```
 
 ### Building
 
 ```
 $ mvn package
-$ java -jar target/raftools-0.6.0.jar
+$ java -jar target/raftools-0.6.1.jar
 ```
 
 ### License
