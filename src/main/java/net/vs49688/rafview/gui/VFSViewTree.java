@@ -23,9 +23,6 @@ package net.vs49688.rafview.gui;
 import java.awt.event.*;
 import java.io.IOException;
 import java.nio.file.*;
-import static java.nio.file.StandardWatchEventKinds.*;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -46,8 +43,6 @@ public class VFSViewTree extends JTree {
 
 	private OpHandler m_OpHandler;
 	private RAFS m_FileSystem;
-	private WatchService m_FileWatcher;
-	private final HashMap<Path, WatchKey> m_WatchedDirectories;
 
 	public VFSViewTree() {
 		super((DefaultTreeModel)null);
@@ -58,20 +53,6 @@ public class VFSViewTree extends JTree {
 
 		m_OpHandler = s_DummyOpHandler;
 		m_FileSystem = null;
-		m_WatchedDirectories = new HashMap<>();
-	}
-
-	@Override
-	public void removeNotify() {
-		super.removeNotify();
-
-		if(m_FileWatcher != null) {
-			try {
-				m_FileWatcher.close();
-			} catch(IOException e) {
-				e.printStackTrace(System.err);
-			}
-		}
 	}
 
 	private JPopupMenu createPopupMenu(Path n) {
@@ -115,75 +96,15 @@ public class VFSViewTree extends JTree {
 		m_OpHandler = handler == null ? s_DummyOpHandler : handler;
 	}
 
-	public void setVFS(RAFS vfs) throws IOException {
-		if(vfs == m_FileSystem) {
-			return;
-		}
-
-		for(WatchKey key : m_WatchedDirectories.values()) {
-			key.cancel();
-		}
-
-		m_WatchedDirectories.clear();
-
-		if(m_FileWatcher != null) {
-			m_FileWatcher.close();
+	public void setVFS(RAFS vfs) {
+		if(m_FileSystem != null) {
+			throw new IllegalStateException("vfs can only be set once");
 		}
 
 		m_FileSystem = vfs;
-		m_FileWatcher = m_FileSystem.getFileSystem().newWatchService();
-		SwingUtilities.invokeLater(new FSChangeProc());
 
 		DefaultTreeModel model = new DefaultTreeModel(new FSEntryNode(m_FileSystem.getRoot()));
 		this.setModel(model);
-	}
-
-	private class FSChangeProc implements Runnable {
-
-		@Override
-		public void run() {
-			WatchKey key;
-			try {
-				key = m_FileWatcher.poll();
-			} catch(ClosedWatchServiceException e) {
-				return;
-			}
-
-			if(key != null) {
-				for(WatchEvent<?> event : key.pollEvents()) {
-					WatchEvent.Kind<?> kind = event.kind();
-
-					Path parent = (Path)key.watchable();
-
-					if(kind == OVERFLOW) {
-						continue;
-					}
-
-					WatchEvent<Path> ev = (WatchEvent<Path>)event;
-					Path fileName = ev.context();
-					Path fullPath = parent.resolve(fileName);
-
-					// TODO: Display changes to any open directories
-//				try {
-//					if(kind == ENTRY_CREATE) {
-//						System.err.printf("%s Created\n", fullPath);
-//						fullPath.register(m_FileWatcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-//					} else if(kind == ENTRY_DELETE) {
-//						System.err.printf("%s Deleted\n", fullPath);
-//					} else if(kind == ENTRY_MODIFY) {
-//						System.err.printf("%s Modified\n", fullPath);
-//					}
-//				} catch(IOException e) {
-//					e.printStackTrace(System.err);
-//				}
-					if(!key.reset()) {
-						break;
-					}
-				}
-			}
-
-			SwingUtilities.invokeLater(this);
-		}
 	}
 
 	private Path getSelectedVFSNode() {
@@ -230,7 +151,7 @@ public class VFSViewTree extends JTree {
 		public void nodeExport(Path node, Version version);
 	}
 
-	private class _Expansion implements TreeExpansionListener {
+	private static class _Expansion implements TreeExpansionListener {
 
 		@Override
 		public void treeExpanded(TreeExpansionEvent event) {
@@ -239,7 +160,6 @@ public class VFSViewTree extends JTree {
 
 			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
 			try {
-				m_WatchedDirectories.put(node.path, node.path.register(m_FileWatcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE));
 				node.repopulate();
 				((DefaultTreeModel)tree.getModel()).nodeStructureChanged(node);
 			} catch(IOException e) {
@@ -249,15 +169,7 @@ public class VFSViewTree extends JTree {
 
 		@Override
 		public void treeCollapsed(TreeExpansionEvent event) {
-			TreePath path = event.getPath();
-
-			FSEntryNode node = (FSEntryNode)path.getLastPathComponent();
-			WatchKey key = m_WatchedDirectories.getOrDefault(node.path, null);
-
-			if(key != null) {
-				key.cancel();
-				m_WatchedDirectories.remove(node.path);
-			}
+			/* nop */
 		}
 	}
 
