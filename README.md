@@ -2,6 +2,14 @@
 
 A viewing/extraction toolkit for League of Legends RAF files.
 
+### NOTICE
+
+League of Legends has not used RAF files for some time now and as such,
+RAFTools is in maintenance mode. It will not receive any new feature
+development or bug fixes.
+
+Please use https://github.com/Crauzer/Obsidian to handle the new format.
+
 ### Features
  * Automated mounting of RAF files (See the filesystem as LoL does)
  * Manual "patch" mounting
